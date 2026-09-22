@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Сравнение списков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="lock">🔒</span>Сравнение списков</span>
+    <div class="top-actions">
+      <button class="btn ghost icon-btn" id="themeBtn" title="Сменить тему" aria-label="Сменить тему">◑</button>
+      <a class="btn ghost" href="index.html">← К анкете</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1>Сравнить два списка</h1>
+    <p>Колонка <b style="color:var(--ink);font-weight:600">A уже подставлена вашей анкетой</b> с этого устройства — заполните только B (или замените A другой ссылкой). Считается прямо здесь, в браузере, ничего не отправляется. Правило: если хотя бы у одного стоит «Нет» — пункт исключается.</p>
+  </section>
+
+  <div class="cmp-inputs">
+    <div class="cmp-col">
+      <input class="cmp-name" id="nameA" placeholder="Имя / метка A (необязательно)" autocomplete="off">
+      <label>Ссылка или код A <button class="btn ghost mini" id="fillMine" type="button" style="float:right;margin-top:-4px">Подставить мою</button></label>
+      <textarea id="codeA" placeholder="Вставьте ссылку сюда…"></textarea>
+    </div>
+    <div class="cmp-col">
+      <input class="cmp-name" id="nameB" placeholder="Имя / метка B (необязательно)" autocomplete="off">
+      <label>Ссылка или код B</label>
+      <textarea id="codeB" placeholder="Вставьте ссылку сюда…"></textarea>
+    </div>
+  </div>
+
+  <button class="btn primary" id="cmpBtn" style="width:100%;padding:12px">Сравнить</button>
+
+  <div id="results"></div>
+
+  <footer class="foot">
+    Сравнение выполняется полностью в вашем браузере. Коды не сохраняются и никуда не уходят.
+  </footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app-data.js?v=374"></script>
+<script>
+/* theme */
+const themeBtn=document.getElementById("themeBtn");
+try{ const saved=localStorage.getItem("checklist-theme"); if(saved) document.documentElement.dataset.theme=saved; }catch(e){}
+themeBtn.addEventListener("click",()=>{ const cur=document.documentElement.dataset.theme; const isDark=cur?cur==="dark":matchMedia("(prefers-color-scheme: dark)").matches; const next=isDark?"light":"dark"; document.documentElement.dataset.theme=next; try{localStorage.setItem("checklist-theme",next);}catch(e){} });
+
+let toastTimer=null; function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2400);}
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+const RU={love:"Обожаю",yes:"Да",maybe:"Может",limit:"Нет"};
+const BC={love:"b-match",yes:"b-good",maybe:"b-maybe",limit:"b-limit"};
+const POS={yes:1,love:1}, SOFT={maybe:1};
+
+function classify(a,b){
+  if(a==="limit"||b==="limit") return "excluded";
+  const pa=POS[a],pb=POS[b],sa=SOFT[a],sb=SOFT[b];
+  if(pa&&pb) return "match";
+  if((pa&&sb)||(sa&&pb)||(sa&&sb)) return "discuss";
+  if(pa||pb||sa||sb) return "one";
+  return null;
+}
+function badge(v){ return v ? '<span class="badge '+BC[v]+'">'+RU[v]+'</span>' : '<span class="badge b-one">—</span>'; }
+
+let LAST=null, FILTER="all";
+document.getElementById("cmpBtn").addEventListener("click",()=>{
+  const rawA=document.getElementById("codeA").value.trim();
+  const rawB=document.getElementById("codeB").value.trim();
+  if(!rawA||!rawB){ toast("Вставьте обе ссылки"); return; }
+  const A=decodeState(extractCode(rawA));
+  const B=decodeState(extractCode(rawB));
+  const nA=esc(document.getElementById("nameA").value.trim()||A.name||"Список A");
+  const nB=esc(document.getElementById("nameB").value.trim()||B.name||"Список B");
+  LAST={A,B,nA,nB}; FILTER="all"; renderResults(true);
+});
+document.getElementById("results").addEventListener("click", e=>{
+  const b=e.target.closest("button[data-f]"); if(!b||!LAST) return;
+  FILTER=b.dataset.f; renderResults(false);
+});
+
+/* авто-подстановка при переходе «Сравнить с моей» из анкеты */
+(function(){
+  try{
+    const a=sessionStorage.getItem("cmpA"), b=sessionStorage.getItem("cmpB");
+    if(a===null && b===null) return;
+    const an=sessionStorage.getItem("cmpAName"), bn=sessionStorage.getItem("cmpBName");
+    if(a) document.getElementById("codeA").value=a;
+    if(b) document.getElementById("codeB").value=b;
+    if(an) document.getElementById("nameA").value=an;
+    if(bn) document.getElementById("nameB").value=bn;
+    ["cmpA","cmpB","cmpAName","cmpBName"].forEach(k=>sessionStorage.removeItem(k));
+    if(a && b) document.getElementById("cmpBtn").click();
+  }catch(e){}
+})();
+
+/* колонка A по умолчанию = моя анкета с этого устройства (можно заменить) */
+(function(){
+  try{
+    if(document.getElementById("codeA").value.trim()) return;
+    const raw=localStorage.getItem("practices-checklist-v1"); if(!raw) return;
+    const own=JSON.parse(raw);
+    document.getElementById("codeA").value=encodeState(own);
+    if(!document.getElementById("nameA").value) document.getElementById("nameA").value=own.name||"Моя анкета";
+  }catch(e){}
+})();
+document.getElementById("fillMine").addEventListener("click", ()=>{
+  try{
+    const raw=localStorage.getItem("practices-checklist-v1");
+    if(!raw){ toast("На этом устройстве нет вашей анкеты"); return; }
+    const own=JSON.parse(raw);
+    document.getElementById("codeA").value=encodeState(own);
+    document.getElementById("nameA").value=own.name||"Моя анкета";
+    toast("Подставлена ваша анкета");
+  }catch(e){ toast("Не удалось"); }
+});
+
+function itemsIter(cb){ DATA.forEach(cat=>cat.items.forEach(it=>{ const a=(LAST.A.items[it.id]||{}).interest||null; const b=(LAST.B.items[it.id]||{}).interest||null; cb(it,a,b); })); }
+const PREF={love:0,yes:1,maybe:2,limit:3};
+function rowHTML(it,a,b){ return '<div class="rrow"><div class="nm">'+esc(it[0])+'<span class="en">'+esc(it[1])+'</span></div><div class="who">'+LAST.nA+': '+badge(a)+' &nbsp; '+LAST.nB+': '+badge(b)+'</div></div>'; }
+function filterBar(){
+  const mk=(fv,label)=>'<button class="btn mini'+(FILTER===fv?' on':'')+'" data-f="'+fv+'">'+label+'</button>';
+  return '<div class="cmp-filter">'+mk("all","Всё")+mk("yesA","«Да» у "+LAST.nA)+mk("yesB","«Да» у "+LAST.nB)+'</div>';
+}
+function groupBlock(title,dot,desc,rows){
+  if(!rows.length) return "";
+  return '<div class="result-group"><h3><span class="dot" style="background:'+dot+'"></span>'+title+' <span style="font-weight:400;color:var(--muted);font-size:14px">('+rows.length+')</span></h3><div class="sub">'+desc+'</div>'+rows.map(r=>rowHTML(r.it,r.a,r.b)).join("")+'</div>';
+}
+function renderResults(scroll){
+  const box=document.getElementById("results");
+  if(FILTER==="yesA"||FILTER==="yesB"){
+    const side=FILTER==="yesA"?"a":"b", who=FILTER==="yesA"?LAST.nA:LAST.nB;
+    const rows=[]; itemsIter((it,a,b)=>{ const v=side==="a"?a:b; if(v==="yes"||v==="love") rows.push({it,a,b,v}); });
+    rows.sort((x,y)=>(PREF[x.v]-PREF[y.v])|| x.it[0].localeCompare(y.it[0]));
+    let html=filterBar();
+    html += rows.length ? groupBlock("«Да / Обожаю» у "+who,"var(--yes)","Сначала «обожаю», потом «да».",rows)
+                        : '<div class="result-group"><div class="sub">У '+who+' нет пунктов «Да/Обожаю».</div></div>';
+    box.innerHTML=html; if(scroll) box.scrollIntoView({behavior:"smooth",block:"start"}); return;
+  }
+  const g={match:[],discuss:[],oneA:[],oneB:[],excluded:[]};
+  itemsIter((it,a,b)=>{ const r=classify(a,b); if(!r) return; if(r==="one"){ (a?g.oneA:g.oneB).push({it,a,b}); } else g[r].push({it,a,b}); });
+  const total=g.match.length+g.discuss.length+g.oneA.length+g.oneB.length+g.excluded.length;
+  if(!total){ box.innerHTML=filterBar()+'<div class="result-group"><div class="sub">Пересечений не найдено. Проверьте, что вставлены оба кода целиком.</div></div>'; return; }
+  let html=filterBar()+'<div class="cmp-summary">'
+    +'<div class="cmp-stat"><b style="color:var(--love)">'+g.match.length+'</b>совпадений</div>'
+    +'<div class="cmp-stat"><b style="color:var(--maybe)">'+g.discuss.length+'</b>обсудить</div>'
+    +'<div class="cmp-stat"><b style="color:var(--chip-ink)">'+(g.oneA.length+g.oneB.length)+'</b>у одного</div>'
+    +'<div class="cmp-stat"><b style="color:var(--limit)">'+g.excluded.length+'</b>исключено</div>'
+    +'</div>';
+  html+=groupBlock("Совпадения — оба «за»","var(--love)","У вас обоих интерес. С этого стоит начать.",g.match);
+  html+=groupBlock("Стоит обсудить","var(--maybe)","Кто-то «может», кто-то «да» — обсудите условия.",g.discuss);
+  html+=groupBlock("Интересно только "+LAST.nA,"var(--chip-ink)","Хочет "+LAST.nA+" — можно предложить и обсудить.",g.oneA);
+  html+=groupBlock("Интересно только "+LAST.nB,"var(--chip-ink)","Хочет "+LAST.nB+" — можно предложить и обсудить.",g.oneB);
+  html+=groupBlock("Исключено — стоп","var(--limit)","Хотя бы у одного «Нет». Сюда не идём.",g.excluded);
+  box.innerHTML=html; if(scroll) box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+</script>
+</body>
+</html>
