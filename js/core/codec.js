@@ -1,0 +1,118 @@
+/* core/codec.js — the share link. State <-> "#a=...&n=...&m=...&lg=..".
+
+   Params:  a = answers (binary, base64url)   m = profile ("About me")
+            n = name   s/f/c/l = safeword/fantasies/comments/allergies (free text, not in UI now)
+            lg = language the link opens in
+   Answers use PERMANENT item codes from data/practices.js, so adding/moving items never
+   breaks old links. Two encodings are built and the shorter one is used (leading tag byte):
+     2 = sparse: varint(gap*4 + value)                 — best for few marks
+     4 = dense : varint(N) + presence bitmap + 2 bits per marked item — best for many marks
+   Read-only legacy tags: 1 = old 6-bit positional, 3 = dense without N (N was 371). */
+(function (KC) {
+  const IV = { limit: 1, maybe: 2, yes: 3, love: 4 }, IREV = [null, "limit", "maybe", "yes", "love"];
+  const LEGACY_N = 371;
+  let byCode = null, codeOf = null;
+  function maps() {
+    if (byCode) return;
+    byCode = []; codeOf = {};
+    KC.CATS.forEach(c => c.items.forEach(([code, id]) => { byCode[code] = id; codeOf[id] = code; }));
+  }
+
+  function b64(bytes) { let s = ""; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function unb64(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const bin = atob(s), out = []; for (let i = 0; i < bin.length; i++) out.push(bin.charCodeAt(i)); return out; }
+  function varint(n, out) { while (n >= 128) { out.push((n & 127) | 128); n >>>= 7; } out.push(n); }
+  function readVarint(bytes, pos) { let n = 0, shift = 0, b; do { b = bytes[pos.i++]; n |= (b & 127) << shift; shift += 7; } while ((b & 128) && pos.i < bytes.length); return n; }
+
+  function packAnswers(items) {
+    maps();
+    const N = byCode.length, marked = [];
+    for (let c = 0; c < N; c++) { const id = byCode[c]; const s = id && items[id]; const v = s && IV[s.interest]; if (v) marked.push([c, v]); }
+    const A = [2]; let prev = -1;
+    marked.forEach(([c, v]) => { varint((c - prev - 1) * 4 + (v - 1), A); prev = c; });
+    const B = [4]; varint(N, B);
+    const bm = new Array(Math.ceil(N / 8)).fill(0);
+    marked.forEach(([c]) => { bm[c >> 3] |= (1 << (c & 7)); });
+    B.push.apply(B, bm);
+    let cur = 0, nb = 0;
+    marked.forEach(([, v]) => { cur = (cur << 2) | (v - 1); nb += 2; if (nb === 8) { B.push(cur & 255); cur = 0; nb = 0; } });
+    if (nb > 0) B.push((cur << (8 - nb)) & 255);
+    return b64(B.length < A.length ? B : A);
+  }
+
+  function unpackAnswers(str) {
+    maps();
+    let bytes; try { bytes = unb64(str); } catch (e) { return {}; }
+    const items = {}; if (!bytes.length) return items;
+    const put = (code, v) => { const id = byCode[code]; if (id && IREV[v]) items[id] = { interest: IREV[v] }; };
+    const tag = bytes[0];
+    if (tag === 2) {
+      const pos = { i: 1 }; let code = -1;
+      while (pos.i < bytes.length) { const n = readVarint(bytes, pos); code += (n >> 2) + 1; put(code, (n & 3) + 1); }
+    } else if (tag === 3 || tag === 4) {
+      const pos = { i: 1 }; const N = tag === 4 ? readVarint(bytes, pos) : LEGACY_N;
+      const bm = pos.i, vals = bm + Math.ceil(N / 8); let bit = 0;
+      for (let c = 0; c < N; c++) {
+        if (!(bytes[bm + (c >> 3)] & (1 << (c & 7)))) continue;
+        const v = (bytes[vals + (bit >> 3)] >> (6 - (bit & 7))) & 3; bit += 2; put(c, v + 1);
+      }
+    } else if (tag === 1) {
+      const bits = []; for (let k = 1; k < bytes.length; k++) for (let j = 7; j >= 0; j--) bits.push((bytes[k] >> j) & 1);
+      let p = 0;
+      for (let c = 0; c < LEGACY_N; c++) { let v = 0; for (let b = 0; b < 6; b++) v = (v << 1) | (bits[p++] || 0); if (v & 7) put(c, v & 7); }
+    }
+    return items;
+  }
+
+  function packMeta(meta) {
+    meta = KC.normalizeMeta(meta); const bytes = [];
+    KC.PROFILE.forEach(f => {
+      const v = meta[f.id];
+      if (f.type === "multi") { let mask = 0; (v || []).forEach(k => { const i = f.opts.indexOf(k); if (i >= 0) mask |= (1 << i); }); bytes.push(mask & 255); }
+      else { const i = v ? f.opts.indexOf(v) : -1; bytes.push(i < 0 ? 0 : i + 1); }
+    });
+    while (bytes.length && bytes[bytes.length - 1] === 0) bytes.pop();
+    return bytes.length ? b64(bytes) : "";
+  }
+
+  function unpackMeta(str) {
+    if (!str) return {};
+    if (str.indexOf("%") >= 0 || str.charAt(0) === "{") { try { return KC.normalizeMeta(JSON.parse(decodeURIComponent(str))); } catch (e) { return {}; } }
+    let bytes; try { bytes = unb64(str); } catch (e) { return {}; }
+    const meta = {};
+    KC.PROFILE.forEach((f, i) => {
+      const byte = bytes[i] || 0;
+      if (f.type === "multi") { const arr = []; f.opts.forEach((o, bit) => { if (o && (byte & (1 << bit))) arr.push(o); }); if (arr.length) meta[f.id] = arr; }
+      else if (byte > 0 && f.opts[byte - 1]) meta[f.id] = f.opts[byte - 1];
+    });
+    return meta;
+  }
+
+  const TEXT = { n: "name", s: "safeword", f: "fantasies", c: "comments", l: "allergies" };
+
+  KC.codec = {
+    packAnswers, unpackAnswers, packMeta, unpackMeta,
+    /* state -> hash string (no leading #). lang: code of page language, or omit */
+    encode(st, lang) {
+      const parts = ["a=" + packAnswers(st.items || {})];
+      Object.keys(TEXT).forEach(k => { const v = st[TEXT[k]]; if (v) parts.push(k + "=" + encodeURIComponent(v)); });
+      const m = packMeta(st.meta); if (m) parts.push("m=" + m);
+      if (lang) parts.push("lg=" + lang);
+      return parts.join("&");
+    },
+    /* hash / full link / bare code -> state (+ .lang, null if absent or unknown) */
+    decode(text) {
+      let h = KC.codec.extract(text);
+      const q = new URLSearchParams(h);
+      const st = { items: {}, meta: {}, name: "", safeword: "", fantasies: "", comments: "", allergies: "", lang: null };
+      if (q.get("a")) st.items = unpackAnswers(q.get("a"));
+      Object.keys(TEXT).forEach(k => { st[TEXT[k]] = q.get(k) || ""; });
+      if (q.get("m")) st.meta = unpackMeta(q.get("m"));
+      const lg = q.get("lg"); if (lg && KC.i18n && KC.i18n.known(lg)) st.lang = lg;
+      return st;
+    },
+    /* accept a full URL, "#..." or a bare code */
+    extract(text) { text = (text || "").trim(); const i = text.indexOf("#"); return (i >= 0 ? text.slice(i + 1) : text).replace(/^#/, ""); },
+    /* same list regardless of which language the link opens in */
+    key(text) { return KC.codec.extract(text).split("&").filter(p => p.indexOf("lg=") !== 0).join("&"); },
+  };
+})(window.KC);

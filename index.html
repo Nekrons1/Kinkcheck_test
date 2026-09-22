@@ -1,13 +1,15 @@
 <!DOCTYPE html>
+<!-- index.html — the checklist form. Markup only: texts come from js/lang/*.ui.js via
+     data-i18n* attributes, logic from js/form/*.js (loaded by js/boot.js). -->
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Чек-лист практик</title>
+<title data-i18n="app.title">Чек-лист практик</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/style.css?v=400">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -16,460 +18,106 @@
 
 <header class="top">
   <div class="top-inner">
-    <span class="brand"><span class="lock">🔒</span>Чек-лист практик</span>
+    <span class="brand"><span class="lock">🔒</span><span data-i18n="app.title"></span></span>
     <div class="top-actions">
-      <button class="btn ghost icon-btn" id="themeBtn" title="Сменить тему" aria-label="Сменить тему">◑</button>
-      <a class="btn primary" id="compareBtn" href="compare.html" title="Сравнить две анкеты">Сравнить анкеты</a>
-      <button class="btn ghost" id="savedBtn" title="Полученные анкеты">Полученные</button>
-      <button class="btn ghost" id="mineBtn" title="Мои сохранённые анкеты">Мои анкеты</button>
-      <button class="btn ghost" id="shareBtn" title="Ссылка и QR">Поделиться</button>
-      <button class="btn ghost" id="pdfBtn">Скачать PDF</button>
-      <button class="btn ghost" id="resetBtn" title="Очистить всё">Очистить</button>
+      <div class="lang-sw" id="langSw" role="group"></div>
+      <button class="btn ghost icon-btn" id="themeBtn" data-i18n-title="hdr.theme">◑</button>
+      <a class="btn primary" id="compareBtn" href="compare.html" data-i18n="hdr.compare" data-i18n-title="hdr.compareTitle"></a>
+      <button class="btn ghost" id="savedBtn" data-i18n="hdr.saved" data-i18n-title="hdr.savedTitle"></button>
+      <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle"></button>
+      <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle"></button>
+      <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf"></button>
+      <button class="btn ghost" id="resetBtn" data-i18n="hdr.reset" data-i18n-title="hdr.resetTitle"></button>
     </div>
   </div>
   <div class="subbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="search" id="search" placeholder="Поиск практики…" autocomplete="off">
+      <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off">
     </div>
-    <select class="jump" id="jump" aria-label="Перейти к разделу"><option value="">Раздел…</option></select>
+    <select class="jump" id="jump" data-i18n-title="jump.aria"></select>
   </div>
   <div class="progress-row">
     <span id="progress"></span>
-    <label class="only-toggle"><input type="checkbox" id="onlyMarked" checked> В экспорт — только отмеченное</label>
+    <label class="only-toggle"><input type="checkbox" id="onlyMarked" checked> <span data-i18n="onlyMarked"></span></label>
   </div>
 </header>
 
 <main class="wrap">
 
   <div class="banner" id="sharedBanner">
-    Вы открыли анкету по ссылке или QR. Она сохранена в «Полученные». Правки <b>пока не сохраняются</b> в этот браузер — так вы не затрёте собственный список.
+    <span data-i18n-html="banner_html"></span>
     <div class="row">
-      <button class="btn" id="bannerCmp">Сравнить с моей</button>
-      <button class="btn ghost" id="bannerOwn">Открыть мою анкету</button>
-      <button class="btn ghost" id="bannerKeep">Заполнять как свою</button>
+      <button class="btn" id="bannerCmp" data-i18n="banner.cmp"></button>
+      <button class="btn ghost" id="bannerOwn" data-i18n="banner.own"></button>
+      <button class="btn ghost" id="bannerKeep" data-i18n="banner.keep"></button>
     </div>
   </div>
 
   <section class="intro">
-    <h1>Отметь, что тебе интересно</h1>
-    <p>Личный чек-лист для обсуждения желаний и границ. Заполни спокойно и честно — можно оставлять пункты пустыми, если они не про тебя. Нажми «?» рядом с пунктом, если не уверен(а), что это. <b style="color:var(--ink);font-weight:600">Всё сохраняется только на этом устройстве</b>, в этом браузере, и никуда не отправляется.</p>
-    <p>Заполненный список — это старт для разговора и согласия, а не обязательство. Стоп-слово и границы всегда важнее любой галочки.</p>
+    <h1 data-i18n="intro.h1"></h1>
+    <p data-i18n-html="intro.p1_html"></p>
+    <p data-i18n="intro.p2"></p>
     <div class="idfields">
-      <label>Имя / ник <span class="hint">лучше латиницей</span><input type="text" id="metaName" autocomplete="off" placeholder="имя или ник"></label>
+      <label><span data-i18n="name.label"></span> <span class="hint" data-i18n="name.hint"></span><input type="text" id="metaName" autocomplete="off" data-i18n-ph="name.ph"></label>
     </div>
   </section>
 
   <section class="role-top">
-    <div class="role-explain">Отмечай то, что <b>хочешь делать с партнёром</b>, если ты Верх, — или <b>что хочешь, чтобы делали с тобой</b>, если ты Низ. Роль сохраняется в ссылке вместе с анкетой и именем. Свитчам лучше вести <b>две отдельные анкеты</b> — каждая описывает желания с одной стороны.</div>
+    <div class="role-explain" data-i18n-html="role.explain_html"></div>
     <div class="role-pick" id="roleTop"></div>
   </section>
 
   <div class="legend">
-    <span><span class="swatch" style="background:var(--limit)"></span><b>Нет</b> — жёсткий лимит, стоп</span>
-    <span><span class="swatch" style="background:var(--maybe)"></span><b>Может</b> — любопытно / при условиях</span>
-    <span><span class="swatch" style="background:var(--yes)"></span><b>Да</b> — с удовольствием</span>
-    <span><span class="swatch" style="background:var(--love)"></span><b>Обожаю</b> — очень люблю / фетиш</span>
+    <span><span class="swatch" style="background:var(--limit)"></span><span data-i18n-html="legend.limit_html"></span></span>
+    <span><span class="swatch" style="background:var(--maybe)"></span><span data-i18n-html="legend.maybe_html"></span></span>
+    <span><span class="swatch" style="background:var(--yes)"></span><span data-i18n-html="legend.yes_html"></span></span>
+    <span><span class="swatch" style="background:var(--love)"></span><span data-i18n-html="legend.love_html"></span></span>
   </div>
 
   <details class="about" id="aboutSection">
-    <summary>О себе</summary>
+    <summary data-i18n="about.summary"></summary>
     <div class="about-body" id="aboutBody"></div>
   </details>
 
   <div id="list"></div>
-  <div class="noresults" id="noresults">Ничего не найдено по запросу.</div>
+  <div class="noresults" id="noresults" data-i18n="noresults"></div>
 
-  <footer class="foot">
-    Инструмент для совершеннолетних. Данные хранятся локально в браузере устройства и не покидают его.
-    Список практик собран и очищен от повторов из трёх источников (FormsPal, The Duchy, KinkSheet) плюс дополнения.
-  </footer>
+  <footer class="foot" data-i18n="foot.form"></footer>
 </main>
 
-<div id="printArea"></div>
 <div class="toast" id="toast"></div>
-
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h3>Поделиться анкетой</h3>
-    <p>Ссылка содержит ваши ответы в сжатом виде. Любой, у кого есть ссылка, увидит их. Ничего не отправляется на сервер — данные живут только в самой ссылке.</p>
-    <div class="linkbox"><input type="text" id="shareLink" readonly><button class="btn primary" id="copyLink">Копировать</button></div>
+    <h3 data-i18n="share.h"></h3>
+    <p data-i18n="share.p"></p>
+    <div class="linkbox"><input type="text" id="shareLink" readonly><button class="btn primary" id="copyLink" data-i18n="share.copy"></button></div>
     <div id="qr"></div>
-    <p style="text-align:center;margin:2px 0 0">QR удобно показать с экрана — навести камеру.</p>
-    <button class="btn ghost" id="overlayClose" style="margin-top:14px;width:100%">Закрыть</button>
+    <p style="text-align:center;margin:2px 0 0" data-i18n="share.qrNote"></p>
+    <button class="btn ghost" id="overlayClose" style="margin-top:14px;width:100%" data-i18n="close"></button>
   </div>
 </div>
 
 <div class="overlay" id="savedOverlay">
   <div class="modal">
-    <h3>Полученные анкеты</h3>
-    <p>Анкеты, которые вы открыли по ссылке или QR, сохраняются здесь — на этом устройстве. Можно открыть анкету или сразу сравнить со своей.</p>
+    <h3 data-i18n="saved.h"></h3>
+    <p data-i18n="saved.p"></p>
     <div id="savedList"></div>
-    <button class="btn ghost" id="savedClose" style="margin-top:14px;width:100%">Закрыть</button>
+    <button class="btn ghost" id="savedClose" style="margin-top:14px;width:100%" data-i18n="close"></button>
   </div>
 </div>
 
 <div class="overlay" id="mineOverlay">
   <div class="modal">
-    <h3>Мои анкеты</h3>
-    <p>Сохранённые на этом устройстве версии вашей анкеты. Можно вести несколько (например, для разных партнёров) и переключаться между ними. Сохраняются полностью, вместе с ролью и «раньше».</p>
-    <button class="btn primary" id="mineSaveNew" style="width:100%;margin-bottom:10px">＋ Сохранить текущую как новую</button>
+    <h3 data-i18n="mine.h"></h3>
+    <p data-i18n="mine.p"></p>
+    <button class="btn primary" id="mineSaveNew" style="width:100%;margin-bottom:10px" data-i18n="mine.saveNew"></button>
     <div id="mineList"></div>
-    <button class="btn ghost" id="mineClose" style="margin-top:14px;width:100%">Закрыть</button>
+    <button class="btn ghost" id="mineClose" style="margin-top:14px;width:100%" data-i18n="close"></button>
   </div>
 </div>
 
-<script src="app-data.js?v=374"></script>
-<script>
-
-
-
-
-
-/* ---------------- State + storage ---------------- */
-const STORAGE_KEY = "practices-checklist-v1";
-
-let state = { meta:{}, safeword:"", allergies:"", fantasies:"", comments:"", name:"", date:"", onlyMarked:true, items:{} };
-
-
-let viewingShared=false;
-function load(){
-  const h=location.hash.replace(/^#/,"");
-  if(h){ try{ const d=decodeState(h); state=Object.assign(state,d); viewingShared=true; }catch(e){} history.replaceState(null,"",location.pathname+location.search); }
-  else { try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw){ const p=JSON.parse(raw); if(p&&typeof p==="object") state = Object.assign(state,p); } }catch(e){} }
-  if(!state.items) state.items={}; if(!state.meta) state.meta={};
-}
-let saveTimer=null;
-function save(){ if(viewingShared) return; clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }, 200); }
-
-/* ---------------- Render ---------------- */
-function el(tag, cls, txt){ const e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
-
-function renderRoleTop(){
-  const box=document.getElementById("roleTop"); if(!box) return;
-  const f=META.find(x=>x.id==="role"); if(!f) return;
-  const field=el("div","field"); field.appendChild(el("div","flabel",f.label));
-  const opts=el("div","opts");
-  f.opts.forEach(o=>{ const b=el("button","opt",o); b.type="button"; b.setAttribute("aria-pressed","false"); b.dataset.field=f.id; b.dataset.val=o; b.dataset.type=f.type; opts.appendChild(b); });
-  field.appendChild(opts); box.appendChild(field);
-}
-function renderAbout(){
-  const body=document.getElementById("aboutBody"); if(!body) return;
-  META.filter(f=>f.id!=="role").forEach(f=>{
-    const field=el("div","field"); field.appendChild(el("div","flabel",f.label));
-    const opts=el("div","opts");
-    f.opts.forEach(o=>{ const b=el("button","opt",o); b.type="button"; b.setAttribute("aria-pressed","false"); b.dataset.field=f.id; b.dataset.val=o; b.dataset.type=f.type; opts.appendChild(b); });
-    field.appendChild(opts); body.appendChild(field);
-  });
-}
-
-function renderList(){
-  const list=document.getElementById("list"); const jump=document.getElementById("jump");
-  DATA.forEach(cat=>{
-    const opt=el("option",null,cat.c); opt.value="cat-"+cat.slug; jump.appendChild(opt);
-    const sec=el("section","cat"); sec.id="cat-"+cat.slug; sec.dataset.slug=cat.slug;
-    const head=el("div","cat-head");
-    head.appendChild(el("h2",null,cat.c));
-    head.appendChild(el("span","en",cat.e));
-    head.appendChild(el("span","count","("+cat.items.length+")"));
-    sec.appendChild(head);
-    cat.items.forEach(it=>{
-      const row=el("div","item"); row.dataset.id=it.id; row.dataset.search=(it[0]+" "+it[1]).toLowerCase();
-      const name=el("div","item-name");
-      name.appendChild(el("span","ru",it[0]));
-      name.appendChild(el("span","en",it[1]));
-      row.appendChild(name);
-      const ctr=el("div","item-controls");
-      if(it[2]){ const help=el("button","mini help","?"); help.type="button"; help.dataset.act="help"; help.setAttribute("aria-label","Что это"); ctr.appendChild(help); }
-
-      const scale=el("div","scale");
-      SCALE.forEach(([v,lab])=>{ const b=el("button",null,lab); b.type="button"; b.dataset.v=v; scale.appendChild(b); });
-      ctr.appendChild(scale);
-      row.appendChild(ctr);
-      if(it[2]){ const d=el("div","item-desc",it[2]); d.hidden=true; row.appendChild(d); }
-      sec.appendChild(row);
-    });
-    list.appendChild(sec);
-  });
-}
-
-function hydrate(){
-  const om=document.getElementById("onlyMarked"); if(om) om.checked = state.onlyMarked!==false;
-  document.getElementById("metaName").value = state.name||"";
-  const sw=document.getElementById("metaSafeword"); if(sw) sw.value=state.safeword||"";
-  ["allergies","fantasies","comments"].forEach(k=>{ const t=document.getElementById("meta-"+k); if(t) t.value=state[k]||""; });
-  document.querySelectorAll(".opt").forEach(b=>{
-    const cur=state.meta[b.dataset.field];
-    const on = b.dataset.type==="multi" ? Array.isArray(cur)&&cur.includes(b.dataset.val) : cur===b.dataset.val;
-    b.setAttribute("aria-pressed", on?"true":"false");
-  });
-  document.querySelectorAll(".item").forEach(row=>{
-    const st=state.items[row.dataset.id]; if(!st) return;
-    if(st.interest){ const b=row.querySelector('.scale button[data-v="'+st.interest+'"]'); if(b) b.classList.add("sel"); }
-  });
-  updateProgress();
-}
-
-/* ---------------- Interaction ---------------- */
-function itemState(id){ return state.items[id] || (state.items[id]={interest:null}); }
-function cleanup(id){ const s=state.items[id]; if(s && !s.interest) delete state.items[id]; }
-
-document.getElementById("list").addEventListener("click", e=>{
-  const btn=e.target.closest("button"); if(!btn) return;
-  const row=e.target.closest(".item"); if(!row) return;
-  if(btn.dataset.act==="help"){
-    const d=row.querySelector(".item-desc"); if(d){ d.hidden=!d.hidden; btn.classList.toggle("on",!d.hidden); }
-    return;
-  }
-  const id=row.dataset.id; const st=itemState(id);
-  if(btn.dataset.v){ const v=btn.dataset.v; if(st.interest===v){ st.interest=null; btn.classList.remove("sel"); } else { st.interest=v; row.querySelectorAll(".scale button").forEach(b=>b.classList.remove("sel")); btn.classList.add("sel"); } }
-  cleanup(id); save(); updateProgress();
-});
-
-function bindText(id, key){ const e=document.getElementById(id); if(!e)return; e.addEventListener("input",()=>{ state[key]=e.value; save(); }); }
-const _nm=document.getElementById("metaName");
-if(_nm) _nm.addEventListener("input", ()=>{
-  _nm.classList.toggle("bad", /[^\x00-\x7F]/.test(_nm.value));
-  state.name=_nm.value; save();
-});
-function optClick(e){
-  const b=e.target.closest(".opt"); if(!b) return; const f=b.dataset.field;
-  if(b.dataset.type==="multi"){
-    let arr=Array.isArray(state.meta[f])?state.meta[f]:[]; const v=b.dataset.val;
-    if(arr.includes(v)) arr=arr.filter(x=>x!==v); else arr.push(v);
-    state.meta[f]=arr; b.setAttribute("aria-pressed", arr.includes(v)?"true":"false");
-  } else {
-    const cur=state.meta[f]; const v=b.dataset.val;
-    if(cur===v){ state.meta[f]=null; b.setAttribute("aria-pressed","false"); }
-    else { state.meta[f]=v; document.querySelectorAll('.opt[data-field="'+f+'"]').forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true"); }
-  }
-  save();
-}
-["aboutBody","roleTop"].forEach(id=>{ const c=document.getElementById(id); if(c) c.addEventListener("click", optClick); });
-document.getElementById("onlyMarked").addEventListener("change", e=>{ state.onlyMarked=e.target.checked; save(); });
-
-const search=document.getElementById("search");
-search.addEventListener("input", ()=>{
-  const q=search.value.trim().toLowerCase(); let any=false;
-  document.querySelectorAll(".cat").forEach(sec=>{
-    let visible=0;
-    sec.querySelectorAll(".item").forEach(row=>{ const m=!q||row.dataset.search.includes(q); row.classList.toggle("filtered-out",!m); if(m) visible++; });
-    sec.classList.toggle("empty", visible===0); if(visible) any=true;
-  });
-  document.getElementById("noresults").style.display = any?"none":"block";
-});
-
-document.getElementById("jump").addEventListener("change", e=>{
-  const id=e.target.value; if(!id) return; const t=document.getElementById(id); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); e.target.value="";
-});
-
-function updateProgress(){
-  let n=0; for(const k in state.items){ if(state.items[k].interest) n++; }
-  let total=0; DATA.forEach(c=>total+=c.items.length);
-  document.getElementById("progress").textContent = "Отмечено "+n+" из "+total+" практик";
-}
-
-const themeBtn=document.getElementById("themeBtn");
-try{ const saved=localStorage.getItem("checklist-theme"); if(saved) document.documentElement.dataset.theme=saved; }catch(e){}
-themeBtn.addEventListener("click", ()=>{
-  const cur=document.documentElement.dataset.theme;
-  const isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-  const next=isDark?"light":"dark"; document.documentElement.dataset.theme=next;
-  try{ localStorage.setItem("checklist-theme",next); }catch(e){}
-});
-
-document.getElementById("resetBtn").addEventListener("click", ()=>{
-  if(!confirm("Очистить все ответы на этом устройстве? Действие необратимо.")) return;
-  state={ meta:{}, safeword:"", allergies:"", fantasies:"", comments:"", name:"", date:"", onlyMarked:true, items:{} };
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
-  const om=document.getElementById("onlyMarked"); if(om) om.checked=true;
-  document.querySelectorAll(".sel").forEach(b=>b.classList.remove("sel"));
-  document.querySelectorAll(".mini.on").forEach(b=>b.classList.remove("on"));
-  document.querySelectorAll(".item-desc").forEach(d=>d.hidden=true);
-  document.querySelectorAll(".opt").forEach(b=>b.setAttribute("aria-pressed","false"));
-  document.querySelectorAll("input,textarea").forEach(i=>{ if(i.type!=="search") i.value=""; });
-  updateProgress(); toast("Очищено");
-});
-
-let toastTimer=null;
-function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2600); }
-
-/* ---------------- Summary sheet (shared by PDF + print) ---------------- */
-function buildSheet(mode){
-  const onlyMarked = state.onlyMarked!==false;
-  const marked=[]; DATA.forEach(cat=>{ const rows = onlyMarked ? cat.items.filter(it=>{ const s=state.items[it.id]; return s&&s.interest; }) : cat.items.slice(); if(rows.length) marked.push({cat,rows}); });
-  const limits=[]; DATA.forEach(cat=>cat.items.forEach(it=>{ const s=state.items[it.id]; if(s&&s.interest==="limit") limits.push(it); }));
-  const P={bg:"#f5f1ec",panel:"#fffdfb",ink:"#241c22",muted:"#8a7d84",line:"#e6ddd6",accent:"#8a2d47"};
-  const PILL={limit:["#f6e2e0","#b23b3b"],maybe:["#f6ecda","#b9852a"],yes:["#e0f0e6","#2f7d54"],love:["#f4e0ec","#9d2f68"]};
-  const w=document.createElement("div");
-  const base="background:"+P.bg+";color:"+P.ink+";font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact;";
-  if(mode==="pdf") w.style.cssText="position:fixed;left:-10000px;top:0;width:760px;padding:30px;"+base;
-  else w.style.cssText="max-width:740px;margin:0 auto;padding:16px 10px 60px;"+base;
-  const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  const metaLine=[]; META.forEach(f=>{ const v=state.meta[f.id]; if(v&&(!Array.isArray(v)||v.length)) metaLine.push(esc(f.label)+": "+esc(Array.isArray(v)?v.join(", "):v)); });
-  const card="background:"+P.panel+";border:1px solid "+P.line+";border-radius:12px;padding:18px 20px;margin-bottom:14px;";
-  const pill=(v)=>'<span style="display:inline-block;background:'+PILL[v][0]+';color:'+PILL[v][1]+';font-weight:600;font-size:12.5px;padding:3px 11px;border-radius:14px;">'+SCALE_LABEL[v]+'</span>';
-  let html="";
-  html+='<div style="'+card+'">';
-  html+='<div style="font-family:Fraunces,Georgia,serif;font-size:27px;font-weight:600;color:'+P.accent+';line-height:1.1;">Чек-лист практик</div>';
-  const idbits=[]; if(state.name) idbits.push("Имя: <b>"+esc(state.name)+"</b>"); if(state.safeword) idbits.push("Стоп-слово: <b>"+esc(state.safeword)+"</b>");
-  if(idbits.length) html+='<div style="margin-top:8px;font-size:13px;color:'+P.muted+';">'+idbits.join("&nbsp;&nbsp;·&nbsp;&nbsp;")+'</div>';
-  if(metaLine.length) html+='<div style="margin-top:5px;font-size:12.5px;color:'+P.muted+';">'+metaLine.join("&nbsp;·&nbsp;")+'</div>';
-  const lg=[["love"],["yes"],["maybe"],["limit"]];
-  html+='<div style="margin-top:12px;">'+lg.map(a=>pill(a[0])).join("&nbsp;")+'</div>';
-  html+='</div>';
-  if(limits.length){
-    html+='<div style="background:'+PILL.limit[0]+';border:1px solid #d7a3a3;border-radius:12px;padding:14px 18px;margin-bottom:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">';
-    html+='<div style="font-family:Fraunces,Georgia,serif;font-weight:600;font-size:16px;color:#a12b2b;margin-bottom:6px;">⛔ Жёсткие лимиты (стоп)</div>';
-    html+='<div style="font-size:13px;color:#5a2a2a;line-height:1.7;">'+limits.map(it=>esc(it[0])).join("&nbsp;·&nbsp;")+'</div></div>';
-  }
-  const RANK={love:0,yes:1,maybe:2,limit:3};
-  marked.forEach(({cat,rows})=>{
-    rows.sort((a,b)=>{ const sa=state.items[a.id]||{}, sb=state.items[b.id]||{}; const ra=sa.interest?RANK[sa.interest]:4, rb=sb.interest?RANK[sb.interest]:4; return ra-rb; });
-    html+='<div style="'+card+'">';
-    html+='<div style="border-bottom:2px solid '+P.accent+';padding-bottom:5px;margin-bottom:8px;"><span style="font-family:Fraunces,Georgia,serif;font-weight:600;font-size:19px;">'+esc(cat.c)+'</span> <span style="font-size:12px;color:'+P.muted+';">'+esc(cat.e)+'</span> <span style="font-size:11.5px;color:'+P.muted+';">· '+rows.length+'</span></div>';
-    html+='<table style="width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed;">';
-    rows.forEach((it,i)=>{ const s=state.items[it.id]||{}; let tags="";
-      const val = s.interest ? pill(s.interest) : '<span style="color:#c3bbbf;">—</span>';
-      const bb = i<rows.length-1 ? 'border-bottom:1px solid '+P.line+';' : '';
-      html+='<tr><td style="padding:6px 8px 6px 0;'+bb+'vertical-align:middle;word-wrap:break-word;"><span style="color:'+P.ink+';">'+esc(it[0])+'</span>'+tags+'<br><span style="color:'+P.muted+';font-size:11px;">'+esc(it[1])+'</span></td><td style="padding:6px 0 6px 8px;'+bb+'vertical-align:middle;width:96px;">'+val+'</td></tr>'; });
-    html+='</table></div>';
-  });
-  const tcard=(title,body)=>'<div style="'+card+'"><div style="font-family:Fraunces,Georgia,serif;font-weight:600;font-size:16px;color:'+P.accent+';margin-bottom:4px;">'+title+'</div><div style="font-size:13px;white-space:pre-wrap;color:'+P.ink+';">'+esc(body)+'</div></div>';
-  if(state.fantasies) html+=tcard("Фантазии",state.fantasies);
-  if(state.comments) html+=tcard("Комментарии",state.comments);
-  if(state.allergies) html+=tcard("Аллергии / медицинское",state.allergies);
-  if(!marked.length && !limits.length) html+='<div style="'+card+'color:'+P.muted+';">Пока ничего не отмечено.</div>';
-  html+='<div style="text-align:center;margin-top:4px;font-size:11px;color:'+P.muted+';">Заполненный чек-лист — основа для разговора и согласия, а не обязательство.</div>';
-  w.innerHTML=html; return w;
-}
-
-/* ---------------- jsPDF download ---------------- */
-document.getElementById("pdfBtn").addEventListener("click", async function(){
-  const btn=this; const old=btn.textContent; btn.disabled=true; btn.textContent="Готовлю PDF…";
-  const sheet=buildSheet("pdf"); document.body.appendChild(sheet);
-  try{
-    if(document.fonts&&document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
-    const canvas=await html2canvas(sheet,{scale:2,backgroundColor:"#ffffff",useCORS:true,windowWidth:sheet.scrollWidth});
-    const {jsPDF}=window.jspdf; const pdf=new jsPDF("p","pt","a4");
-    const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
-    const margin=24, imgW=pw-margin*2, ratio=imgW/canvas.width, sliceH=Math.floor((ph-margin*2)/ratio);
-    let y=0, page=0;
-    while(y<canvas.height){
-      const h=Math.min(sliceH, canvas.height-y);
-      const c=document.createElement("canvas"); c.width=canvas.width; c.height=h;
-      const ctx=c.getContext("2d"); ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,c.width,h);
-      ctx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
-      if(page>0) pdf.addPage();
-      pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",margin,margin,imgW,h*ratio);
-      y+=h; page++;
-    }
-    const fn="чек-лист"+(state.name?("-"+state.name.replace(/\s+/g,"_")):"")+".pdf";
-    try{ pdf.save(fn); }
-    catch(saveErr){ const url=URL.createObjectURL(pdf.output("blob")); window.open(url,"_blank"); }
-    toast("PDF готов");
-  }catch(err){
-    console.error(err); toast("Скачивание не сработало — жми «Печать / PDF»");
-  }finally{ document.body.removeChild(sheet); btn.disabled=false; btn.textContent=old; }
-});
-
-/* ---------------- Init ---------------- */
-load(); renderAbout(); renderRoleTop(); renderList(); hydrate();
-
-/* ---- shared-link banner ---- */
-if(viewingShared){ const b=document.getElementById("sharedBanner"); if(b) b.style.display="block"; }
-document.getElementById("bannerOwn").addEventListener("click",()=>{ location.href=location.pathname; });
-document.getElementById("bannerKeep").addEventListener("click",()=>{ viewingShared=false; document.getElementById("sharedBanner").style.display="none"; save(); toast("Теперь сохраняется в этот браузер"); });
-
-/* ---- share modal + QR ---- */
-const overlay=document.getElementById("overlay");
-document.getElementById("shareBtn").addEventListener("click", ()=>{
-  const link=location.origin+location.pathname+"#"+encodeState(state);
-  document.getElementById("shareLink").value=link;
-  const qr=document.getElementById("qr"); qr.innerHTML="";
-  try{ new QRCode(qr,{text:link,width:240,height:240,correctLevel:QRCode.CorrectLevel.M}); }
-  catch(e){ qr.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center">Ссылка слишком длинная для QR (много текста в полях). Используйте копирование.</div>'; }
-  overlay.classList.add("show");
-});
-document.getElementById("overlayClose").addEventListener("click",()=>overlay.classList.remove("show"));
-overlay.addEventListener("click",e=>{ if(e.target===overlay) overlay.classList.remove("show"); });
-document.getElementById("copyLink").addEventListener("click", async ()=>{
-  const inp=document.getElementById("shareLink"); inp.select(); inp.setSelectionRange(0,99999);
-  try{ await navigator.clipboard.writeText(inp.value); toast("Ссылка скопирована"); }
-  catch(e){ try{ document.execCommand("copy"); toast("Ссылка скопирована"); }catch(_){ toast("Скопируйте вручную"); } }
-});
-
-/* ---- Полученные анкеты (сохранение чужих на устройстве) ---- */
-const SAVED_KEY="checklist-saved-profiles-v1";
-const escH=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-function loadSaved(){ try{ return JSON.parse(localStorage.getItem(SAVED_KEY))||[]; }catch(e){ return []; } }
-function writeSaved(a){ try{ localStorage.setItem(SAVED_KEY, JSON.stringify(a)); }catch(e){} }
-function ownCode(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return encodeState(JSON.parse(raw)); }catch(e){} return viewingShared?"":encodeState(state); }
-function saveVisited(code,name){
-  if(!code) return; if(code===ownCode()) return;
-  const a=loadSaved(); if(a.some(x=>x.code===code)) return;
-  a.unshift({id:"p"+Date.now(), name:(name||"").trim(), code:code, ts:Date.now()});
-  if(a.length>60) a.length=60; writeSaved(a);
-}
-function fmtDate(ts){ const d=new Date(ts); return d.toLocaleDateString("ru-RU")+" "+d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); }
-function startCompare(aCode,bCode,aName,bName){
-  try{ sessionStorage.setItem("cmpA",aCode||""); sessionStorage.setItem("cmpB",bCode||""); sessionStorage.setItem("cmpAName",aName||""); sessionStorage.setItem("cmpBName",bName||""); }catch(e){}
-  location.href="compare.html";
-}
-function renderSaved(){
-  const box=document.getElementById("savedList"); const a=loadSaved();
-  if(!a.length){ box.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">Пока пусто. Откройте чью-то ссылку или QR — анкета появится здесь.</div>'; return; }
-  box.innerHTML=a.map(x=>'<div class="saved-row" data-id="'+x.id+'"><div class="meta"><b>'+(x.name?escH(x.name):"Без имени")+'</b><span>'+fmtDate(x.ts)+'</span></div>'
-    +'<div class="acts"><button class="btn ghost mini" data-act="open">Открыть</button><button class="btn ghost mini" data-act="ren">Переименовать</button><button class="btn ghost mini" data-act="cmp">Сравнить</button><button class="btn ghost mini" data-act="del" title="Удалить">✕</button></div></div>').join("");
-}
-const savedOverlay=document.getElementById("savedOverlay");
-document.getElementById("savedBtn").addEventListener("click", ()=>{ renderSaved(); savedOverlay.classList.add("show"); });
-document.getElementById("savedClose").addEventListener("click", ()=>savedOverlay.classList.remove("show"));
-savedOverlay.addEventListener("click", e=>{ if(e.target===savedOverlay) savedOverlay.classList.remove("show"); });
-document.getElementById("savedList").addEventListener("click", e=>{
-  const btn=e.target.closest("button[data-act]"); if(!btn) return;
-  const row=btn.closest(".saved-row"); const id=row.dataset.id; const a=loadSaved(); const item=a.find(x=>x.id===id); if(!item) return;
-  const act=btn.dataset.act;
-  if(act==="open"){ location.hash=item.code; location.reload(); }
-  else if(act==="ren"){ const nn=prompt("Название анкеты:", item.name||""); if(nn!==null){ item.name=nn.trim(); writeSaved(a); renderSaved(); } }
-  else if(act==="cmp"){ startCompare(ownCode(), item.code, "Моя анкета", item.name||"Полученная"); }
-  else if(act==="del"){ writeSaved(a.filter(x=>x.id!==id)); renderSaved(); }
-});
-
-/* если открыта чужая анкета — сохранить её в «Полученные» и включить кнопку сравнения */
-if(viewingShared){ saveVisited(encodeState(state), state.name); }
-const bcmp=document.getElementById("bannerCmp");
-if(bcmp) bcmp.addEventListener("click", ()=>{ startCompare(ownCode(), encodeState(state), "Моя анкета", state.name||"Эта анкета"); });
-
-/* ---- Мои анкеты (несколько своих, полностью) ---- */
-const MINE_KEY="checklist-my-profiles-v1";
-function loadMine(){ try{ return JSON.parse(localStorage.getItem(MINE_KEY))||[]; }catch(e){ return []; } }
-function writeMine(a){ try{ localStorage.setItem(MINE_KEY, JSON.stringify(a)); }catch(e){} }
-function renderMine(){
-  const box=document.getElementById("mineList"); const a=loadMine();
-  if(!a.length){ box.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">Пока нет сохранённых. Заполните анкету и нажмите «Сохранить текущую как новую».</div>'; return; }
-  box.innerHTML=a.map(x=>'<div class="saved-row" data-id="'+x.id+'"><div class="meta"><b>'+(x.name?escH(x.name):"Без имени")+'</b><span>'+fmtDate(x.ts)+'</span></div>'
-    +'<div class="acts"><button class="btn ghost mini" data-act="load">Загрузить</button><button class="btn ghost mini" data-act="upd">Обновить</button><button class="btn ghost mini" data-act="ren">Переименовать</button><button class="btn ghost mini" data-act="del" title="Удалить">✕</button></div></div>').join("");
-}
-const mineOverlay=document.getElementById("mineOverlay");
-document.getElementById("mineBtn").addEventListener("click", ()=>{ renderMine(); mineOverlay.classList.add("show"); });
-document.getElementById("mineClose").addEventListener("click", ()=>mineOverlay.classList.remove("show"));
-mineOverlay.addEventListener("click", e=>{ if(e.target===mineOverlay) mineOverlay.classList.remove("show"); });
-document.getElementById("mineSaveNew").addEventListener("click", ()=>{
-  const nm=prompt("Название анкеты:", state.name||""); if(nm===null) return;
-  const a=loadMine(); a.unshift({id:"m"+Date.now(), name:nm.trim(), data:JSON.parse(JSON.stringify(state)), ts:Date.now()}); writeMine(a); renderMine(); toast("Сохранено");
-});
-document.getElementById("mineList").addEventListener("click", e=>{
-  const btn=e.target.closest("button[data-act]"); if(!btn) return;
-  const row=btn.closest(".saved-row"); const id=row.dataset.id; const a=loadMine(); const item=a.find(x=>x.id===id); if(!item) return;
-  const act=btn.dataset.act;
-  if(act==="load"){ const d=item.data||{}; localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.assign({onlyMarked:state.onlyMarked}, d))); location.href=location.pathname; }
-  else if(act==="upd"){ item.data=JSON.parse(JSON.stringify(state)); item.ts=Date.now(); writeMine(a); renderMine(); toast("Обновлено"); }
-  else if(act==="ren"){ const nn=prompt("Название анкеты:", item.name||""); if(nn!==null){ item.name=nn.trim(); writeMine(a); renderMine(); } }
-  else if(act==="del"){ writeMine(a.filter(x=>x.id!==id)); renderMine(); }
-});
-
-</script>
+<script src="js/boot.js?v=400" data-page="form" data-v="400"></script>
 </body>
 </html>

@@ -1,0 +1,34 @@
+/* core/match.js — comparison rules shared by compare page and tests. */
+(function (KC) {
+  const POS = { yes: 1, love: 1 }, SOFT = { maybe: 1 };
+  KC.match = {
+    RANK: { love: 0, yes: 1, maybe: 2, limit: 3 },
+    /* any "limit" wins; both positive = match; positive/maybe mix = discuss; one side only = one */
+    classify(a, b) {
+      if (a === "limit" || b === "limit") return "excluded";
+      const pa = POS[a], pb = POS[b], sa = SOFT[a], sb = SOFT[b];
+      if (pa && pb) return "match";
+      if ((pa && sb) || (sa && pb) || (sa && sb)) return "discuss";
+      if (pa || pb || sa || sb) return "one";
+      return null;
+    },
+    /* -> {match, discuss, oneA, oneB, excluded}; each row {id, a, b} in list order */
+    group(A, B) {
+      const g = { match: [], discuss: [], oneA: [], oneB: [], excluded: [] };
+      KC.CATS.forEach(c => c.items.forEach(([, id]) => {
+        const a = (A.items[id] || {}).interest || null, b = (B.items[id] || {}).interest || null;
+        const r = KC.match.classify(a, b); if (!r) return;
+        if (r === "one") (a ? g.oneA : g.oneB).push({ id, a, b }); else g[r].push({ id, a, b });
+      }));
+      return g;
+    },
+    /* items where one side said yes/love: love first, then yes */
+    yesOf(st, other) {
+      const rows = [];
+      KC.CATS.forEach(c => c.items.forEach(([, id]) => {
+        const v = (st.items[id] || {}).interest; if (v === "yes" || v === "love") rows.push({ id, v });
+      }));
+      return rows.sort((x, y) => KC.match.RANK[x.v] - KC.match.RANK[y.v]);
+    },
+  };
+})(window.KC);
