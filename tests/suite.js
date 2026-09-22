@@ -21,7 +21,7 @@ const S = (title) => console.log("\n## " + title);
   eq(ids.length, 371, "item count");
   eq(new Set(ids).size, ids.length, "unique ids"); eq(new Set(codes).size, codes.length, "unique codes");
   eq(ids, OLD.ORDER, "ids+order identical to previous version (saved data compatible)");
-  ["ru", "en"].forEach(l => {
+  ["ru", "en", "pt"].forEach(l => {
     const miss = ids.filter(id => { const it = KC.i18n._pick("items", id, l); return !it || !it[0] || !it[1]; });
     eq(miss.length, 0, l + ": every item has name+hint (" + miss.slice(0, 3) + ")");
     const mc = KC.CATS.filter(c => !KC.i18n._pick("cats", c.id, l)); eq(mc.length, 0, l + ": every category named");
@@ -33,13 +33,21 @@ const S = (title) => console.log("\n## " + title);
   const kr = src("ru"), ke = src("en");
   eq(kr.filter(k => ke.indexOf(k) < 0), [], "keys in ru missing from en");
   eq(ke.filter(k => kr.indexOf(k) < 0), [], "keys in en missing from ru");
+  const kp = src("pt");
+  eq(ke.filter(k => kp.indexOf(k) < 0), [], "keys in en missing from pt");
+  eq(kp.filter(k => ke.indexOf(k) < 0), [], "keys in pt missing from en");
+  const ptEnLeft = ids.filter(id => KC.i18n.item(id, "pt").desc === KC.i18n.item(id, "en").desc); eq(ptEnLeft, [], "PT hints are translated (not English copies)");
   // every profile option has labels in both
-  KC.PROFILE.forEach(f => f.opts.filter(Boolean).forEach(o => ["ru", "en"].forEach(l => { KC.i18n.set(l); ok(KC.i18n.optLabel(f.id, o) !== "profile." + f.id + "." + o, l + " label " + f.id + "." + o); })));
+  KC.PROFILE.forEach(f => f.opts.filter(Boolean).forEach(o => ["ru", "en", "pt"].forEach(l => { KC.i18n.set(l); ok(KC.i18n.optLabel(f.id, o) !== "profile." + f.id + "." + o, l + " label " + f.id + "." + o); })));
   // every t() key used in code exists
   const used = new Set();
   require("child_process").execSync("grep -rhoP \"(?<![A-Za-z.])t\\(\\\"[a-zA-Z0-9_.]+\\\"|data-i18n[a-z-]*=\\\"[a-zA-Z0-9_.]+\\\"\" " + require("./harness").ROOT).toString().split("\n").forEach(s => { const m = s.match(/"([^"]+)"/); if (m && !/\.$/.test(m[1])) used.add(m[1]); });
   eq([...used].filter(k => ke.indexOf(k) < 0), [], "all used keys defined");
   ok(!/switch/.test(JSON.stringify(KC.PROFILE[0].opts.filter(Boolean))), "switch removed from role options");
+
+  /* all cache-busting versions in both pages must match */
+  const vers = ["index.html", "compare.html"].map(f => fs.readFileSync(require("./harness").ROOT + "/" + f, "utf8").match(/[?]v=(\d+)|data-v="(\d+)"/g).map(x => x.replace(/\D/g, "")));
+  eq(new Set([].concat(...vers)).size, 1, "cache versions consistent (css ?v, boot ?v, data-v): " + JSON.stringify(vers));
 
   /* ---------- 2. fresh user fills the form (RU) ---------- */
   S("fresh user, RU, fills in");
@@ -95,6 +103,17 @@ const S = (title) => console.log("\n## " + title);
   ok(/lg=en/.test(p.KC.form.shareLink()), "link now carries lg=en");
   const s = d.getElementById("search"); s.value = "spank"; s.dispatchEvent(new w.Event("input"));
   ok(d.querySelectorAll(".item:not(.filtered-out)").length > 3 && row("hugging").classList.contains("filtered-out"), "EN search works");
+  click(w, d.querySelector('#langSw button[data-lang="pt"]'));
+  eq(p.KC.i18n.lang, "pt", "switched to PT");
+  eq(row("hugging").querySelector(".main").textContent, "Abraços", "PT name shown");
+  eq(row("hugging").querySelector(".sub").textContent, "Hugging", "PT page: English subtitle");
+  ok(row("hugging").querySelector('.scale button[data-v="love"]').classList.contains("sel"), "answer survived switch to PT");
+  eq(row("hugging").querySelector('.scale button[data-v="love"]').textContent, "Adoro", "PT scale");
+  eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submisso(a) / Bottom", "PT role label");
+  eq(d.getElementById("progress").textContent, "4 de 371 práticas marcadas", "PT progress");
+  const ptHash = p.KC.form.shareLink().split("#")[1];
+  ok(/lg=pt/.test(ptHash), "PT link carries lg=pt");
+  eq(open("form", { hash: ptHash, storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "pt", "PT link opens in PT");
   click(w, d.querySelector('#langSw button[data-lang="ru"]'));
   ok(row("hugging").classList.contains("filtered-out"), "search kept after switch");
   s.value = ""; s.dispatchEvent(new w.Event("input"));
@@ -132,7 +151,9 @@ const S = (title) => console.log("\n## " + title);
   eq(open("form", { hash: noLg, navLang: "en-US" }).KC.i18n.lang, "en", "no lg, English browser -> EN");
   const es = open("form", { hash: ruLink.replace("lg=ru", "lg=es") });
   eq(es.KC.i18n.lang, "en", "lg=es (prepared, not enabled) -> EN fallback");
-  eq(es.d.querySelectorAll("#langSw button").length, 2, "switcher shows only RU/EN");
+  eq([...es.d.querySelectorAll("#langSw button")].map(b => b.textContent), ["RU", "EN", "PT"], "switcher shows RU/EN/PT only");
+  eq(open("form", { navLang: "pt-BR" }).KC.i18n.lang, "pt", "Brazilian browser -> PT");
+  eq(open("form", { navLang: "pt-PT" }).KC.i18n.lang, "pt", "Portuguese browser -> PT");
   ok(es.KC.codec.decode("a=Ag&lg=ja").lang === "ja", "codec keeps prepared lang code ja");
   eq(es.KC.codec.decode("a=Ag&lg=xx").lang, null, "unknown lang code ignored");
 
@@ -161,6 +182,19 @@ const S = (title) => console.log("\n## " + title);
   const lp = open("form", { storage: { local: { "practices-checklist-v1": JSON.stringify(legacyState) }, session: {} } });
   eq([lp.KC.form.state.meta, lp.KC.form.state.items, lp.KC.form.state.onlyMarked, "date" in lp.KC.form.state], [{ exp: "medium", attire: ["goth"] }, { hugging: { interest: "yes" } }, false, false], "old saved list migrated");
   ok(lp.d.querySelector('.opt[data-field="attire"][data-val="goth"]').getAttribute("aria-pressed") === "true", "migrated profile shown");
+
+  /* links from the older deployed v371 (sparse-only encoder, same item order) */
+  const V371 = {}; new Function("OUT", fs.readFileSync(__dirname + "/fixtures/legacy-v371-app-data.js", "utf8") + ";OUT.ORDER=ORDER;OUT.enc=encodeState;")(V371);
+  eq(V371.ORDER, OLD.ORDER, "v371 item order identical");
+  let bad371 = 0;
+  for (let trial = 0; trial < 40; trial++) {
+    const items = {}; const n = [0, 3, 50, 200, 371][trial % 5];
+    for (let i = 0; i < n; i++) items[V371.ORDER[Math.floor(Math.random() * 371)]] = { interest: vals[Math.floor(Math.random() * 4)], role: "give", tried: true };
+    const dec = KCn.codec.decode(V371.enc({ items, meta: { role: "Сабмиссив / Низ", attire: ["Кожа"] }, name: "N" + trial, date: "1.1" }));
+    const want = {}; Object.keys(items).forEach(k => want[k] = { interest: items[k].interest });
+    if (JSON.stringify(Object.entries(dec.items).sort()) !== JSON.stringify(Object.entries(want).sort()) || dec.name !== "N" + trial || JSON.stringify(dec.meta) !== JSON.stringify({ role: "sub", attire: ["leather"] })) bad371++;
+  }
+  eq(bad371, 0, "40 links from v371 decode identically");
 
   /* ---------- 6. codec robustness + future additions ---------- */
   S("codec");
@@ -241,6 +275,14 @@ const S = (title) => console.log("\n## " + title);
   click(p.w, p.d.querySelector('#langSw button[data-lang="en"]'));
   sheet = p.KC.form.buildSheet().textContent;
   ok(/Submissive \/ Bottom/.test(sheet) && /Hugging/.test(sheet) && /Hard limits/.test(sheet) && !/[а-яё]/i.test(sheet.replace("Андрей", "")), "EN sheet fully English");
+
+  click(p.w, p.d.querySelector('#langSw button[data-lang="pt"]'));
+  sheet = p.KC.form.buildSheet().textContent;
+  ok(/Submisso\(a\) \/ Bottom/.test(sheet) && /Abraços/.test(sheet) && /Limites rígidos/.test(sheet), "PT sheet");
+  c = open("compare", { storage: own2, navLang: "pt-BR" });
+  c.d.getElementById("codeB").value = "#" + KCn.codec.encode(B);
+  click(c.w, c.d.getElementById("cmpBtn"));
+  eq(titles(), ["Em comum: os dois topam", "Vale conversar", "Só Anna tem interesse", "Só Boris tem interesse", "Excluídos: pare"], "PT compare groups");
 
   const R = report(); console.log("\nPASS", R.PASS, "FAIL", R.FAIL);
   process.exit(R.FAIL ? 1 : 0);

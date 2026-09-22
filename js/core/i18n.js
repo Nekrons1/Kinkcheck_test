@@ -13,7 +13,7 @@
     en: { label: "EN", name: "English",   locale: "en-GB", enabled: true  },
     es: { label: "ES", name: "Español",   locale: "es-ES", enabled: false },
     ja: { label: "JA", name: "日本語",     locale: "ja-JP", enabled: false },
-    pt: { label: "PT", name: "Português", locale: "pt-PT", enabled: false },
+    pt: { label: "PT", name: "Português (Brasil)", locale: "pt-BR", enabled: true  },
   };
   const DEFAULT = "ru";          // for visitors whose browser language is not enabled
   const FALLBACK = ["en", "ru"]; // missing text -> try these packs

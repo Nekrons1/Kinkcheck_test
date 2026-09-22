@@ -8,8 +8,8 @@
     common: [
       "core/kc.js", "core/i18n.js",
       "data/practices.js", "data/profile.js",
-      "lang/ru.ui.js", "lang/en.ui.js",            // + "lang/es.ui.js" etc. when enabled
-      "lang/ru.practices.js", "lang/en.practices.js",
+      "lang/ru.ui.js", "lang/en.ui.js", "lang/pt.ui.js",   // + "lang/es.ui.js" etc. when enabled
+      "lang/ru.practices.js", "lang/en.practices.js", "lang/pt.practices.js",
       "core/codec.js", "core/store.js", "core/match.js",
     ],
     form:    ["form/render.js", "form/events.js", "form/pdf.js", "form/share.js", "form/library.js", "form/main.js"],
