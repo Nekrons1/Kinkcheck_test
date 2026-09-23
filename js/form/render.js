@@ -63,12 +63,11 @@
         const row = KC.el("div", "item"); row.dataset.id = id;
         row.dataset.search = (it.name + " " + en).toLowerCase();
         const name = KC.el("div", "item-name");
-        const main = KC.el("span", "main", it.name);
-        if (code >= KC.NEW_FROM_CODE) {
+        if (code >= KC.NEW_FROM_CODE) { /* green dot in the left margin, level with the name */
           const dot = KC.el("span", "new-dot"); dot.title = t("item.new"); dot.setAttribute("aria-label", t("item.new"));
-          main.appendChild(dot);
+          name.appendChild(dot);
         }
-        name.appendChild(main);
+        name.appendChild(KC.el("span", "main", it.name));
         if (sub) name.appendChild(KC.el("span", "sub", en));
         row.appendChild(name);
         const ctr = KC.el("div", "item-controls");
