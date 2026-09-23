@@ -420,5 +420,9 @@ KC.CATS = [
  ]},
 ];
 
+/* Items with code >= NEW_FROM_CODE get a green "new" dot in the form.
+   371 = everything added after the v371 release. Raise it to retire the dots. */
+KC.NEW_FROM_CODE = 371;
+
 /* Codes of removed items — kept reserved so old links are never misread. */
 KC.RETIRED_CODES = [];

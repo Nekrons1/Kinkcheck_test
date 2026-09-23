@@ -58,12 +58,17 @@
       if (sub) head.appendChild(KC.el("span", "sub", KC.i18n.cat(cat.id, "en")));
       head.appendChild(KC.el("span", "count", "(" + cat.items.length + ")"));
       sec.appendChild(head);
-      cat.items.forEach(([, id]) => {
+      cat.items.forEach(([code, id]) => {
         const it = KC.i18n.item(id), en = sub ? KC.i18n.item(id, "en").name : "";
         const row = KC.el("div", "item"); row.dataset.id = id;
         row.dataset.search = (it.name + " " + en).toLowerCase();
         const name = KC.el("div", "item-name");
-        name.appendChild(KC.el("span", "main", it.name));
+        const main = KC.el("span", "main", it.name);
+        if (code >= KC.NEW_FROM_CODE) {
+          const dot = KC.el("span", "new-dot"); dot.title = t("item.new"); dot.setAttribute("aria-label", t("item.new"));
+          main.appendChild(dot);
+        }
+        name.appendChild(main);
         if (sub) name.appendChild(KC.el("span", "sub", en));
         row.appendChild(name);
         const ctr = KC.el("div", "item-controls");

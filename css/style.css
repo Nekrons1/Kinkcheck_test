@@ -242,3 +242,6 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
 .rrow{flex-wrap:wrap}
 .rrow .nm{flex:1 1 180px;min-width:0}
 .rrow .item-desc{margin-top:4px}
+
+/* green dot = item added after the v371 release (KC.NEW_FROM_CODE) */
+.new-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yes);margin-left:7px;vertical-align:middle;position:relative;top:-1px}

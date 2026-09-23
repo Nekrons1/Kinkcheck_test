@@ -117,4 +117,6 @@ KC.addLang("es", "ui", {
   "cmp.g.discOne.sub": "{who} tiene dudas y la otra parte se apunta: acuerden las condiciones.",
   "cmp.g.discBoth": "Hablarlo: «Quizás» de los dos",
   "cmp.g.discBoth.sub": "A ambos les da curiosidad: vale la pena probar con cuidado después de hablarlo.",
+  "item.new": "Punto nuevo",
+  "legend.new": "puntos nuevos, que antes no estaban en la lista",
 });

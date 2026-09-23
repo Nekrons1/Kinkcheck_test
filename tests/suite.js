@@ -8,6 +8,7 @@ global.atob = s => Buffer.from(s, "base64").toString("binary");
 const OLD = {}; new Function("OUT", fs.readFileSync(__dirname + "/fixtures/legacy-app-data.js", "utf8") +
   ";OUT.DATA=DATA;OUT.ORDER=ORDER;OUT.encodeState=encodeState;OUT.decodeState=decodeState;")(OLD);
 const LAT = /[^\x00-\x7F]/;
+const V371ORDER = (() => { const O = {}; new Function("OUT", fs.readFileSync(__dirname + "/fixtures/legacy-v371-app-data.js", "utf8") + ";OUT.ORDER=ORDER;")(O); return O.ORDER; })();
 const S = (title) => console.log("\n## " + title);
 
 (async () => {
@@ -85,6 +86,12 @@ const S = (title) => console.log("\n## " + title);
   eq(p.KC.i18n.lang, "ru", "RU browser -> RU page");
   eq(d.querySelectorAll(".item").length, 387, "387 rows rendered");
   ok(d.querySelector(".brand-row #langSw"), "language switcher sits in the title row");
+  const dotted = [...d.querySelectorAll(".item .new-dot")].map(x => x.closest(".item").dataset.id).sort();
+  const newer = []; p.KC.CATS.forEach(c => c.items.forEach(([code, id]) => { if (code >= 371) newer.push(id); }));
+  eq(dotted, newer.sort(), "green dot on exactly the items added after v371 (" + newer.length + ")");
+  eq(dotted.filter(id => V371ORDER.indexOf(id) >= 0), [], "no dot on items that existed in v371");
+  eq(d.querySelector('.item[data-id="bukkake"] .main').textContent, "Буккаке", "dot does not change the name text");
+  ok(d.querySelector(".legend .new-dot"), "legend explains the dot");
   ok(!d.querySelector('#roleTop .opt[data-val="switch"]') && d.querySelectorAll("#roleTop .opt").length === 2, "role top: 2 buttons, no Switch");
   ok(!d.querySelector('#aboutBody .opt[data-field="role"]'), "role not duplicated in About me");
   ok(/Свитч/.test(d.querySelector(".role-explain").textContent), "switch still mentioned in text");

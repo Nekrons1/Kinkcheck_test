@@ -119,4 +119,6 @@ KC.addLang("pt", "ui", {
   "cmp.g.discOne.sub": "{who} está em dúvida e o outro topa: combinem as condições.",
   "cmp.g.discBoth": "Conversar: “Talvez” dos dois",
   "cmp.g.discBoth.sub": "Os dois têm curiosidade: vale tentar com cuidado depois de conversar.",
+  "item.new": "Item novo",
+  "legend.new": "itens novos, que antes não estavam na lista",
 });

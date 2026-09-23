@@ -118,4 +118,6 @@ KC.addLang("en", "ui", {
   "cmp.g.discOne.sub": "{who} is unsure, the other is in: talk through the conditions.",
   "cmp.g.discBoth": "Discuss: “Maybe” from both",
   "cmp.g.discBoth.sub": "You are both curious: worth trying carefully after talking it through.",
+  "item.new": "New item",
+  "legend.new": "new items, not in earlier versions of the list",
 });
