@@ -49,9 +49,7 @@
 
   KC.$("resetBtn").addEventListener("click", () => {
     if (!confirm(KC.i18n.t("confirm.reset"))) return;
-    F.state = KC.store.blank();
-    if (!F.viewingShared) KC.store.clearOwn();
-    KC.$("search").value = "";
-    F.renderAll(); KC.toast(KC.i18n.t("toast.cleared"));
+    if (F.viewingShared) { F.state = KC.store.blank(); KC.$("search").value = ""; F.renderAll(); KC.toast(KC.i18n.t("toast.cleared")); return; }
+    F.startNew(); /* current list stays in My lists */
   });
 })(window.KC);

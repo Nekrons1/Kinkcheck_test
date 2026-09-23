@@ -14,23 +14,25 @@
     location.href = "compare.html?lang=" + KC.i18n.lang;
   };
 
-  function rows(list, acts) {
-    return list.map(x => '<div class="saved-row" data-id="' + KC.esc(x.id) + '"><div class="meta"><b>' + KC.esc(x.name || t("unnamed")) + "</b><span>" + fmtDate(x.ts) + "</span></div>"
-      + '<div class="acts">' + acts.map(a => '<button class="btn ghost mini" data-act="' + a + '"' + (a === "del" ? ' title="' + KC.esc(t("act.delete")) + '">✕' : ">" + KC.esc(t("act." + a))) + "</button>").join("") + "</div></div>").join("");
+  /* acts: array, or function(item) -> array; label: function(item) -> name */
+  function rows(list, acts, label, badge) {
+    return list.map(x => '<div class="saved-row' + (badge && badge(x) ? " current" : "") + '" data-id="' + KC.esc(x.id) + '"><div class="meta"><b>' + KC.esc(label(x) || t("unnamed")) + "</b>"
+      + (badge && badge(x) ? '<span class="cur-badge">' + KC.esc(t("mine.current")) + "</span>" : "") + "<span>" + fmtDate(x.ts) + "</span></div>"
+      + '<div class="acts">' + (typeof acts === "function" ? acts(x) : acts).map(a => '<button class="btn ghost mini" data-act="' + a + '"' + (a === "del" ? ' title="' + KC.esc(t("act.delete")) + '">✕' : ">" + KC.esc(t("act." + a))) + "</button>").join("") + "</div></div>").join("");
   }
   const empty = key => '<div style="color:var(--muted);font-size:13px;padding:8px 0">' + KC.esc(t(key)) + "</div>";
-  const rename = (item, save) => { const nn = prompt(t("prompt.listName"), item.name || ""); if (nn !== null) { item.name = nn.trim(); save(); } };
+  const rename = (item, save, cur) => { const nn = prompt(t("prompt.listName"), cur || ""); if (nn !== null) { item.name = nn.trim(); save(); } };
 
   /* ---- Received ---- */
   const recModal = KC.modal("savedOverlay", "savedClose");
-  function drawReceived() { const a = R.list(); KC.$("savedList").innerHTML = a.length ? rows(a, ["open", "rename", "compare", "del"]) : empty("saved.empty"); }
+  function drawReceived() { const a = R.list(); KC.$("savedList").innerHTML = a.length ? rows(a, ["open", "rename", "compare", "del"], x => x.name) : empty("saved.empty"); }
   KC.$("savedBtn").addEventListener("click", () => { drawReceived(); recModal.open(); });
   KC.$("savedList").addEventListener("click", e => {
     const btn = e.target.closest("button[data-act]"); if (!btn) return;
     const id = btn.closest(".saved-row").dataset.id, a = R.list(), item = a.find(x => x.id === id); if (!item) return;
     switch (btn.dataset.act) {
       case "open": location.hash = KC.codec.extract(item.code); location.reload(); break;
-      case "rename": rename(item, () => { R.write(a); drawReceived(); }); break;
+      case "rename": rename(item, () => { R.write(a); drawReceived(); }, item.name); break;
       case "compare": F.startCompare(KC.store.ownCode(), item.code, t("label.mine"), item.name || t("label.received")); break;
       case "del": R.write(a.filter(x => x.id !== id)); drawReceived(); break;
     }
@@ -38,8 +40,13 @@
 
   /* ---- My lists ---- */
   const mineModal = KC.modal("mineOverlay", "mineClose");
-  function drawMine() { const a = M.list(); KC.$("mineList").innerHTML = a.length ? rows(a, ["load", "update", "rename", "del"]) : empty("mine.empty"); }
-  KC.$("mineBtn").addEventListener("click", () => { drawMine(); mineModal.open(); });
+  const isCurrent = x => !F.viewingShared && x.id === M.active();
+  function drawMine() {
+    const a = M.list();
+    KC.$("mineList").innerHTML = a.length ? rows(a, x => isCurrent(x) ? ["rename", "del"] : ["load", "rename", "del"], M.label, isCurrent) : empty("mine.empty");
+  }
+  KC.$("mineBtn").addEventListener("click", () => { F.saveNow(); drawMine(); mineModal.open(); });
+  KC.$("mineNew").addEventListener("click", () => F.startNew());
   KC.$("mineSaveNew").addEventListener("click", () => {
     const nm = prompt(t("prompt.listName"), F.state.name || ""); if (nm === null) return;
     const a = M.list(); a.unshift({ id: "m" + Date.now(), name: nm.trim(), data: KC.store.clone(F.state), ts: Date.now() });
@@ -50,12 +57,12 @@
     const id = btn.closest(".saved-row").dataset.id, a = M.list(), item = a.find(x => x.id === id); if (!item) return;
     switch (btn.dataset.act) {
       case "load": {
+        F.saveNow(); // current list is safe in its own entry
         const st = KC.store.normalize(item.data); st.onlyMarked = F.state.onlyMarked;
-        KC.store.writeOwn(st); location.href = location.pathname; break;
+        KC.store.writeOwn(st); M.setActive(item.id); location.href = location.pathname; break;
       }
-      case "update": item.data = KC.store.clone(F.state); item.ts = Date.now(); M.write(a); drawMine(); KC.toast(t("toast.updated")); break;
-      case "rename": rename(item, () => { M.write(a); drawMine(); }); break;
-      case "del": M.write(a.filter(x => x.id !== id)); drawMine(); break;
+      case "rename": rename(item, () => { M.write(a); drawMine(); }, M.label(item)); break;
+      case "del": M.write(a.filter(x => x.id !== id)); if (id === M.active()) M.setActive(""); drawMine(); break;
     }
   });
 })(window.KC);

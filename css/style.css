@@ -227,3 +227,13 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
 /* compare: profile line per person */
 .cmp-profile{font-size:12.5px;color:var(--muted);margin:0 0 6px;line-height:1.5}
 .cmp-profile b{color:var(--ink);font-weight:600}
+
+/* header: title + languages on one line, actions below */
+.brand-row{display:flex;align-items:center;gap:12px;flex:1 1 100%;min-width:0}
+.brand-row .lang-sw{margin-left:auto}
+.top-actions{margin-left:0}
+/* My lists: the list currently open */
+.saved-row.current .meta b{color:var(--accent)}
+.saved-row .meta .cur-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:1px 7px;margin:2px 0}
+/* compare search */
+.cmp-search{margin:16px 0 4px}

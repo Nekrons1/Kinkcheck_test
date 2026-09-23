@@ -33,27 +33,40 @@
     return '<div class="cmp-filter">' + b("all", t("cmp.all")) + b("yesA", t("cmp.yesOf", { who: LAST.nA })) + b("yesB", t("cmp.yesOf", { who: LAST.nB })) + "</div>";
   }
 
+  /* search: same matching as the form (current-language name + English name) */
+  function matches(id) {
+    const q = KC.$("cmpSearch").value.trim().toLowerCase(); if (!q) return true;
+    return (KC.i18n.item(id).name + " " + KC.i18n.item(id, "en").name).toLowerCase().indexOf(q) >= 0;
+  }
+  const only = rows => rows.filter(r => matches(r.id));
+
   function render(scroll) {
     const box = KC.$("results");
+    KC.$("cmpSearchBox").hidden = false;
+    const searching = !!KC.$("cmpSearch").value.trim();
     let html = filterBar() + profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B);
     if (FILTER === "yesA" || FILTER === "yesB") {
       const side = FILTER === "yesA", who = side ? LAST.nA : LAST.nB;
-      const rows = KC.match.yesOf(side ? LAST.A : LAST.B).map(r => ({ id: r.id, a: (LAST.A.items[r.id] || {}).interest || null, b: (LAST.B.items[r.id] || {}).interest || null }));
+      const rows = only(KC.match.yesOf(side ? LAST.A : LAST.B)).map(r => ({ id: r.id, a: (LAST.A.items[r.id] || {}).interest || null, b: (LAST.B.items[r.id] || {}).interest || null }));
       html += rows.length ? block(t("cmp.yesTitle", { who }), "var(--yes)", t("cmp.yesSub"), rows)
-        : '<div class="result-group"><div class="sub">' + esc(t("cmp.noYes", { who })) + "</div></div>";
+        : '<div class="result-group"><div class="sub">' + esc(searching ? t("noresults") : t("cmp.noYes", { who })) + "</div></div>";
     } else {
       const g = KC.match.group(LAST.A, LAST.B);
-      const total = g.match.length + g.discuss.length + g.oneA.length + g.oneB.length + g.excluded.length;
-      if (!total) html += '<div class="result-group"><div class="sub">' + esc(t("cmp.none")) + "</div></div>";
+      Object.keys(g).forEach(k => { g[k] = only(g[k]); });
+      const ex = g.exBoth.length + g.exA.length + g.exB.length;
+      const total = g.match.length + g.discuss.length + g.oneA.length + g.oneB.length + ex;
+      if (!total) html += '<div class="result-group"><div class="sub">' + esc(searching ? t("noresults") : t("cmp.none")) + "</div></div>";
       else {
         const stat = (n, color, key) => '<div class="cmp-stat"><b style="color:' + color + '">' + n + "</b>" + esc(t(key)) + "</div>";
         html += '<div class="cmp-summary">' + stat(g.match.length, "var(--love)", "cmp.stat.match") + stat(g.discuss.length, "var(--maybe)", "cmp.stat.discuss")
-          + stat(g.oneA.length + g.oneB.length, "var(--chip-ink)", "cmp.stat.one") + stat(g.excluded.length, "var(--limit)", "cmp.stat.excluded") + "</div>";
+          + stat(g.oneA.length + g.oneB.length, "var(--chip-ink)", "cmp.stat.one") + stat(ex, "var(--limit)", "cmp.stat.excluded") + "</div>";
         html += block(t("cmp.g.match"), "var(--love)", t("cmp.g.match.sub"), g.match);
         html += block(t("cmp.g.discuss"), "var(--maybe)", t("cmp.g.discuss.sub"), g.discuss);
         html += block(t("cmp.g.one", { who: LAST.nA }), "var(--chip-ink)", t("cmp.g.one.sub", { who: LAST.nA }), g.oneA);
         html += block(t("cmp.g.one", { who: LAST.nB }), "var(--chip-ink)", t("cmp.g.one.sub", { who: LAST.nB }), g.oneB);
-        html += block(t("cmp.g.excluded"), "var(--limit)", t("cmp.g.excluded.sub"), g.excluded);
+        html += block(t("cmp.g.exBoth"), "var(--limit)", t("cmp.g.exBoth.sub"), g.exBoth);
+        html += block(t("cmp.g.exOne", { who: LAST.nA }), "var(--limit)", t("cmp.g.exOne.sub", { who: LAST.nA }), g.exA);
+        html += block(t("cmp.g.exOne", { who: LAST.nB }), "var(--limit)", t("cmp.g.exOne.sub", { who: LAST.nB }), g.exB);
       }
     }
     box.innerHTML = html;
@@ -65,8 +78,9 @@
     if (!rawA || !rawB) { KC.toast(t("cmp.needBoth")); return; }
     const A = KC.codec.decode(rawA), B = KC.codec.decode(rawB);
     LAST = { A, B, nA: KC.$("nameA").value.trim() || A.name || t("cmp.listA"), nB: KC.$("nameB").value.trim() || B.name || t("cmp.listB") };
-    FILTER = "all"; render(true);
+    FILTER = "all"; KC.$("cmpSearch").value = ""; render(true);
   });
+  KC.$("cmpSearch").addEventListener("input", () => { if (LAST) render(false); });
   KC.$("results").addEventListener("click", e => {
     const b = e.target.closest("button[data-f]"); if (!b || !LAST) return; FILTER = b.dataset.f; render(false);
   });

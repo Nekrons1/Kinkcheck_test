@@ -18,6 +18,8 @@
       return st;
     },
     clone: st => JSON.parse(JSON.stringify(st)),
+    /* nothing filled in at all */
+    isEmpty: st => !st.name && !Object.keys(st.items).length && !Object.keys(st.meta).length && !st.safeword && !st.fantasies && !st.comments && !st.allergies,
 
     /* own current list */
     loadOwn()   { return S.normalize(KC.ls.get(KC.KEYS.state, null)); },
@@ -40,10 +42,22 @@
       },
     },
 
-    /* my lists: [{id, name, data:state, ts}] — full copy, nothing lost */
+    /* my lists: [{id, name, data:state, ts}] — full copies, nothing lost.
+       The own list is auto-saved into the "active" entry (KC.KEYS.active):
+         key absent = never set (older version) | "" = new list not saved yet | id */
     mine: {
       list()   { return KC.ls.get(KC.KEYS.mine, []) || []; },
       write(a) { KC.ls.set(KC.KEYS.mine, a); },
+      active()      { return KC.ls.raw(KC.KEYS.active); },
+      setActive(id) { KC.ls.setRaw(KC.KEYS.active, id || ""); },
+      /* copy st into the active entry, creating it if needed */
+      sync(st) {
+        const a = this.list(); let id = this.active(); let item = id && a.find(x => x.id === id);
+        if (!item) { id = "m" + Date.now(); item = { id, name: "", data: null, ts: 0 }; a.unshift(item); this.setActive(id); }
+        item.data = S.clone(st); item.ts = Date.now(); this.write(a); return id;
+      },
+      /* display name: own label, else the name inside the list */
+      label(x) { return x.name || (x.data && x.data.name) || ""; },
     },
   };
 })(window.KC);

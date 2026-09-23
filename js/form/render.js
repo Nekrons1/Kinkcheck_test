@@ -7,8 +7,22 @@
 
   /* save own list (never while viewing someone else's link) */
   let timer = null;
-  F.save = function () { if (F.viewingShared) return; clearTimeout(timer); timer = setTimeout(() => KC.store.writeOwn(F.state), 200); };
-  F.saveNow = function () { if (F.viewingShared) return; clearTimeout(timer); KC.store.writeOwn(F.state); };
+  /* own list -> storage + its "My lists" entry (created on the first real change) */
+  function persist() {
+    KC.store.writeOwn(F.state);
+    const M = KC.store.mine;
+    if (!KC.store.isEmpty(F.state) || M.list().some(x => x.id === M.active())) M.sync(F.state);
+  }
+  F.save = function () { if (F.viewingShared) return; clearTimeout(timer); timer = setTimeout(persist, 200); };
+  F.saveNow = function () { if (F.viewingShared) return; clearTimeout(timer); persist(); };
+  /* leave the current list (it stays in My lists) and start an empty one */
+  F.startNew = function () {
+    if (!F.viewingShared) F.saveNow();
+    KC.store.mine.setActive("");
+    const st = KC.store.blank(); st.onlyMarked = F.state.onlyMarked;
+    KC.store.writeOwn(st);
+    location.href = location.pathname;
+  };
 
   /* profile: role block at the top + "About me" */
   F.renderProfile = function () {

@@ -21,6 +21,7 @@ window.KC = window.KC || {};
     mine:  "checklist-my-profiles-v1",      // several own lists (full JSON)
     theme: "checklist-theme",               // "light" | "dark" (raw string)
     lang:  "checklist-lang",                // preferred UI language (raw string)
+    active: "checklist-active-mine-id",     // which "My lists" entry the own list is saved into
   };
 
   KC.ls = {

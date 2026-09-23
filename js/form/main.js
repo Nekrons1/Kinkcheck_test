@@ -16,6 +16,8 @@
     history.replaceState(null, "", location.pathname + location.search);
   } else {
     F.state = KC.store.loadOwn();
+    /* first run after update: an existing filled-in list goes into My lists */
+    if (KC.store.mine.active() === null && !KC.store.isEmpty(F.state)) KC.store.mine.sync(F.state);
   }
 
   /* 2. language: link's language wins, then saved choice, then browser */
@@ -32,7 +34,9 @@
   }
   KC.$("bannerOwn").addEventListener("click", () => { location.href = location.pathname; });
   KC.$("bannerKeep").addEventListener("click", () => {
-    F.viewingShared = false; KC.$("sharedBanner").style.display = "none"; F.saveNow(); KC.toast(t("toast.keep"));
+    /* becomes a new own list; the previous one stays in My lists */
+    F.viewingShared = false; KC.$("sharedBanner").style.display = "none";
+    KC.store.mine.setActive(""); F.saveNow(); KC.toast(t("toast.keep"));
   });
   KC.$("bannerCmp").addEventListener("click", () => {
     F.startCompare(KC.store.ownCode(), KC.codec.encode(F.state, KC.i18n.lang), t("label.mine"), F.state.name || t("label.this"));

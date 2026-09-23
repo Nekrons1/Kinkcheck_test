@@ -18,15 +18,18 @@ const S = (title) => console.log("\n## " + title);
   ok(!p.errors.length, "no script errors on load: " + p.errors.join(" | "));
   const ids = [], codes = [];
   KC.CATS.forEach(c => c.items.forEach(([code, id]) => { ids.push(id); codes.push(code); }));
-  eq(ids.length, 371, "item count");
+  eq(ids.length, 380, "item count");
   eq(new Set(ids).size, ids.length, "unique ids"); eq(new Set(codes).size, codes.length, "unique codes");
-  eq(ids, OLD.ORDER, "ids+order identical to previous version (saved data compatible)");
-  ["ru", "en", "pt"].forEach(l => {
+  const byCode = {}; KC.CATS.forEach(c => c.items.forEach(([code, id]) => byCode[code] = id));
+  eq(OLD.ORDER.map((id, i) => byCode[i]), OLD.ORDER, "codes 0..370 still mean the same items as in old versions");
+  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(380).keys()], "codes are 0..379 with no gaps or reuse");
+  eq(["furry","xenophilia-tentacles","trampling-barefoot","trampling-shoes","rubber-band-snapping","forced-drinking-beer-cider","irrumatio-to-vomiting","bukkake","cum-in-eyes"].map(id => ids.indexOf(id) >= 0), Array(9).fill(true), "9 new items present");
+  ["ru", "en", "pt", "es"].forEach(l => {
     const miss = ids.filter(id => { const it = KC.i18n._pick("items", id, l); return !it || !it[0] || !it[1]; });
     eq(miss.length, 0, l + ": every item has name+hint (" + miss.slice(0, 3) + ")");
     const mc = KC.CATS.filter(c => !KC.i18n._pick("cats", c.id, l)); eq(mc.length, 0, l + ": every category named");
   });
-  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 371, "EN names unique");
+  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 380, "EN names unique");
   const enCyr = ids.filter(id => LAT.test(KC.i18n.item(id, "en").desc.replace(/[’“”–—…]/g, ""))); eq(enCyr, [], "EN hints contain no Cyrillic");
   // ui key parity
   const src = l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8").match(/"([a-zA-Z0-9_.]+)":/g).map(s => s.slice(1, -2));
@@ -36,9 +39,15 @@ const S = (title) => console.log("\n## " + title);
   const kp = src("pt");
   eq(ke.filter(k => kp.indexOf(k) < 0), [], "keys in en missing from pt");
   eq(kp.filter(k => ke.indexOf(k) < 0), [], "keys in pt missing from en");
+  const kes = src("es");
+  eq(ke.filter(k => kes.indexOf(k) < 0), [], "keys in en missing from es");
+  eq(kes.filter(k => ke.indexOf(k) < 0), [], "keys in es missing from en");
+  const esEnLeft = ids.filter(id => KC.i18n.item(id, "es").desc === KC.i18n.item(id, "en").desc); eq(esEnLeft, [], "ES hints are translated");
+  const esSrc = fs.readFileSync(require("./harness").ROOT + "/js/lang/es.practices.js", "utf8") + fs.readFileSync(require("./harness").ROOT + "/js/lang/es.ui.js", "utf8");
+  eq((esSrc.match(/\b(vosotros|os interesa|acordad|mirándoos|bragas|magreo|moratones|coger|correrse)\b/gi) || []), [], "ES has no Spain/LatAm-only forms");
   const ptEnLeft = ids.filter(id => KC.i18n.item(id, "pt").desc === KC.i18n.item(id, "en").desc); eq(ptEnLeft, [], "PT hints are translated (not English copies)");
   // every profile option has labels in both
-  KC.PROFILE.forEach(f => f.opts.filter(Boolean).forEach(o => ["ru", "en", "pt"].forEach(l => { KC.i18n.set(l); ok(KC.i18n.optLabel(f.id, o) !== "profile." + f.id + "." + o, l + " label " + f.id + "." + o); })));
+  KC.PROFILE.forEach(f => f.opts.filter(Boolean).forEach(o => ["ru", "en", "pt", "es"].forEach(l => { KC.i18n.set(l); ok(KC.i18n.optLabel(f.id, o) !== "profile." + f.id + "." + o, l + " label " + f.id + "." + o); })));
   // every t() key used in code exists
   const used = new Set();
   require("child_process").execSync("grep -rhoP \"(?<![A-Za-z.])t\\(\\\"[a-zA-Z0-9_.]+\\\"|data-i18n[a-z-]*=\\\"[a-zA-Z0-9_.]+\\\"\" " + require("./harness").ROOT).toString().split("\n").forEach(s => { const m = s.match(/"([^"]+)"/); if (m && !/\.$/.test(m[1])) used.add(m[1]); });
@@ -54,7 +63,8 @@ const S = (title) => console.log("\n## " + title);
   p = open("form", { navLang: "ru" });
   let { w, d } = p;
   eq(p.KC.i18n.lang, "ru", "RU browser -> RU page");
-  eq(d.querySelectorAll(".item").length, 371, "371 rows rendered");
+  eq(d.querySelectorAll(".item").length, 380, "380 rows rendered");
+  ok(d.querySelector(".brand-row #langSw"), "language switcher sits in the title row");
   ok(!d.querySelector('#roleTop .opt[data-val="switch"]') && d.querySelectorAll("#roleTop .opt").length === 2, "role top: 2 buttons, no Switch");
   ok(!d.querySelector('#aboutBody .opt[data-field="role"]'), "role not duplicated in About me");
   ok(/Свитч/.test(d.querySelector(".role-explain").textContent), "switch still mentioned in text");
@@ -75,7 +85,7 @@ const S = (title) => console.log("\n## " + title);
   let saved = JSON.parse(w.localStorage.getItem("practices-checklist-v1"));
   eq(saved.items, { hugging: { interest: "love" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "limit" }, "impact-bruising": { interest: "yes" } }, "answers saved (toggle-off removed)");
   eq(saved.meta, { role: "sub", exp: "medium", orient: "bi", rel: "poly", attire: ["lace", "leather"] }, "profile saved as keys");
-  eq(d.getElementById("progress").textContent, "Отмечено 4 из 371 практик", "progress text");
+  eq(d.getElementById("progress").textContent, "Отмечено 4 из 380 практик", "progress text");
   const link = p.KC.form.shareLink();
   ok(/[#&]lg=ru(&|$)/.test(link), "share link carries lg=ru");
   ok(/[#&]m=/.test(link), "share link carries profile (m=)");
@@ -97,7 +107,7 @@ const S = (title) => console.log("\n## " + title);
   ok(d.querySelector('#roleTop .opt[data-val="sub"]').getAttribute("aria-pressed") === "true", "role survived switch");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submissive / Bottom", "role label translated");
   eq(d.getElementById("metaName").value, "Андрей", "name survived switch");
-  eq(d.getElementById("progress").textContent, "4 of 371 practices marked", "EN progress");
+  eq(d.getElementById("progress").textContent, "4 of 380 practices marked", "EN progress");
   eq(d.getElementById("shareBtn").textContent, "Share", "header translated");
   eq(d.documentElement.lang, "en", "<html lang> updated");
   ok(/lg=en/.test(p.KC.form.shareLink()), "link now carries lg=en");
@@ -110,7 +120,7 @@ const S = (title) => console.log("\n## " + title);
   ok(row("hugging").querySelector('.scale button[data-v="love"]').classList.contains("sel"), "answer survived switch to PT");
   eq(row("hugging").querySelector('.scale button[data-v="love"]').textContent, "Adoro", "PT scale");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submisso(a) / Bottom", "PT role label");
-  eq(d.getElementById("progress").textContent, "4 de 371 práticas marcadas", "PT progress");
+  eq(d.getElementById("progress").textContent, "4 de 380 práticas marcadas", "PT progress");
   const ptHash = p.KC.form.shareLink().split("#")[1];
   ok(/lg=pt/.test(ptHash), "PT link carries lg=pt");
   eq(open("form", { hash: ptHash, storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "pt", "PT link opens in PT");
@@ -150,8 +160,10 @@ const S = (title) => console.log("\n## " + title);
   eq(open("form", { hash: noLg, navLang: "de" }).KC.i18n.lang, "ru", "no lg, unknown browser lang -> RU default");
   eq(open("form", { hash: noLg, navLang: "en-US" }).KC.i18n.lang, "en", "no lg, English browser -> EN");
   const es = open("form", { hash: ruLink.replace("lg=ru", "lg=es") });
-  eq(es.KC.i18n.lang, "en", "lg=es (prepared, not enabled) -> EN fallback");
-  eq([...es.d.querySelectorAll("#langSw button")].map(b => b.textContent), ["RU", "EN", "PT"], "switcher shows RU/EN/PT only");
+  eq(es.KC.i18n.lang, "es", "lg=es opens in Spanish");
+  eq([...es.d.querySelectorAll("#langSw button")].map(b => b.textContent), ["RU", "EN", "ES", "PT"], "switcher shows RU/EN/ES/PT only (ja still hidden)");
+  eq(open("form", { navLang: "es-MX" }).KC.i18n.lang, "es", "Spanish browser -> ES");
+  eq(open("form", { hash: ruLink.replace("lg=ru", "lg=ja") }).KC.i18n.lang, "en", "lg=ja (prepared) -> EN fallback");
   eq(open("form", { navLang: "pt-BR" }).KC.i18n.lang, "pt", "Brazilian browser -> PT");
   eq(open("form", { navLang: "pt-PT" }).KC.i18n.lang, "pt", "Portuguese browser -> PT");
   ok(es.KC.codec.decode("a=Ag&lg=ja").lang === "ja", "codec keeps prepared lang code ja");
@@ -214,32 +226,75 @@ const S = (title) => console.log("\n## " + title);
   // simulate a future release that adds items (new codes appended, inserted mid-category)
   const today = KCn.codec.encode({ items: all, meta: {} });
   const sparseToday = KCn.codec.encode({ items: { hugging: { interest: "yes" }, "impact-bruising": { interest: "love" } }, meta: {} });
-  KCn.CATS[0].items.splice(3, 0, [371, "new-thing"]); KCn.CATS[5].items.push([372, "new-thing-2"]);
-  const fut = open("form"); fut.KC.CATS[0].items.splice(3, 0, [371, "new-thing"]); fut.KC.CATS[5].items.push([372, "new-thing-2"]);
+  const fut = open("form"); fut.KC.CATS[0].items.splice(3, 0, [380, "new-thing"]); fut.KC.CATS[5].items.push([381, "new-thing-2"]);
   eq(Object.keys(fut.KC.codec.decode(today).items).length, 371, "dense link from today still decodes after items are added");
   eq(fut.KC.codec.decode(sparseToday).items, { hugging: { interest: "yes" }, "impact-bruising": { interest: "love" } }, "sparse link from today still decodes after items are added");
 
+  const withNew = { items: { furry: { interest: "love" }, bukkake: { interest: "limit" }, "cum-in-eyes": { interest: "maybe" }, hugging: { interest: "yes" } }, meta: {} };
+  const srt = o => Object.entries(o).sort();
+  eq(srt(KCn.codec.decode(KCn.codec.encode(withNew)).items), srt(withNew.items), "link with new items round-trips");
+  const allNew = {}; KCn.CATS.forEach(c => c.items.forEach(([, id], i) => allNew[id] = { interest: vals[i % 4] }));
+  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 380, "fully filled 380-item link round-trips");
+
   /* ---------- 7. My lists ---------- */
   S("My lists");
-  p = open("form", { storage: own, answers: { prompt: "Для Б" } });
+  // existing filled-in list from an older version appears in My lists automatically
+  p = open("form", { storage: own });
+  let mine = JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1"));
+  eq(mine.length, 1, "own list auto-saved into My lists on first run");
+  eq(mine[0].data.meta.role, "sub", "full list saved (incl. role)");
+  eq(p.w.localStorage.getItem("checklist-active-mine-id"), mine[0].id, "it is the active entry");
   click(p.w, p.d.getElementById("mineBtn"));
-  click(p.w, p.d.getElementById("mineSaveNew"));
-  eq(JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1"))[0].name, "Для Б", "saved as new list");
-  eq(p.d.querySelectorAll("#mineList .saved-row").length, 1, "listed");
-  let st2 = p.storage(); const other = JSON.parse(st2.local["practices-checklist-v1"]); other.items = { chains: { interest: "love" } }; other.meta = {};
-  st2.local["practices-checklist-v1"] = JSON.stringify(other);
+  ok(p.d.querySelector("#mineList .saved-row.current .cur-badge"), "current list marked as open");
+  eq(p.d.querySelector("#mineList .saved-row b").textContent, "Андрей", "unnamed entry shows the list's name");
+  ok(!p.d.querySelector('#mineList .current button[data-act="load"]'), "no Load button on the open list");
+  // changes keep syncing
+  click(p.w, p.d.querySelector('.item[data-id="chains"] .scale button[data-v="yes"]')); await sleep(260);
+  mine = JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1"));
+  eq([mine.length, mine[0].data.items.chains], [1, { interest: "yes" }], "edits auto-sync into the same entry");
+  // copy
+  p.w.prompt = () => "Копия"; click(p.w, p.d.getElementById("mineSaveNew"));
+  eq(JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1")).length, 2, "Save a copy adds a second entry");
+  // create new list: blank form, old one kept
+  click(p.w, p.d.getElementById("mineNew"));
+  let st2 = p.storage();
+  eq(JSON.parse(st2.local["practices-checklist-v1"]).items, {}, "new list is empty");
+  eq(st2.local["checklist-active-mine-id"], "", "new list not saved until changed");
   p = open("form", { storage: st2 });
+  eq(p.d.querySelectorAll(".scale button.sel").length, 0, "form opens blank");
+  eq(JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1")).length, 2, "just opening a blank list adds nothing");
+  click(p.w, p.d.querySelector('.item[data-id="orgy"] .scale button[data-v="love"]')); await sleep(260);
+  mine = JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1"));
+  eq([mine.length, mine[0].data.items], [3, { orgy: { interest: "love" } }], "first change creates its own entry");
+  // load another entry
   click(p.w, p.d.getElementById("mineBtn"));
-  click(p.w, p.d.querySelector('#mineList button[data-act="load"]'));
-  eq(JSON.parse(p.w.localStorage.getItem("practices-checklist-v1")).meta.role, "sub", "Load restores full list incl. role");
+  const andreiRow = [...p.d.querySelectorAll("#mineList .saved-row")].find(r => r.querySelector("b").textContent === "Андрей");
+  click(p.w, andreiRow.querySelector('button[data-act="load"]'));
+  st2 = p.storage();
+  eq(JSON.parse(st2.local["practices-checklist-v1"]).meta.role, "sub", "Load restores full list incl. role");
+  eq(st2.local["checklist-active-mine-id"], andreiRow.dataset.id, "loaded entry becomes active");
+  eq(JSON.parse(st2.local["checklist-my-profiles-v1"]).find(x => x.data.items.orgy).data.items, { orgy: { interest: "love" } }, "list left behind is still saved");
+  // Clear = start new, nothing lost
+  p = open("form", { storage: st2 }); click(p.w, p.d.getElementById("resetBtn"));
+  eq(JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1")).length, 3, "Clear keeps every saved list");
+  // viewing someone's link never touches My lists; "Use as my own" makes a new entry
+  const before = p.storage();
+  p = open("form", { hash: ruLink, storage: before });
+  eq(p.w.localStorage.getItem("checklist-my-profiles-v1"), before.local["checklist-my-profiles-v1"], "viewing a link does not add to My lists");
+  click(p.w, p.d.getElementById("bannerKeep"));
+  eq(JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1")).length, 4, "'Use as my own' adds it as a new list, old ones kept");
+  // delete active
+  click(p.w, p.d.getElementById("mineBtn"));
+  click(p.w, p.d.querySelector('#mineList .current button[data-act="del"]'));
+  eq([JSON.parse(p.w.localStorage.getItem("checklist-my-profiles-v1")).length, p.w.localStorage.getItem("checklist-active-mine-id")], [3, ""], "deleting the open list detaches it");
 
   /* ---------- 8. compare ---------- */
   S("compare");
-  const A = { items: { hugging: { interest: "love" }, chains: { interest: "yes" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "limit" }, orgy: { interest: "yes" }, "anal-sex": { interest: "love" } }, meta: { role: "dom", exp: "large" }, name: "Anna" };
-  const B = { items: { hugging: { interest: "yes" }, chains: { interest: "maybe" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "love" }, "rope-bondage-shibari": { interest: "yes" } }, meta: { role: "sub", attire: ["latex"] }, name: "Boris" };
+  const A = { items: { hugging: { interest: "love" }, chains: { interest: "yes" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "limit" }, orgy: { interest: "yes" }, "anal-sex": { interest: "love" }, branding: { interest: "limit" }, cbt: { interest: "yes" } }, meta: { role: "dom", exp: "large" }, name: "Anna" };
+  const B = { items: { hugging: { interest: "yes" }, chains: { interest: "maybe" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "love" }, "rope-bondage-shibari": { interest: "yes" }, branding: { interest: "limit" }, cbt: { interest: "limit" } }, meta: { role: "sub", attire: ["latex"] }, name: "Boris" };
   const g = KCn.match.group(A, B);
-  eq([g.match.map(x => x.id), g.discuss.map(x => x.id), g.oneA.map(x => x.id), g.oneB.map(x => x.id), g.excluded.map(x => x.id)],
-    [["hugging"], ["chains", "spanking-hand"], ["anal-sex", "orgy"], ["rope-bondage-shibari"], ["fisting-anal"]], "grouping incl. A/B split");
+  eq(["match", "discuss", "oneA", "oneB", "exBoth", "exA", "exB"].map(k => g[k].map(x => x.id)),
+    [["hugging"], ["chains", "spanking-hand"], ["anal-sex", "orgy"], ["rope-bondage-shibari"], ["branding"], ["fisting-anal"], ["cbt"]], "grouping incl. A/B split and 3-way excluded split");
   const own2 = { local: { "practices-checklist-v1": JSON.stringify(Object.assign(KCn.store.blank(), A)) }, session: {} };
   let c = open("compare", { storage: own2, navLang: "ru" });
   ok(!c.errors.length, "compare loads: " + c.errors.join("|"));
@@ -247,11 +302,20 @@ const S = (title) => console.log("\n## " + title);
   c.d.getElementById("codeB").value = "https://x/#" + KCn.codec.encode(B, "en");
   click(c.w, c.d.getElementById("cmpBtn"));
   const titles = () => [...c.d.querySelectorAll(".result-group h3")].map(h => h.textContent.replace(/\s*\(\d+\)$/, ""));
-  eq(titles(), ["Совпадения — оба «за»", "Стоит обсудить", "Интересно только Anna", "Интересно только Boris", "Исключено — стоп"], "RU groups, one-sided split A then B");
+  eq(titles(), ["Совпадения — оба «за»", "Стоит обсудить", "Интересно только Anna", "Интересно только Boris", "Исключено — «Нет» у обоих", "Исключено — «Нет» у Anna", "Исключено — «Нет» у Boris"], "RU groups incl. excluded split");
+  ok(!c.d.getElementById("cmpSearchBox").hidden, "search shown after comparing");
+  const cs = c.d.getElementById("cmpSearch");
+  cs.value = "анал"; cs.dispatchEvent(new c.w.Event("input"));
+  eq([...c.d.querySelectorAll(".rrow")].map(r => r.querySelector(".nm").firstChild.textContent), ["Анальный секс", "Фистинг — анальный"], "compare search (RU name, across groups)");
+  cs.value = "branding"; cs.dispatchEvent(new c.w.Event("input"));
+  eq(titles(), ["Исключено — «Нет» у обоих"], "compare search matches English name too");
+  cs.value = "zzzz"; cs.dispatchEvent(new c.w.Event("input"));
+  eq(c.d.querySelector(".result-group .sub").textContent, "Ничего не найдено по запросу.", "no-match message");
+  cs.value = ""; cs.dispatchEvent(new c.w.Event("input"));
   eq(c.d.querySelectorAll(".cmp-profile").length, 2, "profile line for both people");
   ok(/Сабмиссив/.test(c.d.querySelectorAll(".cmp-profile")[1].textContent) && /Латекс/.test(c.d.querySelectorAll(".cmp-profile")[1].textContent), "B's role+attire shown");
   click(c.w, c.d.querySelector('button[data-f="yesA"]'));
-  const yesA = [...c.d.querySelectorAll(".rrow")].length; eq(yesA, 4, "filter «Да» у Anna: 4 items (love first)");
+  const yesA = [...c.d.querySelectorAll(".rrow")].length; eq(yesA, 5, "filter «Да» у Anna: 5 items");
   ok(c.d.querySelector('button[data-f="yesA"]').classList.contains("on"), "active filter highlighted");
   click(c.w, c.d.querySelector('button[data-f="yesB"]')); eq(c.d.querySelectorAll(".rrow").length, 3, "filter «Да» у Boris: 3 items");
   click(c.w, c.d.querySelector('#langSw button[data-lang="en"]'));
@@ -282,7 +346,16 @@ const S = (title) => console.log("\n## " + title);
   c = open("compare", { storage: own2, navLang: "pt-BR" });
   c.d.getElementById("codeB").value = "#" + KCn.codec.encode(B);
   click(c.w, c.d.getElementById("cmpBtn"));
-  eq(titles(), ["Em comum: os dois topam", "Vale conversar", "Só Anna tem interesse", "Só Boris tem interesse", "Excluídos: pare"], "PT compare groups");
+  eq(titles(), ["Em comum: os dois topam", "Vale conversar", "Só Anna tem interesse", "Só Boris tem interesse", "Excluídos: “Não” dos dois", "Excluídos: “Não” de Anna", "Excluídos: “Não” de Boris"], "PT compare groups");
+  click(c.w, c.d.querySelector('#langSw button[data-lang="es"]'));
+  eq(titles()[0], "En común: los dos se apuntan", "ES compare groups");
+  // ES form
+  const ownEs = { local: Object.assign({}, own.local, { "checklist-lang": "es" }), session: {} };
+  p = open("form", { storage: ownEs });
+  eq(p.d.querySelector('.item[data-id="golden-showers"] .main').textContent, "Lluvia dorada", "ES name");
+  eq(p.d.querySelector('.item[data-id="furry"] .main').textContent, "Furry", "ES new item");
+  ok(/lg=es/.test(p.KC.form.shareLink()), "ES link carries lg=es");
+  ok(/Límites duros/.test(p.KC.form.buildSheet().textContent), "ES PDF sheet");
 
   const R = report(); console.log("\nPASS", R.PASS, "FAIL", R.FAIL);
   process.exit(R.FAIL ? 1 : 0);

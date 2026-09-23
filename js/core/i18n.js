@@ -11,7 +11,7 @@
   const LANGS = {
     ru: { label: "RU", name: "Русский",   locale: "ru-RU", enabled: true  },
     en: { label: "EN", name: "English",   locale: "en-GB", enabled: true  },
-    es: { label: "ES", name: "Español",   locale: "es-ES", enabled: false },
+    es: { label: "ES", name: "Español",   locale: "es-ES", enabled: true  },
     ja: { label: "JA", name: "日本語",     locale: "ja-JP", enabled: false },
     pt: { label: "PT", name: "Português (Brasil)", locale: "pt-BR", enabled: true  },
   };
