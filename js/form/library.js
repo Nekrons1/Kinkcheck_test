@@ -49,9 +49,33 @@
   KC.$("mineNew").addEventListener("click", () => F.startNew());
   KC.$("mineSaveNew").addEventListener("click", () => {
     const nm = prompt(t("prompt.listName"), F.state.name || ""); if (nm === null) return;
-    const a = M.list(); a.unshift({ id: "m" + Date.now(), name: nm.trim(), data: KC.store.clone(F.state), ts: Date.now() });
+    const copy = KC.store.clone(F.state); copy.uid = KC.store.newUid(); /* a copy is a separate list */
+    const a = M.list(); a.unshift({ id: "m" + Date.now(), name: nm.trim(), data: copy, ts: Date.now() });
     M.write(a); drawMine(); KC.toast(t("toast.saved"));
   });
+  /* backup to / restore from a file */
+  KC.$("backupSave").addEventListener("click", () => {
+    F.saveNow();
+    const blob = new Blob([JSON.stringify(KC.store.exportAll(), null, 1)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = "kinkcheck-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    KC.toast(t("toast.backupSaved"));
+  });
+  KC.$("backupLoad").addEventListener("click", () => KC.$("backupFile").click());
+  KC.$("backupFile").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      let res = null; try { res = KC.store.importAll(JSON.parse(r.result)); } catch (err) {}
+      e.target.value = "";
+      if (!res) { KC.toast(t("toast.backupBad")); return; }
+      KC.toast(KC.i18n.t("toast.backupLoaded", res));
+      setTimeout(() => { location.href = location.pathname; }, 900);
+    };
+    r.readAsText(f);
+  });
+
   KC.$("mineList").addEventListener("click", e => {
     const btn = e.target.closest("button[data-act]"); if (!btn) return;
     const id = btn.closest(".saved-row").dataset.id, a = M.list(), item = a.find(x => x.id === id); if (!item) return;

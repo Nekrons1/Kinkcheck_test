@@ -4,11 +4,13 @@
    Link encoding stores one byte per field, IN THIS ORDER, so:
    - append new fields at the END only;
    - an option's position = its code: never reorder; to remove one, replace it with null.
-   top:true  -> rendered in the role block at the top of the form instead of "About me". */
+   top:true    -> rendered in the role block at the top of the form instead of "About me".
+   hidden:true -> field retired: not shown, not stored, dropped from old links; kept only so
+                  the byte positions of the fields after it stay the same. */
 KC.PROFILE = [
   { id: "role",   type: "single", top: true, opts: ["dom", "sub", null /* was: switch */] },
   { id: "exp",    type: "single", opts: ["novice", "some", "medium", "large", "extensive"] },
-  { id: "orient", type: "single", opts: ["straight", "gay", "bi", "bicurious"] },
+  { id: "orient", type: "single", hidden: true, opts: ["straight", "gay", "bi", "bicurious"] },
   { id: "rel",    type: "single", opts: ["mono", "poly", "any"] },
   { id: "attire", type: "multi",  opts: ["denim", "goth", "lace", "latex", "leather"] },
 ];
@@ -31,6 +33,7 @@ KC.normalizeMeta = function (meta) {
     return k && f.opts.indexOf(k) >= 0 ? k : null;
   };
   KC.PROFILE.forEach(f => {
+    if (f.hidden) return;
     const v = meta[f.id];
     if (f.type === "multi") {
       const arr = (Array.isArray(v) ? v : []).map(x => fix(f, x)).filter(Boolean);

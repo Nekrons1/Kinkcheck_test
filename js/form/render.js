@@ -9,6 +9,7 @@
   let timer = null;
   /* own list -> storage + its "My lists" entry (created on the first real change) */
   function persist() {
+    if (!F.state.uid) F.state.uid = KC.store.newUid();
     KC.store.writeOwn(F.state);
     const M = KC.store.mine;
     if (!KC.store.isEmpty(F.state) || M.list().some(x => x.id === M.active())) M.sync(F.state);
@@ -29,6 +30,7 @@
     const top = KC.$("roleTop"), about = KC.$("aboutBody");
     top.innerHTML = ""; about.innerHTML = "";
     KC.PROFILE.forEach(f => {
+      if (f.hidden) return;
       const field = KC.el("div", "field");
       field.appendChild(KC.el("div", "flabel", KC.i18n.fieldLabel(f.id)));
       const opts = KC.el("div", "opts");
@@ -61,6 +63,7 @@
       cat.items.forEach(([code, id]) => {
         const it = KC.i18n.item(id), en = sub ? KC.i18n.item(id, "en").name : "";
         const row = KC.el("div", "item"); row.dataset.id = id;
+        if (code >= KC.NEW_FROM_CODE) row.dataset.new = "1";
         row.dataset.search = (it.name + " " + en).toLowerCase();
         const name = KC.el("div", "item-name");
         if (code >= KC.NEW_FROM_CODE) { /* green dot in the left margin, level with the name */
@@ -105,24 +108,42 @@
   };
 
   F.updateProgress = function () {
+    /* only items that exist in the list: the number always matches what goes into a link */
     let n = 0, total = 0;
-    Object.keys(F.state.items).forEach(k => { if (F.state.items[k].interest) n++; });
-    KC.CATS.forEach(c => total += c.items.length);
+    KC.CATS.forEach(c => c.items.forEach(([, id]) => { total++; if (F.state.items[id] && F.state.items[id].interest) n++; }));
     KC.$("progress").textContent = t("progress", { n, total });
   };
 
+  /* search + "Show" filter (all / unanswered / new). Evaluated only when search or filter changes,
+     so a row you just answered stays in place until then. */
   F.applySearch = function () {
-    const q = KC.$("search").value.trim().toLowerCase(); let any = false;
+    const q = KC.$("search").value.trim().toLowerCase(), view = KC.$("view").value; let any = false;
     document.querySelectorAll(".cat").forEach(sec => {
       let visible = 0;
-      sec.querySelectorAll(".item").forEach(row => { const m = !q || row.dataset.search.indexOf(q) >= 0; row.classList.toggle("filtered-out", !m); if (m) visible++; });
+      sec.querySelectorAll(".item").forEach(row => {
+        let m = !q || row.dataset.search.indexOf(q) >= 0;
+        if (m && view === "unanswered") m = !F.state.items[row.dataset.id];
+        if (m && view === "new") m = row.dataset.new === "1";
+        row.classList.toggle("filtered-out", !m); if (m) visible++;
+      });
       sec.classList.toggle("empty", visible === 0); if (visible) any = true;
     });
     KC.$("noresults").style.display = any ? "none" : "block";
   };
 
+  /* banner for a list opened from a link: says what happened with "Received" */
+  F.renderBanner = function () {
+    const r = F.receivedResult || {}, name = r.item && r.item.name;
+    const status = r.status === "own" ? t("banner.isOwn")
+      : r.status === "exists" ? (name ? t("banner.exists", { name: KC.esc(name) }) : t("banner.existsUnnamed"))
+      : r.status === "updated" ? (name ? t("banner.updated", { name: KC.esc(name) }) : t("banner.updatedUnnamed"))
+      : r.status === "added" ? t("banner.saved") : "";
+    KC.$("bannerText").innerHTML = t("banner_html", { status });
+  };
+
   F.renderAll = function () {
     KC.i18n.apply(document);
+    if (F.viewingShared) F.renderBanner();
     KC.$("compareBtn").href = "compare.html?lang=" + KC.i18n.lang;
     F.renderProfile(); F.renderList(); F.hydrate(); F.applySearch();
   };

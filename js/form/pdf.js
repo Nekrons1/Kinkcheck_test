@@ -16,7 +16,7 @@
 
     const metaLine = [];
     KC.PROFILE.forEach(f => {
-      const v = st.meta[f.id]; if (!v || (Array.isArray(v) && !v.length)) return;
+      const v = !f.hidden && st.meta[f.id]; if (!v || (Array.isArray(v) && !v.length)) return;
       const txt = (Array.isArray(v) ? v : [v]).map(o => KC.i18n.optLabel(f.id, o)).join(", ");
       metaLine.push(esc(KC.i18n.fieldLabel(f.id)) + ": " + esc(txt));
     });

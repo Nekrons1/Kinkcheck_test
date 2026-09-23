@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=492">
+<link rel="stylesheet" href="css/style.css?v=520">
 </head>
 <body>
 
@@ -31,18 +31,8 @@
     <p data-i18n-html="cmp.intro_html"></p>
   </section>
 
-  <div class="cmp-inputs">
-    <div class="cmp-col">
-      <input class="cmp-name" id="nameA" data-i18n-ph="cmp.nameA" autocomplete="off">
-      <label><span data-i18n="cmp.codeA"></span> <button class="btn ghost mini" id="fillMine" type="button" style="float:right;margin-top:-4px" data-i18n="cmp.fillMine"></button></label>
-      <textarea id="codeA" data-i18n-ph="cmp.codePh"></textarea>
-    </div>
-    <div class="cmp-col">
-      <input class="cmp-name" id="nameB" data-i18n-ph="cmp.nameB" autocomplete="off">
-      <label data-i18n="cmp.codeB"></label>
-      <textarea id="codeB" data-i18n-ph="cmp.codePh"></textarea>
-    </div>
-  </div>
+  <div class="cmp-inputs" id="parts"></div>
+  <button class="btn ghost" id="addPart" type="button" style="width:100%;margin:0 0 10px" data-i18n="cmp.add"></button>
 
   <button class="btn primary" id="cmpBtn" style="width:100%;padding:12px" data-i18n="cmp.go"></button>
 
@@ -58,6 +48,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="js/boot.js?v=492" data-page="compare" data-v="492"></script>
+<script src="js/boot.js?v=520" data-page="compare" data-v="520"></script>
 </body>
 </html>

@@ -43,6 +43,7 @@
 
   KC.$("onlyMarked").addEventListener("change", e => { F.state.onlyMarked = e.target.checked; F.save(); });
   KC.$("search").addEventListener("input", F.applySearch);
+  KC.$("view").addEventListener("change", F.applySearch);
   KC.$("jump").addEventListener("change", e => {
     const el = e.target.value && KC.$(e.target.value); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); e.target.value = "";
   });

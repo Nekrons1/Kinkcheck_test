@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=492">
+<link rel="stylesheet" href="css/style.css?v=520">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -20,6 +20,7 @@
   <div class="top-inner">
     <div class="brand-row">
       <span class="brand"><span class="lock">🔒</span><span data-i18n="app.title"></span></span>
+      <span class="progress-inline" id="progress"></span>
       <div class="lang-sw" id="langSw" role="group"></div>
     </div>
     <div class="top-actions">
@@ -38,9 +39,11 @@
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off">
     </div>
     <select class="jump" id="jump" data-i18n-title="jump.aria"></select>
-  </div>
-  <div class="progress-row">
-    <span id="progress"></span>
+    <select class="jump view-sel" id="view" data-i18n-title="view.label">
+      <option value="all" data-i18n="view.all"></option>
+      <option value="unanswered" data-i18n="view.unanswered"></option>
+      <option value="new" data-i18n="view.new"></option>
+    </select>
     <label class="only-toggle"><input type="checkbox" id="onlyMarked" checked> <span data-i18n="onlyMarked"></span></label>
   </div>
 </header>
@@ -48,11 +51,12 @@
 <main class="wrap">
 
   <div class="banner" id="sharedBanner">
-    <span data-i18n-html="banner_html"></span>
+    <span id="bannerText"></span>
     <div class="row">
       <button class="btn" id="bannerCmp" data-i18n="banner.cmp"></button>
       <button class="btn ghost" id="bannerOwn" data-i18n="banner.own"></button>
       <button class="btn ghost" id="bannerKeep" data-i18n="banner.keep"></button>
+      <button class="btn ghost" id="bannerSaveAs" data-i18n="banner.saveAs"></button>
     </div>
   </div>
 
@@ -118,10 +122,18 @@
     <button class="btn primary" id="mineNew" style="width:100%;margin-bottom:8px" data-i18n="mine.new"></button>
     <button class="btn ghost" id="mineSaveNew" style="width:100%;margin-bottom:10px" data-i18n="mine.copy"></button>
     <div id="mineList"></div>
+    <div class="backup">
+      <p data-i18n="backup.hint"></p>
+      <div class="row">
+        <button class="btn ghost" id="backupSave" type="button" data-i18n="backup.save"></button>
+        <button class="btn ghost" id="backupLoad" type="button" data-i18n="backup.load"></button>
+        <input type="file" id="backupFile" accept=".json,application/json" hidden>
+      </div>
+    </div>
     <button class="btn ghost" id="mineClose" style="margin-top:14px;width:100%" data-i18n="close"></button>
   </div>
 </div>
 
-<script src="js/boot.js?v=492" data-page="form" data-v="492"></script>
+<script src="js/boot.js?v=520" data-page="form" data-v="520"></script>
 </body>
 </html>

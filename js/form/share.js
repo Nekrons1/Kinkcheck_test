@@ -3,7 +3,10 @@
   const F = KC.form, t = k => KC.i18n.t(k);
   const modal = KC.modal("overlay", "overlayClose");
 
-  F.shareLink = () => location.origin + location.pathname + "#" + KC.codec.encode(F.state, KC.i18n.lang);
+  F.shareLink = () => {
+    if (!F.viewingShared && !F.state.uid) F.saveNow(); /* gives the list its id */
+    return location.origin + location.pathname + "#" + KC.codec.encode(F.state, KC.i18n.lang);
+  };
 
   KC.$("shareBtn").addEventListener("click", () => {
     const link = F.shareLink();

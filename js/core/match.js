@@ -27,11 +27,12 @@
       }));
       return g;
     },
-    /* items where one side said yes/love: love first, then yes */
-    yesOf(st, other) {
+    /* items where one side said yes/love (withMaybe: also maybe): love, then yes, then maybe */
+    yesOf(st, withMaybe) {
+      const ok = withMaybe ? { love: 1, yes: 1, maybe: 1 } : { love: 1, yes: 1 };
       const rows = [];
       KC.CATS.forEach(c => c.items.forEach(([, id]) => {
-        const v = (st.items[id] || {}).interest; if (v === "yes" || v === "love") rows.push({ id, v });
+        const v = (st.items[id] || {}).interest; if (ok[v]) rows.push({ id, v });
       }));
       return rows.sort((x, y) => KC.match.RANK[x.v] - KC.match.RANK[y.v]);
     },

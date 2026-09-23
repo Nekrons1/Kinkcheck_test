@@ -253,3 +253,66 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .brand-row .brand{font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .lang-btn{padding:6px 7px;font-size:11px}
 }
+
+/* compact sticky header: progress in the title row, export toggle next to "Download PDF" */
+.progress-inline{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.top-inner{padding:7px 14px;row-gap:7px}
+.top-actions{gap:6px}
+.top-actions .btn{padding:6px 10px;font-size:14px}
+.top-actions .icon-btn{padding:6px 9px}
+.subbar{flex-wrap:wrap;row-gap:6px}
+.subbar .only-toggle{font-size:12.5px;color:var(--muted);white-space:nowrap}
+@media (max-width:560px){ .subbar .only-toggle{flex-basis:100%;font-size:11.5px} }
+.subbar{padding-top:0;padding-bottom:8px}
+@media (max-width:560px){
+  .brand-row{flex-wrap:wrap;row-gap:2px}
+  .progress-inline{order:3;flex-basis:100%;font-size:11.5px}
+  .top-actions .btn{padding:6px 8px;font-size:13px}
+}
+.subbar select.jump{flex:0 1 190px;min-width:0}
+/* phones: action buttons in one horizontally scrollable row */
+@media (max-width:560px){
+  .top-actions{flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px}
+  .top-actions::-webkit-scrollbar{display:none}
+  .top-actions > *{flex:0 0 auto}
+}
+
+/* "Show: all / unanswered / new" next to the section menu */
+.subbar select.view-sel{flex:0 1 170px;min-width:0}
+@media (max-width:560px){ .subbar select.jump{flex:1 1 40%} }
+
+/* My lists: backup block */
+.backup{border-top:1px solid var(--line2);margin-top:12px;padding-top:10px}
+.backup p{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.backup .row{display:flex;gap:8px;flex-wrap:wrap}
+.backup .row .btn{flex:1 1 150px}
+
+/* compare: participant cards */
+.cmp-inputs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cmp-col-head{display:flex;gap:6px;align-items:center}
+.cmp-col-head .cmp-name{flex:1;min-width:0}
+.cmp-pick{width:100%;font:inherit;font-size:13px;padding:7px 8px;margin:6px 0;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.cmp-pick:disabled{opacity:.5}
+/* compare: pair table */
+.pair-wrap{overflow-x:auto}
+.pair-table{border-collapse:collapse;font-size:13px;margin-top:6px}
+.pair-table th{font-weight:600;padding:6px 8px;text-align:left;white-space:nowrap;color:var(--ink)}
+.pair-table td{padding:4px;text-align:center;border-top:1px solid var(--line2)}
+.pair-table td.self{color:var(--muted)}
+.pair-n{font:inherit;font-weight:600;min-width:38px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--accent-soft);color:var(--accent);cursor:pointer}
+/* desktop: give the search box the room, keep both menus compact */
+.subbar .search{flex:1 1 180px;min-width:150px}
+.subbar select.jump{flex:0 1 150px}
+/* phones: row 1 = search + Show, row 2 = Section + export toggle */
+@media (max-width:560px){
+  .subbar{row-gap:6px}
+  .subbar .search{order:1;flex:1 1 52%;min-width:0}
+  .subbar select.view-sel{order:2;flex:1 1 38%}
+  .subbar select.jump:not(.view-sel){order:3;flex:1 1 40%;max-width:none}
+  .subbar .only-toggle{order:4;flex:1 1 50%;flex-basis:auto;white-space:normal;line-height:1.25}
+  .subbar select.jump{padding:8px 8px;font-size:14px}
+}
+@media (max-width:560px){
+  .subbar select.jump:not(.view-sel){flex:0 1 48%}
+  .subbar .only-toggle{flex:1 1 44%;min-width:0;font-size:11px}
+}
