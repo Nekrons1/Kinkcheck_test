@@ -155,4 +155,10 @@ KC.addLang("pt", "ui", {
   "cmp.pairsTitle": "Combinações por par",
   "cmp.pairsSub": "Número de itens em que os dois marcaram “Sim” ou “Adoro”. Toque em um número para abrir a comparação detalhada do par.",
   "cmp.backGroup": "← Voltar ao grupo",
+  "role.short.dom": "Top",
+  "role.short.sub": "Bottom",
+  "cmp.pairsAny": "Todos os pares",
+  "cmp.pairsRole": "Só Top + Bottom",
+  "cmp.pairsRoleSub": "Só os pares em que um participante é Top e o outro Bottom. As outras células mostram um traço.",
+  "cmp.noRole": "Sem papel indicado: {names}",
 });

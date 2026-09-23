@@ -154,4 +154,10 @@ KC.addLang("en", "ui", {
   "cmp.pairsTitle": "Matches per pair",
   "cmp.pairsSub": "Number of items where both said “Yes” or “Love”. Tap a number to open the detailed comparison of that pair.",
   "cmp.backGroup": "← Back to group",
+  "role.short.dom": "Top",
+  "role.short.sub": "Bottom",
+  "cmp.pairsAny": "All pairs",
+  "cmp.pairsRole": "Top + Bottom only",
+  "cmp.pairsRoleSub": "Only pairs where one participant is a Top and the other a Bottom. Other cells show a dash.",
+  "cmp.noRole": "No role given: {names}",
 });

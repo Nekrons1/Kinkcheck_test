@@ -316,3 +316,7 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .subbar select.jump:not(.view-sel){flex:0 1 48%}
   .subbar .only-toggle{flex:1 1 44%;min-width:0;font-size:11px}
 }
+
+/* pair table: role under the name, Top+Bottom switch */
+.pair-table .role-tag{display:block;font-size:10.5px;font-weight:500;color:var(--muted)}
+.pair-mode{margin:8px 0 4px}

@@ -10,6 +10,7 @@
   const MAX = 10;
   let LAST = null, FILTER = "all";   /* detailed pair view */
   let GROUP = null, GFILTER = "allYes"; /* group view: [{name, st}] */
+  let PMODE = "any";                    /* pair table: "any" | "role" (only Top + Bottom pairs) */
 
   KC.initTheme();
   KC.i18n.set(KC.i18n.detect(null));
@@ -137,13 +138,26 @@
     let html = '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
       + P.map(p => profileLine(p.name, p.st)).join("");
     if (GFILTER === "pairs") {
-      let tb = '<div class="pair-wrap"><table class="pair-table"><tr><th></th>' + P.map(p => "<th>" + esc(p.name) + "</th>").join("") + "</tr>";
+      const role = p => p.st.meta.role || "";
+      const fits = (a, b) => PMODE === "any" || (role(a) && role(b) && role(a) !== role(b)); /* dom + sub */
+      const head = p => esc(p.name) + (role(p) ? '<span class="role-tag">' + esc(t("role.short." + role(p))) + "</span>" : "");
+      let tb = '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
+        + '<button class="btn mini' + (PMODE === "role" ? " on" : "") + '" data-pm="role">' + esc(t("cmp.pairsRole")) + "</button></div>"
+        + (PMODE === "role" ? '<div class="sub">' + esc(t("cmp.pairsRoleSub")) + "</div>" : "")
+        + '<div class="pair-wrap"><table class="pair-table"><tr><th></th>' + P.map(p => "<th>" + head(p) + "</th>").join("") + "</tr>";
+      let shown = 0;
       P.forEach((a, i) => {
-        tb += "<tr><th>" + esc(a.name) + "</th>" + P.map((b, j) => i === j ? '<td class="self">—</td>'
-          : '<td><button class="pair-n" data-pair="' + Math.min(i, j) + "," + Math.max(i, j) + '">' + pairCount(a.st, b.st) + "</button></td>").join("") + "</tr>";
+        tb += "<tr><th>" + head(a) + "</th>" + P.map((b, j) => {
+          if (i === j) return '<td class="self">—</td>';
+          if (!fits(a, b)) return '<td class="self">—</td>';
+          if (i < j) shown++;
+          return '<td><button class="pair-n" data-pair="' + Math.min(i, j) + "," + Math.max(i, j) + '">' + pairCount(a.st, b.st) + "</button></td>";
+        }).join("") + "</tr>";
       });
       tb += "</table></div>";
-      return html + blockOf(t("cmp.pairsTitle"), "var(--love)", t("cmp.pairsSub"), tb, P.length * (P.length - 1) / 2);
+      const noRole = P.filter(p => !role(p)).map(p => p.name);
+      if (PMODE === "role" && noRole.length) tb += '<div class="sub" style="margin-top:6px">' + esc(t("cmp.noRole", { names: noRole.join(", ") })) + "</div>";
+      return html + blockOf(t("cmp.pairsTitle"), "var(--love)", t("cmp.pairsSub"), tb, shown);
     }
     const rows = [];
     KC.CATS.forEach(c => c.items.forEach(([, id]) => {
@@ -181,6 +195,8 @@
   KC.$("results").addEventListener("click", e => {
     const h = e.target.closest('button[data-act="help"]');
     if (h) { const d = h.parentNode.querySelector(".item-desc"); if (d) { d.hidden = !d.hidden; h.classList.toggle("on", !d.hidden); } return; }
+    const pm = e.target.closest("button[data-pm]");
+    if (pm) { PMODE = pm.dataset.pm; render(false); return; }
     const pr = e.target.closest("button[data-pair]");
     if (pr) { const [i, j] = pr.dataset.pair.split(",").map(Number); LAST = { A: GROUP[i].st, B: GROUP[j].st, nA: GROUP[i].name, nB: GROUP[j].name, fromGroup: true }; FILTER = "all"; render(true); return; }
     const b = e.target.closest("button[data-f]"); if (!b) return;

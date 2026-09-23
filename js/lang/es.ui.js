@@ -153,4 +153,10 @@ KC.addLang("es", "ui", {
   "cmp.pairsTitle": "Coincidencias por pareja",
   "cmp.pairsSub": "Número de puntos en los que ambos dijeron «Sí» o «Me encanta». Pulsa un número para abrir la comparación detallada de la pareja.",
   "cmp.backGroup": "← Volver al grupo",
+  "role.short.dom": "Top",
+  "role.short.sub": "Bottom",
+  "cmp.pairsAny": "Todas las parejas",
+  "cmp.pairsRole": "Solo Top + Bottom",
+  "cmp.pairsRoleSub": "Solo las parejas en las que uno es Top y el otro Bottom. Las demás celdas muestran un guion.",
+  "cmp.noRole": "Sin rol indicado: {names}",
 });

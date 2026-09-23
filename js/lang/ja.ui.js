@@ -154,4 +154,10 @@ KC.addLang("ja", "ui", {
   "cmp.pairsTitle": "ペアごとの一致数",
   "cmp.pairsSub": "二人とも「OK」か「大好き」の項目数。数字を押すと、そのペアの詳しい比較が開きます。",
   "cmp.backGroup": "← グループに戻る",
+  "role.short.dom": "トップ",
+  "role.short.sub": "ボトム",
+  "cmp.pairsAny": "すべてのペア",
+  "cmp.pairsRole": "トップ＋ボトムのみ",
+  "cmp.pairsRoleSub": "一方がトップ、もう一方がボトムのペアだけを表示します。それ以外は「—」です。",
+  "cmp.noRole": "役割が未設定：{names}",
 });
