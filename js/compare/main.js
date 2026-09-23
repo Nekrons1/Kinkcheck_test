@@ -16,8 +16,13 @@
     const sub = KC.i18n.lang !== "en" ? '<span class="sub">' + esc(KC.i18n.item(id, "en").name) + "</span>" : "";
     return esc(KC.i18n.item(id).name) + sub;
   };
-  const row = r => '<div class="rrow"><div class="nm">' + itemName(r.id) + '</div><div class="who">'
-    + esc(LAST.nA) + ": " + badge(r.a) + " &nbsp; " + esc(LAST.nB) + ": " + badge(r.b) + "</div></div>";
+  const row = r => {
+    const desc = KC.i18n.item(r.id).desc;
+    return '<div class="rrow"><div class="nm">' + itemName(r.id) + "</div>"
+      + (desc ? '<button class="mini help" type="button" data-act="help" aria-label="' + esc(t("item.help")) + '">?</button>' : "")
+      + '<div class="who">' + esc(LAST.nA) + ": " + badge(r.a) + " &nbsp; " + esc(LAST.nB) + ": " + badge(r.b) + "</div>"
+      + (desc ? '<div class="item-desc" hidden>' + esc(desc) + "</div>" : "") + "</div>";
+  };
   const block = (title, dot, sub, rows) => !rows.length ? "" :
     '<div class="result-group"><h3><span class="dot" style="background:' + dot + '"></span>' + esc(title)
     + ' <span style="font-weight:400;color:var(--muted);font-size:14px">(' + rows.length + ')</span></h3><div class="sub">' + esc(sub) + "</div>" + rows.map(row).join("") + "</div>";
@@ -85,6 +90,8 @@
   });
   KC.$("cmpSearch").addEventListener("input", () => { if (LAST) render(false); });
   KC.$("results").addEventListener("click", e => {
+    const h = e.target.closest('button[data-act="help"]');
+    if (h) { const d = h.parentNode.querySelector(".item-desc"); if (d) { d.hidden = !d.hidden; h.classList.toggle("on", !d.hidden); } return; }
     const b = e.target.closest("button[data-f]"); if (!b || !LAST) return; FILTER = b.dataset.f; render(false);
   });
 
