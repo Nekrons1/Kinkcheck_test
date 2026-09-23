@@ -12,7 +12,7 @@
     ru: { label: "RU", name: "Русский",   locale: "ru-RU", enabled: true  },
     en: { label: "EN", name: "English",   locale: "en-GB", enabled: true  },
     es: { label: "ES", name: "Español",   locale: "es-ES", enabled: true  },
-    ja: { label: "JA", name: "日本語",     locale: "ja-JP", enabled: false },
+    ja: { label: "JA", name: "日本語",     locale: "ja-JP", enabled: true  },
     pt: { label: "PT", name: "Português (Brasil)", locale: "pt-BR", enabled: true  },
   };
   const DEFAULT = "ru";          // for visitors whose browser language is not enabled
@@ -60,6 +60,10 @@
       for (const l of order) { const p = packs[l]; if (p && p[part][id] != null) return p[part][id]; }
       return null;
     },
+    /* strict check, no fallback: does <lang>'s own pack define this entry? */
+    has(part, id, lang) { const p = packs[lang]; return !!(p && p[part][id] != null); },
+    /* ids of the list that the current language does not translate (shown in English instead) */
+    missing() { const out = []; KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (!I.has("items", id, cur)) out.push(id); })); return out; },
     fieldLabel: f => I.t("profile." + f),
     optLabel: (f, o) => I.t("profile." + f + "." + o),
 

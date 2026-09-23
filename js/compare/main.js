@@ -54,14 +54,17 @@
       const g = KC.match.group(LAST.A, LAST.B);
       Object.keys(g).forEach(k => { g[k] = only(g[k]); });
       const ex = g.exBoth.length + g.exA.length + g.exB.length;
-      const total = g.match.length + g.discuss.length + g.oneA.length + g.oneB.length + ex;
+      const disc = g.discA.length + g.discB.length + g.discBoth.length;
+      const total = g.match.length + disc + g.oneA.length + g.oneB.length + ex;
       if (!total) html += '<div class="result-group"><div class="sub">' + esc(searching ? t("noresults") : t("cmp.none")) + "</div></div>";
       else {
         const stat = (n, color, key) => '<div class="cmp-stat"><b style="color:' + color + '">' + n + "</b>" + esc(t(key)) + "</div>";
-        html += '<div class="cmp-summary">' + stat(g.match.length, "var(--love)", "cmp.stat.match") + stat(g.discuss.length, "var(--maybe)", "cmp.stat.discuss")
+        html += '<div class="cmp-summary">' + stat(g.match.length, "var(--love)", "cmp.stat.match") + stat(disc, "var(--maybe)", "cmp.stat.discuss")
           + stat(g.oneA.length + g.oneB.length, "var(--chip-ink)", "cmp.stat.one") + stat(ex, "var(--limit)", "cmp.stat.excluded") + "</div>";
         html += block(t("cmp.g.match"), "var(--love)", t("cmp.g.match.sub"), g.match);
-        html += block(t("cmp.g.discuss"), "var(--maybe)", t("cmp.g.discuss.sub"), g.discuss);
+        html += block(t("cmp.g.discOne", { who: LAST.nA }), "var(--maybe)", t("cmp.g.discOne.sub", { who: LAST.nA }), g.discA);
+        html += block(t("cmp.g.discOne", { who: LAST.nB }), "var(--maybe)", t("cmp.g.discOne.sub", { who: LAST.nB }), g.discB);
+        html += block(t("cmp.g.discBoth"), "var(--maybe)", t("cmp.g.discBoth.sub"), g.discBoth);
         html += block(t("cmp.g.one", { who: LAST.nA }), "var(--chip-ink)", t("cmp.g.one.sub", { who: LAST.nA }), g.oneA);
         html += block(t("cmp.g.one", { who: LAST.nB }), "var(--chip-ink)", t("cmp.g.one.sub", { who: LAST.nB }), g.oneB);
         html += block(t("cmp.g.exBoth"), "var(--limit)", t("cmp.g.exBoth.sub"), g.exBoth);

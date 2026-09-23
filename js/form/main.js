@@ -26,6 +26,9 @@
 
   /* 3. draw */
   F.renderAll();
+  /* stale language file on the server shows up here (items fall back to English) */
+  const miss = KC.i18n.missing();
+  if (miss.length) console.warn("[kinkcheck] js/lang/" + KC.i18n.lang + ".practices.js lacks " + miss.length + " items (outdated file?):", miss);
 
   /* 4. opened from a link: remember it under "Received", show banner */
   if (F.viewingShared) {

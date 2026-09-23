@@ -105,7 +105,6 @@ KC.addLang("pt", "ui", {
   "cmp.none": "Nenhuma sobreposição. Confira se os dois códigos foram colados inteiros.",
   "cmp.stat.match": "em comum", "cmp.stat.discuss": "para conversar", "cmp.stat.one": "de um lado só", "cmp.stat.excluded": "excluídos",
   "cmp.g.match": "Em comum: os dois topam", "cmp.g.match.sub": "Vocês dois têm interesse. Um bom ponto de partida.",
-  "cmp.g.discuss": "Vale conversar", "cmp.g.discuss.sub": "Um disse “talvez”, o outro “sim”: combinem as condições.",
   "cmp.g.one": "Só {who} tem interesse", "cmp.g.one.sub": "{who} quer: dá para propor e conversar.",
   "cmp.yesTitle": "“Sim / Adoro” de {who}", "cmp.yesSub": "Primeiro “Adoro”, depois “Sim”.",
   "cmp.noYes": "{who} não marcou nenhum “Sim/Adoro”.",
@@ -116,4 +115,8 @@ KC.addLang("pt", "ui", {
   "cmp.g.exBoth.sub": "Limite para os dois.",
   "cmp.g.exOne": "Excluídos: “Não” de {who}",
   "cmp.g.exOne.sub": "Limite de {who}. Fora de questão, mesmo que o outro tenha interesse.",
+  "cmp.g.discOne": "Conversar: “Talvez” de {who}",
+  "cmp.g.discOne.sub": "{who} está em dúvida e o outro topa: combinem as condições.",
+  "cmp.g.discBoth": "Conversar: “Talvez” dos dois",
+  "cmp.g.discBoth.sub": "Os dois têm curiosidade: vale tentar com cuidado depois de conversar.",
 });

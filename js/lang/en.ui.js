@@ -104,7 +104,6 @@ KC.addLang("en", "ui", {
   "cmp.none": "No overlap found. Check that both codes were pasted in full.",
   "cmp.stat.match": "matches", "cmp.stat.discuss": "to discuss", "cmp.stat.one": "one-sided", "cmp.stat.excluded": "excluded",
   "cmp.g.match": "Matches: both are in", "cmp.g.match.sub": "You are both interested. A good place to start.",
-  "cmp.g.discuss": "Worth discussing", "cmp.g.discuss.sub": "One says “maybe”, the other “yes”: talk through the conditions.",
   "cmp.g.one": "Only {who} is interested", "cmp.g.one.sub": "{who} wants it: you could suggest it and talk.",
   "cmp.yesTitle": "“Yes / Love” from {who}", "cmp.yesSub": "“Love” first, then “Yes”.",
   "cmp.noYes": "{who} has no “Yes/Love” items.",
@@ -115,4 +114,8 @@ KC.addLang("en", "ui", {
   "cmp.g.exBoth.sub": "A limit for both of you.",
   "cmp.g.exOne": "Excluded: “No” from {who}",
   "cmp.g.exOne.sub": "{who}'s limit. Off the table, even if the other is interested.",
+  "cmp.g.discOne": "Discuss: “Maybe” from {who}",
+  "cmp.g.discOne.sub": "{who} is unsure, the other is in: talk through the conditions.",
+  "cmp.g.discBoth": "Discuss: “Maybe” from both",
+  "cmp.g.discBoth.sub": "You are both curious: worth trying carefully after talking it through.",
 });

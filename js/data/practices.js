@@ -88,6 +88,7 @@ KC.CATS = [
    [75,"rubber-latex-wearing"],
    [76,"spandex-clothing"],
    [77,"cosplay"],
+   [380,"nerd-hikikomori"],
    [78,"formal-clothing"],
    [79,"slutty-clothing"],
    [80,"clothed-sex"],
@@ -406,6 +407,7 @@ KC.CATS = [
  {id:"marking", items:[
    [365,"bruising-temporary"],
    [366,"body-writing"],
+   [381,"humiliating-body-writing"],
    [367,"tattooing"],
    [368,"branding"],
    [369,"scarification"],

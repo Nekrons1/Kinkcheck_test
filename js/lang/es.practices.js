@@ -98,6 +98,7 @@ KC.addLang("es", "items", {
   "rubber-latex-wearing": ["Llevar látex / goma", "Llevar ropa de látex o goma."],
   "spandex-clothing": ["Ropa de spandex", "Ropa ajustada de spandex."],
   "cosplay": ["Cosplay", "Disfraces de personajes para la escena."],
+  "nerd-hikikomori": ["Nerd / hikikomori", "Atracción por la imagen, el estilo o el rol de nerd o de recluso (hikikomori)."],
   "formal-clothing": ["Ropa formal", "Atuendo formal: traje, vestido."],
   "slutty-clothing": ["Ropa provocativa", "Ropa reveladora y provocativa."],
   "clothed-sex": ["Sexo con ropa", "Sexo sin desnudarse del todo."],
@@ -406,6 +407,7 @@ KC.addLang("es", "items", {
   /* marking */
   "bruising-temporary": ["Hematomas (temporales)", "Chupetones y hematomas deliberados que desaparecen con el tiempo."],
   "body-writing": ["Escribir en el cuerpo", "Escribir en la piel: marcador, lápiz labial."],
+  "humiliating-body-writing": ["Palabras humillantes en el cuerpo", "Palabras humillantes escritas en el cuerpo con marcador o lápiz labial."],
   "tattooing": ["Tatuajes", "Hacerse tatuajes."],
   "branding": ["Branding (marcado a fuego)", "Marca permanente por quemadura en la piel."],
   "scarification": ["Escarificación", "Cicatrices deliberadas (cortes)."],

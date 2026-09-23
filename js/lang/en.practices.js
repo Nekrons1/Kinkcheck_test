@@ -97,6 +97,7 @@ KC.addLang("en", "items", {
   "rubber-latex-wearing": ["Rubber/latex (wearing)", "Wearing latex or rubber clothing."],
   "spandex-clothing": ["Spandex clothing", "Tight spandex clothing."],
   "cosplay": ["Cosplay", "Character costumes for a scene."],
+  "nerd-hikikomori": ["Nerd / hikikomori", "Attraction to the nerd or shut-in (hikikomori) look, style or role."],
   "formal-clothing": ["Formal clothing", "Formal outfits: suits, dresses."],
   "slutty-clothing": ["Slutty clothing", "Revealing, provocative outfits."],
   "clothed-sex": ["Clothed sex", "Sex without fully undressing."],
@@ -405,6 +406,7 @@ KC.addLang("en", "items", {
   /* marking */
   "bruising-temporary": ["Bruising (temporary)", "Deliberate love bites and bruises that fade with time."],
   "body-writing": ["Body writing", "Writing on the skin: marker, lipstick."],
+  "humiliating-body-writing": ["Humiliating body writing", "Degrading words written on the body in marker or lipstick."],
   "tattooing": ["Tattooing", "Getting tattoos."],
   "branding": ["Branding", "A permanent burn brand on the skin."],
   "scarification": ["Scarification", "Deliberate scars (cutting)."],

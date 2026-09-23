@@ -12,16 +12,17 @@
       if (pa || pb || sa || sb) return "one";
       return null;
     },
-    /* -> {match, discuss, oneA, oneB, exBoth, exA, exB}; each row {id, a, b} in list order.
-       exA = only A said "No", exB = only B said "No". */
+    /* -> {match, discA, discB, discBoth, oneA, oneB, exBoth, exA, exB}; rows {id, a, b} in list order.
+       discA = A said "maybe" (B positive), discBoth = both "maybe"; exA = only A said "No". */
     group(A, B) {
-      const g = { match: [], discuss: [], oneA: [], oneB: [], exBoth: [], exA: [], exB: [] };
+      const g = { match: [], discA: [], discB: [], discBoth: [], oneA: [], oneB: [], exBoth: [], exA: [], exB: [] };
       KC.CATS.forEach(c => c.items.forEach(([, id]) => {
         const a = (A.items[id] || {}).interest || null, b = (B.items[id] || {}).interest || null;
         const r = KC.match.classify(a, b); if (!r) return;
         const row = { id, a, b };
         if (r === "one") (a ? g.oneA : g.oneB).push(row);
         else if (r === "excluded") (a === "limit" && b === "limit" ? g.exBoth : a === "limit" ? g.exA : g.exB).push(row);
+        else if (r === "discuss") (a === "maybe" && b === "maybe" ? g.discBoth : a === "maybe" ? g.discA : g.discB).push(row);
         else g[r].push(row);
       }));
       return g;
