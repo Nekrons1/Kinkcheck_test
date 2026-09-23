@@ -30,7 +30,23 @@
 
     /* received lists: [{id, name, code, ts}] */
     received: {
-      list()   { return KC.ls.get(KC.KEYS.saved, []) || []; },
+      /* also merges duplicates left by older versions: keeps the earliest entry,
+         taking a custom name from a duplicate if the kept one has none */
+      list() {
+        const a = KC.ls.get(KC.KEYS.saved, []) || [];
+        const byKey = {}, out = [];
+        a.slice().sort((x, y) => (x.ts || 0) - (y.ts || 0)).forEach(x => {
+          let k; try { k = KC.codec.key(x.code); } catch (e) { k = x.code; }
+          const first = byKey[k];
+          if (!first) { byKey[k] = x; out.push(x); }
+          else if (!first.name && x.name) first.name = x.name;
+        });
+        if (out.length !== a.length) {
+          const keep = a.filter(x => out.indexOf(x) >= 0); // original order (newest first)
+          this.write(keep); return keep;
+        }
+        return a;
+      },
       write(a) { KC.ls.set(KC.KEYS.saved, a); },
       add(code, name) {
         if (!code) return;

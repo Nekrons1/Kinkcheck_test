@@ -236,6 +236,27 @@ const S = (title) => console.log("\n## " + title);
   }
   eq(bad371, 0, "40 links from v371 decode identically");
 
+  /* Received: opening a list saved by an older version must not duplicate it */
+  const oldRec = V371.enc({ items: { hugging: { interest: "love" }, chains: { interest: "yes" } }, meta: { role: "Сабмиссив / Низ" }, name: "Ns", date: "1.1" });
+  let rp = open("form", { hash: oldRec, storage: { local: { "checklist-saved-profiles-v1": JSON.stringify([{ id: "p1", name: "Мой Ns", code: oldRec, ts: 1 }]) }, session: {} } });
+  let rec = JSON.parse(rp.w.localStorage.getItem("checklist-saved-profiles-v1"));
+  eq([rec.length, rec[0].name], [1, "Мой Ns"], "opening an old Received entry does not duplicate it");
+  const oldDense = OLD.encodeState({ items: (() => { const it = {}; OLD.ORDER.slice(0, 120).forEach(id => it[id] = { interest: "yes" }); return it; })(), meta: {}, name: "D" });
+  rp = open("form", { hash: oldDense, storage: { local: { "checklist-saved-profiles-v1": JSON.stringify([{ id: "p2", name: "", code: oldDense, ts: 1 }]) }, session: {} } });
+  eq(JSON.parse(rp.w.localStorage.getItem("checklist-saved-profiles-v1")).length, 1, "same for a v374 dense-format entry");
+  // duplicates already stored get merged, keeping the original and a custom name
+  const dupStore = JSON.stringify([
+    { id: "p9", name: "", code: KCn.codec.encode(KCn.codec.decode(oldRec), "ru"), ts: 30 },
+    { id: "p8", name: "Облако", code: "#a=Ag&n=Other", ts: 20 },
+    { id: "p1", name: "Мой Ns", code: oldRec, ts: 10 }]);
+  rp = open("form", { storage: { local: { "checklist-saved-profiles-v1": dupStore }, session: {} } });
+  click(rp.w, rp.d.getElementById("savedBtn"));
+  rec = JSON.parse(rp.w.localStorage.getItem("checklist-saved-profiles-v1"));
+  eq(rec.map(x => [x.id, x.name]), [["p8", "Облако"], ["p1", "Мой Ns"]], "existing duplicates merged, different lists kept, order kept");
+  eq(rp.d.querySelectorAll("#savedList .saved-row").length, 2, "Received shows the merged list");
+  const k1 = KCn.codec.key(oldRec), k2 = KCn.codec.key(KCn.codec.encode(KCn.codec.decode(oldRec), "en"));
+  eq(k1 === k2 && k1 !== KCn.codec.key("a=Ag&n=Ns"), true, "key: same content = same key across versions/languages, different content differs");
+
   /* ---------- 6. codec robustness + future additions ---------- */
   S("codec");
   let rt = 0;

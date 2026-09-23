@@ -112,7 +112,8 @@
     },
     /* accept a full URL, "#..." or a bare code */
     extract(text) { text = (text || "").trim(); const i = text.indexOf("#"); return (i >= 0 ? text.slice(i + 1) : text).replace(/^#/, ""); },
-    /* same list regardless of which language the link opens in */
-    key(text) { return KC.codec.extract(text).split("&").filter(p => p.indexOf("lg=") !== 0).join("&"); },
+    /* identity of a list by CONTENT: decode, then re-encode with the current encoder and no language.
+       Links made by older versions (other answer formats, old fields) map to the same key. */
+    key(text) { const st = KC.codec.decode(text); return KC.codec.encode(st); },
   };
 })(window.KC);
