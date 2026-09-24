@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=551">
+<link rel="stylesheet" href="css/style.css?v=552">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -43,8 +43,15 @@
       <option value="all" data-i18n="view.all"></option>
       <option value="unanswered" data-i18n="view.unanswered"></option>
       <option value="new" data-i18n="view.new"></option>
+      <option value="answered" data-i18n="view.answered"></option>
+      <option value="positive" data-i18n="view.positive"></option>
     </select>
     <label class="only-toggle"><input type="checkbox" id="onlyMarked" checked> <span data-i18n="onlyMarked"></span></label>
+    <button class="btn ghost filt-btn" id="filtBtn" type="button" aria-expanded="false" aria-controls="filtBar"><span data-i18n="filt.btn"></span><span class="filt-dot" id="filtDot" hidden></span></button>
+    <div class="filt-bar" id="filtBar" hidden>
+      <label class="filt-tpl"><span data-i18n="filt.tpl"></span><select id="tplSel"></select></label>
+      <label class="only-toggle"><input type="checkbox" id="onlyFav"> <span data-i18n="filt.onlyFav"></span></label>
+    </div>
   </div>
 </header>
 
@@ -57,6 +64,8 @@
       <button class="btn ghost" id="bannerOwn" data-i18n="banner.own"></button>
       <button class="btn ghost" id="bannerKeep" data-i18n="banner.keep"></button>
       <button class="btn ghost" id="bannerSaveAs" data-i18n="banner.saveAs"></button>
+      <button class="btn" id="bannerTplFill" data-i18n="banner.tplFill" hidden></button>
+      <button class="btn ghost" id="bannerTpl" data-i18n="banner.tpl"></button>
     </div>
   </div>
 
@@ -87,6 +96,7 @@
     <div class="about-body" id="aboutBody"></div>
   </details>
 
+  <div class="tpl-note" id="tplNote" hidden><span id="tplNoteText"></span> <button class="btn ghost mini" id="tplOff" type="button" data-i18n="tpl.off"></button></div>
   <div id="list"></div>
   <div class="noresults" id="noresults" data-i18n="noresults"></div>
 
@@ -99,9 +109,21 @@
   <div class="modal">
     <h3 data-i18n="share.h"></h3>
     <p data-i18n="share.p"></p>
+    <p class="share-note" id="shareTplNote" hidden></p>
+    <div class="share-kind" id="shareKind"></div>
     <div class="linkbox"><input type="text" id="shareLink" readonly><button class="btn primary" id="copyLink" data-i18n="share.copy"></button></div>
     <div id="qr"></div>
     <p style="text-align:center;margin:2px 0 0" data-i18n="share.qrNote"></p>
+    <div class="tpl-share" id="tplShare">
+      <h4 data-i18n="tplShare.h"></h4>
+      <p data-i18n="tplShare.p"></p>
+      <input type="text" id="tplName" autocomplete="off" maxlength="60" data-i18n-ph="tplShare.ph">
+      <div class="row">
+        <button class="btn primary" id="tplShareBtn" type="button" data-i18n="tplShare.share"></button>
+        <button class="btn ghost" id="tplSaveBtn" type="button" data-i18n="tplShare.save"></button>
+      </div>
+      <button class="btn ghost mini" id="shareBack" type="button" data-i18n="tplShare.back" hidden></button>
+    </div>
     <button class="btn ghost" id="overlayClose" style="margin-top:14px;width:100%" data-i18n="close"></button>
   </div>
 </div>
@@ -111,6 +133,9 @@
     <h3 data-i18n="saved.h"></h3>
     <p data-i18n="saved.p"></p>
     <div id="savedList"></div>
+    <h4 class="sub-h" data-i18n="saved.tplH"></h4>
+    <p class="sub-p" data-i18n="saved.tplP"></p>
+    <div id="savedTplList"></div>
     <button class="btn ghost" id="savedClose" style="margin-top:14px;width:100%" data-i18n="close"></button>
   </div>
 </div>
@@ -122,6 +147,9 @@
     <button class="btn primary" id="mineNew" style="width:100%;margin-bottom:8px" data-i18n="mine.new"></button>
     <button class="btn ghost" id="mineSaveNew" style="width:100%;margin-bottom:10px" data-i18n="mine.copy"></button>
     <div id="mineList"></div>
+    <h4 class="sub-h" data-i18n="mine.tplH"></h4>
+    <p class="sub-p" data-i18n="mine.tplP"></p>
+    <div id="mineTplList"></div>
     <div class="backup">
       <p data-i18n="backup.hint"></p>
       <div class="row">
@@ -134,6 +162,16 @@
   </div>
 </div>
 
-<script src="js/boot.js?v=551" data-page="form" data-v="551"></script>
+<div class="overlay" id="resetOverlay">
+  <div class="modal">
+    <h3 data-i18n="reset.h"></h3>
+    <p id="resetText"></p>
+    <button class="btn primary" id="resetList" type="button" style="width:100%;margin-bottom:8px" data-i18n="reset.list"></button>
+    <button class="btn ghost" id="resetFav" type="button" style="width:100%"></button>
+    <button class="btn ghost" id="resetClose" type="button" style="margin-top:14px;width:100%" data-i18n="cancel"></button>
+  </div>
+</div>
+
+<script src="js/boot.js?v=552" data-page="form" data-v="552"></script>
 </body>
 </html>

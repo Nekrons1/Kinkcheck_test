@@ -1,8 +1,12 @@
-/* core/store.js — everything kept in this browser: own list, "My lists", "Received".
+/* core/store.js — everything kept in this browser: own list, "My lists", "Received", templates, favourites.
    State shape: { name, meta:{field:key|[keys]}, items:{id:{interest}}, onlyMarked,
-                  safeword, fantasies, comments, allergies } */
+                  safeword, fantasies, comments, allergies,
+                  fav?:[ids]                       favourites (♥) of this list, device only, never in links
+                  template?:{id, name, ids:[...]}  template this list is filled by (a full copy) } */
 (function (KC) {
   const VALID = { limit: 1, maybe: 1, yes: 1, love: 1 };
+  const TID = /^[A-Za-z0-9]{6}$/;
+  const newEntryId = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
 
   const S = KC.store = {
     /* 6 random url-safe characters: the list's own id inside links */
@@ -25,18 +29,47 @@
       Object.keys(items).forEach(id => { const v = items[id] && items[id].interest; if (VALID[v] && !AL[id]) st.items[id] = { interest: v }; });
       /* answers saved under ids of the earliest versions go to the current item (current answer wins) */
       Object.keys(items).forEach(id => { const v = items[id] && items[id].interest; const to = AL[id]; if (to && VALID[v] && !st.items[to]) st.items[to] = { interest: v }; });
+      /* favourites and the template are kept only when present, so older states stay unchanged */
+      if (Array.isArray(src.fav)) { const f = S.cleanIds(src.fav); if (f.length) st.fav = f; }
+      const tp = S.cleanTpl(src.template); if (tp) st.template = tp;
       return st;
+    },
+    /* list of item ids: strings only, no duplicates, earliest ids mapped to current ones */
+    cleanIds(a) {
+      const AL = KC.ID_ALIASES || {}, out = [];
+      (Array.isArray(a) ? a : []).forEach(id => { if (typeof id !== "string" || !id) return; id = AL[id] || id; if (out.indexOf(id) < 0) out.push(id); });
+      return out;
+    },
+    cleanTpl(t) {
+      if (!t || typeof t !== "object" || !TID.test(t.id || "")) return null;
+      const ids = S.cleanIds(t.ids); if (!ids.length) return null;
+      return { id: t.id, name: typeof t.name === "string" ? t.name : "", ids };
+    },
+    /* the list with only the answers inside a template (ids) */
+    trim(st, ids) {
+      const out = S.clone(st), set = {}; ids.forEach(id => { set[id] = 1; });
+      out.items = {}; Object.keys(st.items || {}).forEach(id => { if (set[id]) out.items[id] = st.items[id]; });
+      return out;
+    },
+    /* what leaves the device (link, compare): a list filled by a template gives only the template's answers */
+    forShare(st) { return st && st.template ? S.trim(st, st.template.ids) : st; },
+    /* answered items in list order, optionally only those inside ids -> contents of a new template */
+    answeredIds(st, ids) {
+      const set = ids ? {} : null; if (ids) ids.forEach(id => { set[id] = 1; });
+      const out = []; KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (st.items[id] && st.items[id].interest && (!set || set[id])) out.push(id); }));
+      return out;
     },
     clone: st => JSON.parse(JSON.stringify(st)),
     /* nothing filled in at all */
-    isEmpty: st => !st.name && !Object.keys(st.items).length && !Object.keys(st.meta).length && !st.safeword && !st.fantasies && !st.comments && !st.allergies,
+    isEmpty: st => !st.name && !Object.keys(st.items).length && !Object.keys(st.meta).length && !st.safeword && !st.fantasies && !st.comments && !st.allergies
+      && !(st.fav && st.fav.length) && !st.template,
 
     /* own current list */
     loadOwn()   { return S.normalize(KC.ls.get(KC.KEYS.state, null)); },
     hasOwn()    { return KC.ls.raw(KC.KEYS.state) != null; },
     writeOwn(st){ KC.ls.set(KC.KEYS.state, st); },
     clearOwn()  { KC.ls.del(KC.KEYS.state); },
-    ownCode()   { return S.hasOwn() ? KC.codec.encode(S.loadOwn()) : ""; },
+    ownCode()   { return S.hasOwn() ? KC.codec.encode(S.forShare(S.loadOwn())) : ""; },
 
     /* received lists: [{id, name, code, ts}] */
     received: {
@@ -89,10 +122,11 @@
     /* backup of everything on this device -> plain object (saved as a .json file) */
     exportAll() {
       return { app: "kinkcheck", v: 1, ts: Date.now(), own: KC.ls.get(KC.KEYS.state, null), active: S.mine.active(),
-        mine: S.mine.list(), received: KC.ls.get(KC.KEYS.saved, []) || [] };
+        mine: S.mine.list(), received: KC.ls.get(KC.KEYS.saved, []) || [], templates: S.tpl.list(), favs: S.favs.all() };
     },
     /* merge a backup in: adds lists that are not here yet (by id), never deletes anything.
-       -> {mine: added, received: added} or null if it is not a backup */
+       -> {mine: added, received: added, templates: added} or null if it is not a backup.
+       Backups made before templates/favourites existed simply lack those fields. */
     importAll(b) {
       if (!b || b.app !== "kinkcheck" || !Array.isArray(b.mine) || !Array.isArray(b.received)) return null;
       const mine = S.mine.list(), rec = KC.ls.get(KC.KEYS.saved, []) || [];
@@ -102,9 +136,28 @@
       b.received.forEach(x => { if (x && x.id && typeof x.code === "string" && !rIds[x.id]) { rec.push(x); ar++; } });
       mine.sort((x, y) => (y.ts || 0) - (x.ts || 0)); rec.sort((x, y) => (y.ts || 0) - (x.ts || 0));
       S.mine.write(mine); KC.ls.set(KC.KEYS.saved, rec);
+      /* templates: new ones by entry id (a template already here under the same id stays as it is) */
+      let at = 0;
+      if (Array.isArray(b.templates)) {
+        const tl = S.tpl.list(), tIds = {}; tl.forEach(x => { tIds[x.id] = 1; });
+        b.templates.forEach(x => {
+          if (!x || !x.id || !TID.test(x.tid || "") || tIds[x.id] || tl.some(y => y.tid === x.tid && !!y.own === !!x.own)) return;
+          const ids = S.cleanIds(x.ids); if (!ids.length) return;
+          const it = { id: x.id, tid: x.tid, name: typeof x.name === "string" ? x.name : "", ids, own: !!x.own, ts: x.ts || Date.now() };
+          if (typeof x.label === "string" && x.label) it.label = x.label;
+          tl.push(it); at++;
+        });
+        tl.sort((x, y) => (y.ts || 0) - (x.ts || 0)); S.tpl.write(tl);
+      }
+      /* favourites of received lists: union per list */
+      if (b.favs && typeof b.favs === "object" && !Array.isArray(b.favs)) {
+        const o = S.favs.all();
+        Object.keys(b.favs).forEach(k => { const add = S.cleanIds(b.favs[k]); if (!add.length) return; const cur = Array.isArray(o[k]) ? o[k] : []; o[k] = cur.concat(add.filter(id => cur.indexOf(id) < 0)); });
+        KC.ls.set(KC.KEYS.fav, o);
+      }
       /* nothing filled in here yet: take the backup's current list as well */
       if (S.isEmpty(S.loadOwn()) && b.own) { S.writeOwn(S.normalize(b.own)); if (b.active) S.mine.setActive(b.active); }
-      return { mine: am, received: ar };
+      return { mine: am, received: ar, templates: at };
     },
 
     /* my lists: [{id, name, data:state, ts}] — full copies, nothing lost.
@@ -123,6 +176,58 @@
       },
       /* display name: own label, else the name inside the list */
       label(x) { return x.name || (x.data && x.data.name) || ""; },
+    },
+
+    /* templates: [{id, tid, name, label?, ids:[item ids], own, ts}]
+       tid  = 6-char template id carried in links (ti=), so a newer version replaces the old copy
+       own  = true: "My lists → My templates"; false: "Received → Templates"
+       name = the name in the link; label = recipient's own name for a received template */
+    tpl: {
+      list()     { const a = KC.ls.get(KC.KEYS.tpl, []); return Array.isArray(a) ? a.filter(x => x && TID.test(x.tid || "") && Array.isArray(x.ids)) : []; },
+      write(a)   { KC.ls.set(KC.KEYS.tpl, a); },
+      own()      { return this.list().filter(x => x.own); },
+      received() { return this.list().filter(x => !x.own); },
+      label(x)   { return (x && (x.label || x.name)) || ""; },
+      byTid(tid) { const a = this.list(); return a.find(x => x.own && x.tid === tid) || a.find(x => x.tid === tid) || null; },
+      /* as stored inside a list (state.template) */
+      toState(x) { return { id: x.tid, name: this.label(x), ids: x.ids.slice() }; },
+      /* id of a template made from a list: my template with the same name, else derived from list id + name,
+         so sharing the same name from the same list again updates the recipient's copy */
+      tidFor(uid, name) {
+        const nm = (name || "").trim().toLowerCase(), mine = this.own().find(x => (x.name || "").trim().toLowerCase() === nm);
+        return mine ? mine.tid : KC.codecSum((uid || "") + "|" + nm, 6);
+      },
+      /* "Save as my template": the same name (or id) updates that template -> {status: added|updated, item} */
+      saveOwn(name, ids, tid) {
+        const a = this.list(), nm = (name || "").trim(), low = nm.toLowerCase();
+        const i = a.findIndex(x => x.own && (x.tid === tid || (x.name || "").trim().toLowerCase() === low));
+        if (i >= 0) { const it = a.splice(i, 1)[0]; it.name = nm; it.ids = ids.slice(); it.ts = Date.now(); a.unshift(it); this.write(a); return { status: "updated", item: it }; }
+        const item = { id: newEntryId("t"), tid, name: nm, ids: ids.slice(), own: true, ts: Date.now() };
+        a.unshift(item); this.write(a); return { status: "added", item };
+      },
+      /* template opened from a link -> {status: added | exists | updated | own | none, item} */
+      addReceived(tid, name, ids) {
+        if (!TID.test(tid || "") || !ids.length) return { status: "none" };
+        const a = this.list(), mine = a.find(x => x.own && x.tid === tid);
+        if (mine) return { status: "own", item: mine };
+        const i = a.findIndex(x => !x.own && x.tid === tid);
+        if (i >= 0) {
+          const it = a.splice(i, 1)[0], same = it.name === name && it.ids.length === ids.length && ids.every(id => it.ids.indexOf(id) >= 0);
+          it.name = name; it.ids = ids.slice(); it.ts = Date.now(); a.unshift(it); this.write(a);
+          return { status: same ? "exists" : "updated", item: it };
+        }
+        const item = { id: newEntryId("t"), tid, name, ids: ids.slice(), own: false, ts: Date.now() };
+        a.unshift(item); if (a.length > 60) a.length = 60; this.write(a); return { status: "added", item };
+      },
+    },
+
+    /* favourites (♥) of lists opened from links, by list: {"u:<list id>" | "k:<content key>": [ids]}.
+       Own lists keep theirs inside the list (state.fav). */
+    favs: {
+      all()      { const o = KC.ls.get(KC.KEYS.fav, {}); return o && typeof o === "object" && !Array.isArray(o) ? o : {}; },
+      get(key)   { const v = this.all()[key]; return Array.isArray(v) ? v.slice() : []; },
+      set(key, ids) { const o = this.all(); if (ids.length) o[key] = ids.slice(); else delete o[key]; KC.ls.set(KC.KEYS.fav, o); },
+      keyOf(code) { const d = KC.codec.decode(code); return d.uid ? "u:" + d.uid : "k:" + KC.codec.key(code); },
     },
   };
 })(window.KC);

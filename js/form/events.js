@@ -6,6 +6,7 @@
   /* answer buttons + "?" hints */
   KC.$("list").addEventListener("click", e => {
     const btn = e.target.closest("button"); const row = e.target.closest(".item"); if (!btn || !row) return;
+    if (btn.dataset.act === "fav") { F.paintFav(row, F.toggleFav(row.dataset.id)); return; }
     if (btn.dataset.act === "help") {
       const d = row.querySelector(".item-desc"); if (d) { d.hidden = !d.hidden; btn.classList.toggle("on", !d.hidden); }
       return;
@@ -48,9 +49,37 @@
     const el = e.target.value && KC.$(e.target.value); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); e.target.value = "";
   });
 
+  /* "Filters" panel: template + only favourites */
+  KC.$("filtBtn").addEventListener("click", () => F.toggleFilters());
+  F.toggleFilters = function (open) {
+    const bar = KC.$("filtBar"); bar.hidden = open === undefined ? !bar.hidden : !open;
+    KC.$("filtBtn").setAttribute("aria-expanded", bar.hidden ? "false" : "true");
+  };
+  KC.$("onlyFav").addEventListener("change", F.applySearch);
+  KC.$("tplSel").addEventListener("change", e => {
+    const v = e.target.value; if (v === "cur") return;
+    const x = v && KC.store.tpl.byTid(v);
+    F.setTpl(x ? KC.store.tpl.toState(x) : null);
+  });
+  KC.$("tplOff").addEventListener("click", () => F.setTpl(null));
+
+  /* "Clear": a small window — clear the list or only its favourites (also guards against a stray tap) */
+  const t = (k, v) => KC.i18n.t(k, v);
+  const resetModal = KC.modal("resetOverlay", "resetClose");
   KC.$("resetBtn").addEventListener("click", () => {
-    if (!confirm(KC.i18n.t("confirm.reset"))) return;
-    if (F.viewingShared) { F.state = KC.store.blank(); KC.$("search").value = ""; F.renderAll(); KC.toast(KC.i18n.t("toast.cleared")); return; }
+    const n = F.favList().length, fb = KC.$("resetFav");
+    KC.$("resetText").textContent = t(F.viewingShared ? "reset.pShared" : "confirm.reset");
+    fb.textContent = t("reset.fav", { n }); fb.disabled = !n;
+    resetModal.open();
+  });
+  KC.$("resetList").addEventListener("click", () => {
+    resetModal.close();
+    if (F.viewingShared) { F.state = KC.store.blank(); KC.$("search").value = ""; F.renderAll(); KC.toast(t("toast.cleared")); return; }
     F.startNew(); /* current list stays in My lists */
+  });
+  KC.$("resetFav").addEventListener("click", () => {
+    resetModal.close();
+    F.setFavs([]); if (!F.viewingShared) F.saveNow();
+    F.hydrate(); F.applySearch(); KC.toast(t("toast.favCleared"));
   });
 })(window.KC);

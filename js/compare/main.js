@@ -43,8 +43,10 @@
   /* saved lists on this device, for the pickers */
   function sources() {
     const out = [];
-    if (KC.store.hasOwn() && !KC.store.isEmpty(KC.store.loadOwn())) { const o = KC.store.loadOwn(); out.push({ g: "mine", v: "cur", label: t("cmp.pickCurrent"), name: o.name || t("label.mine"), code: KC.codec.encode(o) }); }
-    KC.store.mine.list().forEach(x => { if (x.id === KC.store.mine.active() || !x.data) return; out.push({ g: "mine", v: "m:" + x.id, label: KC.store.mine.label(x) || t("unnamed"), name: KC.store.mine.label(x), code: KC.codec.encode(KC.store.normalize(x.data)) }); });
+    /* a list filled by a template is compared by the template's answers only (as it would be shared) */
+    const tplOf = st => st.template ? " — " + t("list.byTpl", { name: st.template.name || t("unnamed") }) : "";
+    if (KC.store.hasOwn() && !KC.store.isEmpty(KC.store.loadOwn())) { const o = KC.store.loadOwn(); out.push({ g: "mine", v: "cur", label: t("cmp.pickCurrent") + tplOf(o), name: o.name || t("label.mine"), code: KC.codec.encode(KC.store.forShare(o)) }); }
+    KC.store.mine.list().forEach(x => { if (x.id === KC.store.mine.active() || !x.data) return; const st = KC.store.normalize(x.data); out.push({ g: "mine", v: "m:" + x.id, label: (KC.store.mine.label(x) || t("unnamed")) + tplOf(st), name: KC.store.mine.label(x), code: KC.codec.encode(KC.store.forShare(st)) }); });
     KC.store.received.list().forEach(x => out.push({ g: "rec", v: "r:" + x.id, label: x.name || KC.codec.decode(x.code).name || t("unnamed"), name: x.name || KC.codec.decode(x.code).name, code: x.code }));
     return out;
   }

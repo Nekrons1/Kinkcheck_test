@@ -22,6 +22,8 @@ window.KC = window.KC || {};
     theme: "checklist-theme",               // "light" | "dark" (raw string)
     lang:  "checklist-lang",                // preferred UI language (raw string)
     active: "checklist-active-mine-id",     // which "My lists" entry the own list is saved into
+    tpl:   "checklist-templates-v1",        // templates: own ("My lists") and received
+    fav:   "checklist-favs-v1",             // favourites (♥) of lists opened from links: {listKey: [ids]}
   };
 
   KC.ls = {

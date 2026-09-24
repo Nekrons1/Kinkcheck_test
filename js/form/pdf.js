@@ -1,5 +1,7 @@
 /* form/pdf.js — "Download PDF": builds a styled summary sheet off-screen, rasterises it
-   with html2canvas and slices it into A4 pages with jsPDF (both loaded from cdnjs). */
+   with html2canvas and slices it into A4 pages with jsPDF (both loaded from cdnjs).
+   Follows the screen: a template limits the items (and is named in the header), favourites get ♥,
+   "only ♥" in the filter panel limits the sheet to favourites. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   const P = { bg: "#f5f1ec", panel: "#fffdfb", ink: "#241c22", muted: "#8a7d84", line: "#e6ddd6", accent: "#8a2d47" };
@@ -7,12 +9,15 @@
   const serif = "font-family:Fraunces,Georgia,serif;font-weight:600;";
 
   F.buildSheet = function () {
-    const st = F.state, sub = KC.i18n.lang !== "en";
+    const st = F.shown(), sub = KC.i18n.lang !== "en", tp = F.tpl(), set = F.tplSet();
+    const favs = {}; F.favList().forEach(id => { favs[id] = 1; });
+    const onlyFav = KC.$("onlyFav").checked, inScope = id => (!set || set[id]) && (!onlyFav || favs[id]);
+    const heart = id => favs[id] ? '<span style="color:' + P.accent + ';">♥</span> ' : "";
     const w = document.createElement("div");
     w.style.cssText = "position:fixed;left:-10000px;top:0;width:760px;padding:30px;background:" + P.bg + ";color:" + P.ink + ";font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.5;";
     const card = "background:" + P.panel + ";border:1px solid " + P.line + ";border-radius:12px;padding:18px 20px;margin-bottom:14px;";
     const pill = v => '<span style="display:inline-block;background:' + PILL[v][0] + ";color:" + PILL[v][1] + ';font-weight:600;font-size:12.5px;padding:3px 11px;border-radius:14px;">' + esc(t("scale." + v)) + "</span>";
-    const nameOf = id => esc(KC.i18n.item(id).name) + (sub ? '<br><span style="color:' + P.muted + ';font-size:11px;">' + esc(KC.i18n.item(id, "en").name) + "</span>" : "");
+    const nameOf = id => heart(id) + esc(KC.i18n.item(id).name) + (sub ? '<br><span style="color:' + P.muted + ';font-size:11px;">' + esc(KC.i18n.item(id, "en").name) + "</span>" : "");
 
     const metaLine = [];
     KC.PROFILE.forEach(f => {
@@ -27,19 +32,30 @@
     let html = '<div style="' + card + '"><div style="' + serif + "font-size:27px;color:" + P.accent + ';line-height:1.1;">' + esc(t("app.title")) + "</div>";
     if (idbits.length) html += '<div style="margin-top:8px;font-size:13px;color:' + P.muted + ';">' + idbits.join("&nbsp;&nbsp;·&nbsp;&nbsp;") + "</div>";
     if (metaLine.length) html += '<div style="margin-top:5px;font-size:12.5px;color:' + P.muted + ';">' + metaLine.join("&nbsp;·&nbsp;") + "</div>";
+    const scope = [];
+    if (tp) scope.push(esc(t("pdf.tpl", { name: tp.name || t("unnamed"), n: tp.ids.length })));
+    if (onlyFav) scope.push(esc(t("pdf.onlyFav")));
+    if (scope.length) html += '<div style="margin-top:5px;font-size:12.5px;color:' + P.accent + ';font-weight:600;">' + scope.join("&nbsp;·&nbsp;") + "</div>";
     html += '<div style="margin-top:12px;">' + ["love", "yes", "maybe", "limit"].map(pill).join("&nbsp;") + "</div></div>";
 
     const limits = [];
-    KC.CATS.forEach(c => c.items.forEach(([, id]) => { if ((st.items[id] || {}).interest === "limit") limits.push(id); }));
+    KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (inScope(id) && (st.items[id] || {}).interest === "limit") limits.push(id); }));
     if (limits.length) {
       html += '<div style="background:' + PILL.limit[0] + ';border:1px solid #d7a3a3;border-radius:12px;padding:14px 18px;margin-bottom:14px;">'
         + '<div style="' + serif + 'font-size:16px;color:#a12b2b;margin-bottom:6px;">' + esc(t("pdf.limits")) + "</div>"
         + '<div style="font-size:13px;color:#5a2a2a;line-height:1.7;">' + limits.map(id => esc(KC.i18n.item(id).name)).join("&nbsp;·&nbsp;") + "</div></div>";
     }
 
+    /* favourites at a glance (not needed when the sheet shows only favourites) */
+    const favIds = []; KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (favs[id] && (!set || set[id])) favIds.push(id); }));
+    if (favIds.length && !onlyFav) {
+      html += '<div style="' + card + '"><div style="' + serif + "font-size:16px;color:" + P.accent + ';margin-bottom:6px;">' + esc(t("pdf.favs")) + "</div>"
+        + '<div style="font-size:13px;line-height:1.7;">' + favIds.map(id => esc(KC.i18n.item(id).name)).join("&nbsp;·&nbsp;") + "</div></div>";
+    }
+
     let any = false;
     KC.CATS.forEach(cat => {
-      let rows = cat.items.map(([, id]) => id);
+      let rows = cat.items.map(([, id]) => id).filter(inScope);
       if (st.onlyMarked !== false) rows = rows.filter(id => st.items[id]);
       if (!rows.length) return; any = true;
       const rank = id => { const s = st.items[id]; return s ? KC.match.RANK[s.interest] : 4; };

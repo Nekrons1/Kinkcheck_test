@@ -368,3 +368,73 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
 }
 /* Thai has marks above and below the line: a bit more line height in compact buttons */
 html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
+
+/* ---------- favourites (♥), filter panel, templates ---------- */
+.mini.fav{width:29px;padding:6px 0;text-align:center;font-size:14px;line-height:1;color:var(--muted);opacity:.6}
+.mini.fav:hover{opacity:1}
+.mini.fav.on{opacity:1;color:var(--love);border-color:var(--love);background:var(--love-bg)}
+/* "Filters ▾" + folding panel under the search row */
+.subbar .filt-btn{flex:0 0 auto;padding:8px 11px;font-size:13.5px;white-space:nowrap;position:relative}
+.subbar .filt-btn::after{content:" ▾";font-size:11px}
+.subbar .filt-btn[aria-expanded="true"]::after{content:" ▴"}
+.subbar .filt-btn.on{border-color:var(--accent);color:var(--accent)}
+.filt-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:5px;vertical-align:middle;position:relative;top:-1px}
+.filt-dot[hidden]{display:none}
+.filt-bar{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+.filt-bar[hidden]{display:none}
+.filt-tpl{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);flex:1 1 260px;min-width:0}
+.filt-tpl select{font:inherit;font-size:14px;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);flex:1 1 auto;min-width:0;max-width:100%}
+.filt-bar .only-toggle{font-size:13px;color:var(--ink);white-space:nowrap}
+/* note above the list while a template is on */
+.tpl-note{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:10px 13px;margin:16px 0 0;font-size:13px;line-height:1.5;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tpl-note[hidden]{display:none}
+.tpl-note span{flex:1 1 240px}
+.banner .banner-tpl{display:block;margin-top:6px}
+/* share window: which link is shown + template block */
+.share-note{color:var(--accent)!important;font-weight:500}
+.share-note[hidden]{display:none}
+.share-kind{font-size:12.5px;font-weight:600;color:var(--ink);margin:0 0 6px}
+.tpl-share{border-top:1px solid var(--line2);margin-top:14px;padding-top:12px}
+.tpl-share h4, .sub-h{font-family:Fraunces,Georgia,serif;font-size:17px;margin:0 0 2px}
+.tpl-share input{width:100%;font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin-bottom:8px}
+.tpl-share input.bad{border-color:var(--limit);outline:1px solid var(--limit)}
+.tpl-share .row{display:flex;gap:8px;flex-wrap:wrap}
+.tpl-share .row .btn{flex:1 1 170px}
+.tpl-share #shareBack{margin-top:8px}
+.tpl-share #shareBack[hidden]{display:none}
+.sub-h{margin-top:18px;border-top:1px solid var(--line2);padding-top:12px}
+.modal p.sub-p{margin:2px 0 6px}
+#resetFav:disabled{opacity:.45;cursor:default}
+/* phones: row 1 = search + Show, row 2 = Section + export toggle + Filters, then the panel */
+@media (max-width:560px){
+  .subbar select.jump:not(.view-sel){flex:1 1 30%}
+  .subbar .only-toggle{flex:1 1 30%}
+  .subbar .filt-btn{order:5;padding:8px 8px;font-size:12.5px}
+  .subbar .filt-bar{order:6;padding:7px 8px}
+  .filt-bar .only-toggle{flex:0 1 auto;font-size:12.5px}
+  .filt-tpl{flex-basis:100%}
+}
+/* desktop: the export toggle may take two lines so "Filters" fits in the same row */
+@media (min-width:561px){
+  .subbar .only-toggle{white-space:normal;flex:0 1 165px;line-height:1.25}
+  .subbar .search{min-width:130px}
+}
+@media (max-width:560px){
+  .subbar select.jump:not(.view-sel){flex:1 1 24%}
+  .subbar .only-toggle{flex:1 1 40%}
+  .subbar .filt-btn{padding:7px 7px;font-size:12px}
+}
+@media (max-width:560px){
+  .subbar select.jump:not(.view-sel){flex:1 1 30%}
+  .subbar .only-toggle{flex:1 1 32%}
+}
+/* narrow phones: ♥ + ? + the scale stay on one line */
+@media (max-width:370px){
+  .item-controls{gap:4px}
+  .mini.fav, .mini.help{width:26px}
+  .scale button{padding:7px 6px}
+}
+@media (max-width:560px){
+  .subbar select.jump:not(.view-sel){flex:0 1 96px}
+  .subbar .only-toggle{flex:1 1 0}
+}

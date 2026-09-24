@@ -1,7 +1,7 @@
-/* form/library.js — the two device-local lists: "Received" (other people's links)
-   and "My lists" (several own lists, stored in full). Also the hand-off to compare.html. */
+/* form/library.js — the device-local lists: "Received" (other people's links + received templates)
+   and "My lists" (several own lists, stored in full + my templates). Also the hand-off to compare.html. */
 (function (KC) {
-  const F = KC.form, t = k => KC.i18n.t(k), R = KC.store.received, M = KC.store.mine;
+  const F = KC.form, t = (k, v) => KC.i18n.t(k, v), R = KC.store.received, M = KC.store.mine, T = KC.store.tpl;
 
   const fmtDate = ts => { const d = new Date(ts), L = KC.i18n.locale(); return d.toLocaleDateString(L) + " " + d.toLocaleTimeString(L, { hour: "2-digit", minute: "2-digit" }); };
 
@@ -14,18 +14,44 @@
     location.href = "compare.html?lang=" + KC.i18n.lang;
   };
 
-  /* acts: array, or function(item) -> array; label: function(item) -> name */
-  function rows(list, acts, label, badge) {
+  /* acts: array, or function(item) -> array; label: function(item) -> name; extra: function(item) -> text before the date */
+  function rows(list, acts, label, badge, extra) {
     return list.map(x => '<div class="saved-row' + (badge && badge(x) ? " current" : "") + '" data-id="' + KC.esc(x.id) + '"><div class="meta"><b>' + KC.esc(label(x) || t("unnamed")) + "</b>"
-      + (badge && badge(x) ? '<span class="cur-badge">' + KC.esc(t("mine.current")) + "</span>" : "") + "<span>" + fmtDate(x.ts) + "</span></div>"
+      + (badge && badge(x) ? '<span class="cur-badge">' + KC.esc(t("mine.current")) + "</span>" : "")
+      + "<span>" + (extra && extra(x) ? KC.esc(extra(x)) + " · " : "") + fmtDate(x.ts) + "</span></div>"
       + '<div class="acts">' + (typeof acts === "function" ? acts(x) : acts).map(a => '<button class="btn ghost mini" data-act="' + a + '"' + (a === "del" ? ' title="' + KC.esc(t("act.delete")) + '">✕' : ">" + KC.esc(t("act." + a))) + "</button>").join("") + "</div></div>").join("");
   }
   const empty = key => '<div style="color:var(--muted);font-size:13px;padding:8px 0">' + KC.esc(t(key)) + "</div>";
   const rename = (item, save, cur) => { const nn = prompt(t("prompt.listName"), cur || ""); if (nn !== null) { item.name = nn.trim(); save(); } };
 
+  /* "by template «X»" under lists filled by a template */
+  const byTpl = name => t("list.byTpl", { name: name || t("unnamed") });
+  const recTpl = x => { try { const d = KC.codec.decode(x.code); return d.tpl ? byTpl(d.tpl.name) : ""; } catch (e) { return ""; } };
+  const mineTpl = x => x.data && x.data.template ? byTpl(x.data.template.name) : "";
+  const tplCount = x => t("tpl.count", { n: x.ids.length });
+
+  /* templates: "use" fills the own list by it; rename; delete (lists filled by it keep their copy) */
+  function tplClick(e, own, redraw, closeModal) {
+    const btn = e.target.closest("button[data-act]"); if (!btn) return;
+    const id = btn.closest(".saved-row").dataset.id, a = T.list(), item = a.find(x => x.id === id); if (!item) return;
+    switch (btn.dataset.act) {
+      case "use": closeModal(); F.fillByTpl(T.toState(item)); break;
+      case "rename": {
+        const nn = prompt(t("prompt.tplName"), T.label(item)); if (nn === null || !nn.trim()) return;
+        if (own) item.name = nn.trim(); else item.label = nn.trim(); /* a received template keeps the name from its link */
+        T.write(a); redraw(); F.renderTplUI(); break;
+      }
+      case "del": T.write(a.filter(x => x.id !== id)); redraw(); F.renderTplUI(); break;
+    }
+  }
+
   /* ---- Received ---- */
   const recModal = KC.modal("savedOverlay", "savedClose");
-  function drawReceived() { const a = R.list(); KC.$("savedList").innerHTML = a.length ? rows(a, ["open", "rename", "compare", "del"], x => x.name) : empty("saved.empty"); }
+  function drawReceived() {
+    const a = R.list(); KC.$("savedList").innerHTML = a.length ? rows(a, ["open", "rename", "compare", "del"], x => x.name, null, recTpl) : empty("saved.empty");
+    const tl = T.received(); KC.$("savedTplList").innerHTML = tl.length ? rows(tl, ["use", "rename", "del"], T.label, null, tplCount) : empty("saved.tplEmpty");
+  }
+  KC.$("savedTplList").addEventListener("click", e => tplClick(e, false, drawReceived, recModal.close));
   KC.$("savedBtn").addEventListener("click", () => { drawReceived(); recModal.open(); });
   KC.$("savedList").addEventListener("click", e => {
     const btn = e.target.closest("button[data-act]"); if (!btn) return;
@@ -43,8 +69,10 @@
   const isCurrent = x => !F.viewingShared && x.id === M.active();
   function drawMine() {
     const a = M.list();
-    KC.$("mineList").innerHTML = a.length ? rows(a, x => isCurrent(x) ? ["rename", "del"] : ["load", "rename", "del"], M.label, isCurrent) : empty("mine.empty");
+    KC.$("mineList").innerHTML = a.length ? rows(a, x => isCurrent(x) ? ["rename", "del"] : ["load", "rename", "del"], M.label, isCurrent, mineTpl) : empty("mine.empty");
+    const tl = T.own(); KC.$("mineTplList").innerHTML = tl.length ? rows(tl, ["use", "rename", "del"], T.label, null, tplCount) : empty("mine.tplEmpty");
   }
+  KC.$("mineTplList").addEventListener("click", e => tplClick(e, true, drawMine, mineModal.close));
   KC.$("mineBtn").addEventListener("click", () => { F.saveNow(); drawMine(); mineModal.open(); });
   KC.$("mineNew").addEventListener("click", () => F.startNew());
   KC.$("mineSaveNew").addEventListener("click", () => {
@@ -70,7 +98,7 @@
       let res = null; try { res = KC.store.importAll(JSON.parse(r.result)); } catch (err) {}
       e.target.value = "";
       if (!res) { KC.toast(t("toast.backupBad")); return; }
-      KC.toast(KC.i18n.t("toast.backupLoaded", res));
+      KC.toast(KC.i18n.t(res.templates ? "toast.backupLoadedTpl" : "toast.backupLoaded", res));
       setTimeout(() => { location.href = location.pathname; }, 900);
     };
     r.readAsText(f);

@@ -3,6 +3,8 @@
    Params:  a = answers (binary, base64url)   m = profile ("About me")
             n = name   s/f/c/l = safeword/fantasies/comments/allergies (free text, not in UI now)
             lg = language the link opens in   i = 6-char id of the list (tells apart copies with equal content)
+            ti = 6-char template id, tn = template name: a TEMPLATE link. The template is the set of items
+                 answered in it, so the answers (a) carry both things: the template and the sender's list.
    Answers use PERMANENT item codes from data/practices.js, so adding/moving items never
    breaks old links. Two encodings are built and the shorter one is used (leading tag byte):
      2 = sparse: varint(gap*4 + value)                 — best for few marks
@@ -124,7 +126,7 @@
     return meta;
   }
 
-  const UID = /^[A-Za-z0-9_-]{6}$/;
+  const UID = /^[A-Za-z0-9_-]{6}$/, TID = /^[A-Za-z0-9]{6}$/;
   KC.codecSum = sum;
   const TEXT = { n: "name", s: "safeword", f: "fantasies", c: "comments", l: "allergies" };
 
@@ -136,6 +138,7 @@
       Object.keys(TEXT).forEach(k => { const v = st[TEXT[k]]; if (v) parts.push(k + "=" + encodeURIComponent(v)); });
       const m = packMeta(st.meta); if (m) parts.push("m=" + m);
       if (st.uid && UID.test(st.uid)) parts.push("i=" + st.uid);
+      if (st.tpl && TID.test(st.tpl.id || "")) { parts.push("ti=" + st.tpl.id); if (st.tpl.name) parts.push("tn=" + encodeURIComponent(st.tpl.name)); }
       if (lang) parts.push("lg=" + lang);
       parts.push("k=" + sum(parts[0].slice(2) + "|" + (m || "") + "|" + (st.uid || "")));
       return parts.join("&");
@@ -150,6 +153,7 @@
       if (q.get("m")) st.meta = unpackMeta(q.get("m"));
       const lg = q.get("lg"); if (lg && KC.i18n && KC.i18n.known(lg)) st.lang = lg;
       const i = q.get("i"); if (i && UID.test(i)) st.uid = i;
+      const ti = q.get("ti"); if (ti && TID.test(ti)) st.tpl = { id: ti, name: q.get("tn") || "" };
       /* damaged link (e.g. a chat app removed characters): answers would be wrong */
       const a = q.get("a") || "", k = q.get("k");
       st.damaged = !answersIntact(a) || (!!k && k !== sum(a + "|" + (q.get("m") || "") + "|" + (q.get("i") || ""), k.length));
