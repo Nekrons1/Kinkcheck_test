@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=556">
+<link rel="stylesheet" href="css/style.css?v=557">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -40,19 +40,15 @@
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off">
     </div>
     <select class="jump" id="jump" data-i18n-title="jump.aria"></select>
-    <button class="btn ghost filt-btn" id="filtBtn" type="button" aria-expanded="false" aria-controls="filtBar"><span data-i18n="filt.btn"></span><span class="filt-dot" id="filtDot" hidden></span></button>
+    <select class="jump tpl-sel" id="tplSel" data-i18n-title="filt.tpl"></select>
+    <select class="jump view-sel" id="view" data-i18n-title="view.label">
+      <option value="all" data-i18n="view.all"></option>
+      <option value="unanswered" data-i18n="view.unanswered"></option>
+      <option value="new" data-i18n="view.new"></option>
+      <option value="answered" data-i18n="view.answered"></option>
+      <option value="positive" data-i18n="view.positive"></option>
+    </select>
     <label class="fav-toggle" data-i18n-title="filt.onlyFav"><input type="checkbox" id="onlyFav"><span aria-hidden="true">♥</span></label>
-    <div class="filt-bar" id="filtBar" hidden>
-      <label class="filt-row"><span data-i18n="filt.tpl"></span><select id="tplSel"></select></label>
-      <label class="filt-row"><span data-i18n="view.label"></span><select id="view">
-        <option value="all" data-i18n="view.all"></option>
-        <option value="unanswered" data-i18n="view.unanswered"></option>
-        <option value="new" data-i18n="view.new"></option>
-        <option value="answered" data-i18n="view.answered"></option>
-        <option value="positive" data-i18n="view.positive"></option>
-      </select></label>
-      <button class="help-q" type="button" data-help="filters" data-i18n-title="help.open">?</button>
-    </div>
   </div>
 </header>
 
@@ -126,6 +122,7 @@
       <p data-i18n="tplShare.p"></p>
       <input type="text" id="tplName" autocomplete="off" maxlength="60" data-i18n-ph="tplShare.ph">
       <div class="tpl-hint" id="tplHint" data-i18n="tplShare.latin"></div>
+      <button class="btn primary tpl-cur" id="tplCurBtn" type="button" hidden></button>
       <div class="row">
         <button class="btn primary" id="tplShareBtn" type="button" data-i18n="tplShare.share"></button>
         <button class="btn ghost" id="tplSaveBtn" type="button" data-i18n="tplShare.save"></button>
@@ -176,6 +173,7 @@
     <h3><span data-i18n="hdr.pdf"></span> <button class="help-q" type="button" data-help="pdf" data-i18n-title="help.open">?</button></h3>
     <p class="share-note" id="pdfScope" hidden></p>
     <label class="only-toggle"><input type="checkbox" id="onlyMarked" checked> <span data-i18n="onlyMarked"></span></label>
+    <label class="only-toggle"><input type="checkbox" id="pdfFavLimits"> <span data-i18n="pdf.favLimits"></span></label>
     <button class="btn primary" id="pdfGo" type="button" style="width:100%;margin-top:16px" data-i18n="pdf.go"></button>
     <button class="btn ghost" id="pdfClose" type="button" style="margin-top:8px;width:100%" data-i18n="cancel"></button>
   </div>
@@ -191,6 +189,6 @@
   </div>
 </div>
 
-<script src="js/boot.js?v=556" data-page="form" data-v="556"></script>
+<script src="js/boot.js?v=557" data-page="form" data-v="557"></script>
 </body>
 </html>

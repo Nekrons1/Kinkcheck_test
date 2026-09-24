@@ -49,14 +49,8 @@
     const el = e.target.value && KC.$(e.target.value); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); e.target.value = "";
   });
 
-  /* "Filters" panel: template + only favourites */
-  KC.$("filtBtn").addEventListener("click", () => F.toggleFilters());
-  F.toggleFilters = function (open) {
-    const bar = KC.$("filtBar"); bar.hidden = open === undefined ? !bar.hidden : !open;
-    KC.$("filtBtn").setAttribute("aria-expanded", bar.hidden ? "false" : "true");
-  };
   KC.$("onlyFav").addEventListener("change", F.applySearch);
-  /* template in the Filters panel: only changes what is shown now (never what the list was created by) */
+  /* template list in the header: only changes what is shown now (never what the list was created by) */
   KC.$("tplSel").addEventListener("change", e => {
     const x = e.target.value && KC.store.tpl.byTid(e.target.value);
     F.setTpl(x ? KC.store.tpl.use(x) : null);

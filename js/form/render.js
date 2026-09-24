@@ -231,8 +231,10 @@
     const sel = KC.$("tplSel"), tp = F.tpl(), T = KC.store.tpl;
     const opt = (v, label) => '<option value="' + esc(v) + '">' + esc(label) + "</option>";
     const group = (key, a) => a.length ? '<optgroup label="' + esc(t(key)) + '">' + a.map(x => opt(x.tid, T.label(x) || t("unnamed"))).join("") + "</optgroup>" : "";
-    sel.innerHTML = opt("", t("filt.tplNone")) + group("filt.tplMine", T.own()) + group("filt.tplRec", T.received());
+    /* the header list: "Template…" when none is applied; with one applied it shows its name and offers "✕ No template" */
+    sel.innerHTML = opt("", t(tp ? "filt.tplOff" : "filt.tplPh")) + group("filt.tplMine", T.own()) + group("filt.tplRec", T.received());
     sel.value = tp ? tp.id : "";
+    sel.hidden = !tp && !T.list().length; /* nothing to pick yet */
     /* the note above the list: what the list was created by, what is shown now, one button to switch */
     const b = F.bound(), lib = b && T.resolve(b), note = KC.$("tplNote"), btn = KC.$("tplAct");
     const known = {}; KC.CATS.forEach(c => c.items.forEach(([, id]) => { known[id] = 1; }));
@@ -247,10 +249,10 @@
     btn.textContent = act === "all" ? t("tpl.showAll") : act === "bound" ? t("tpl.showBound") : t("tpl.off");
     F.renderFiltDot();
   };
-  /* dot on "Filters" while something in the panel is active (the panel may be folded) */
+  /* header lists and ♥ are highlighted while they filter something */
   F.renderFiltDot = function () {
-    const on = !!F.tpl() || KC.$("view").value !== "all";
-    KC.$("filtDot").hidden = !on; KC.$("filtBtn").classList.toggle("on", on);
+    KC.$("tplSel").classList.toggle("on", !!F.tpl());
+    KC.$("view").classList.toggle("on", KC.$("view").value !== "all");
     KC.$("onlyFav").closest(".fav-toggle").classList.toggle("on", KC.$("onlyFav").checked);
   };
 

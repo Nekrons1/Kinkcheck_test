@@ -17,7 +17,7 @@
     if (d.tpl && !d.damaged) {
       const known = {}; KC.CATS.forEach(c => c.items.forEach(([, id]) => { known[id] = 1; }));
       const ids = (d.tpl.ids || S.answeredIds(F.state)).filter(id => known[id]);
-      if (ids.length) tplLink = { id: d.tpl.id, name: d.tpl.name, ids, empty: !!d.tpl.ids };
+      if (ids.length) tplLink = { id: d.tpl.id, name: d.tpl.name, ids };
     }
     /* a list filled by a template: remembered in Received with that mark (fi=), applied when opened */
     F.sharedBy = d.by || (d.tpl ? { id: d.tpl.id, name: d.tpl.name } : null);
@@ -44,7 +44,8 @@
      to Received, and the page opens MY list by this template, empty or with my earlier answers. */
   if (tplLink) {
     const notice = { tpl: S.tpl.addReceived(tplLink.id, tplLink.name, tplLink.ids).status };
-    if (!tplLink.empty && Object.keys(F.state.items).length) {
+    /* the link may carry the sender's answers (with answers = template, or a whole template + answers) */
+    if (Object.keys(F.state.items).length) {
       const r = S.received.add(F.sharedCode, F.state.name);
       if (r.status !== "own") { notice.sender = r.status; notice.senderName = F.state.name; notice.rec = r.item && r.item.id; }
     }
@@ -107,12 +108,11 @@
     S.mine.setActive(""); F.state.uid = S.newUid(); F.saveNow(); KC.toast(t("toast.keep"));
     F.renderTplUI(); F.applySearch(); F.updateProgress();
   });
-  /* someone's list shown by one of my templates: open the filter panel with the template picker */
+  /* someone's list shown by one of my templates: open the template list in the header */
   KC.$("bannerTpl").addEventListener("click", () => {
-    F.toggleFilters(true);
     const sel = KC.$("tplSel");
-    if (sel.options.length <= 1) KC.toast(t("toast.noTpl"));
-    try { sel.focus(); sel.scrollIntoView({ block: "nearest" }); } catch (e) {}
+    if (sel.hidden || sel.options.length <= 1) { KC.toast(t("toast.noTpl")); return; }
+    try { sel.focus(); sel.showPicker(); } catch (e) {}
   });
   KC.$("bannerSaveAs").addEventListener("click", () => {
     const nm = prompt(t("prompt.listName"), F.state.name || ""); if (nm === null) return;

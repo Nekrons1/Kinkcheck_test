@@ -5,7 +5,9 @@
      carries my answers to them. The recipient gets an empty list by the template to fill in, and my list
      lands in their Received.
    - A saved template shared from the template lists: the template only, no answers (F.shareTemplate).
-   - "Save as my template": the template + a copy of this list marked as created by it (F.saveAsTemplate). */
+   - "Save as my template": the template + a copy of this list marked as created by it (F.saveAsTemplate).
+   - "Share the current template «X»": the template this list is shown by / was created by, as it is (same id,
+     name and every item), with my answers to it — so a received template can be passed on while filling it. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), T = KC.store.tpl, S = KC.store;
   const modal = KC.modal("overlay", "overlayClose");
@@ -47,6 +49,10 @@
     /* templates are made from your own list */
     KC.$("tplShare").hidden = F.viewingShared;
     KC.$("tplName").classList.remove("bad"); markName();
+    /* the template in effect (shown now, else the one the list was created by), if it is saved here */
+    const cur = F.viewingShared ? null : (tp && T.byTid(tp.id)) || (F.bound() && T.byTid(F.bound().id));
+    const cb = KC.$("tplCurBtn"); cb.hidden = !cur; F.curTpl = cur || null;
+    if (cur) cb.textContent = t("tplShare.cur", { name: cur.name || T.label(cur) || t("unnamed") });
     showList();
     modal.open();
   });
@@ -100,6 +106,13 @@
     F.renderTplUI();
   });
   KC.$("tplSaveBtn").addEventListener("click", () => { const nm = askName(); if (nm) F.saveAsTemplate(nm); });
+  KC.$("tplCurBtn").addEventListener("click", () => {
+    const x = F.curTpl; if (!x) return;
+    if (!F.state.uid) F.saveNow();
+    const st = S.trim(F.state, x.ids); st.tpl = { id: x.tid, name: x.name, ids: x.ids };
+    show(base() + KC.codec.encode(st, KC.i18n.lang), t("share.kindTplCur", { name: x.name || t("unnamed"), n: x.ids.length, k: Object.keys(st.items).length }));
+    KC.$("shareBack").hidden = false;
+  });
   KC.$("shareBack").addEventListener("click", showList);
 
   KC.$("copyLink").addEventListener("click", async () => {

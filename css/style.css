@@ -490,3 +490,26 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 @media (max-width:349px){
   .subbar #jump{flex:1 1 60px}
 }
+
+/* ---------- search row v557: [search][Section][Template…][All items][♥] ---------- */
+/* search and Section are short on purpose: words are short, and the opened list is wider than the closed one */
+.subbar .search{flex:1 1 150px;max-width:260px;min-width:110px}
+.subbar #jump{flex:0 1 150px;max-width:none}
+.subbar #tplSel{flex:0 1 180px;min-width:0}
+.subbar #view{flex:0 1 180px;min-width:0}
+.subbar #tplSel[hidden]{display:none}
+/* a list that filters something now is highlighted (like ♥) */
+.subbar select.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
+/* phones: row 1 = search, Section, ♥; row 2 = Template…, All items */
+@media (max-width:560px){
+  .subbar{gap:6px}
+  .subbar .search{order:1;flex:1 1 100px;max-width:none;min-width:0}
+  .subbar #jump{order:2;flex:0 1 112px;padding:8px 6px;font-size:14px}
+  .subbar .fav-toggle{order:3;width:38px}
+  .subbar #tplSel{order:4;flex:1 1 40%;padding:8px 6px;font-size:14px}
+  .subbar #view{order:5;flex:1 1 40%;padding:8px 6px;font-size:14px}
+}
+@media (max-width:349px){
+  .subbar .search{flex:1 1 90px}
+  .subbar #jump{flex:0 1 96px}
+}

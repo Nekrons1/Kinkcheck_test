@@ -11,7 +11,11 @@
   F.buildSheet = function () {
     const st = F.shown(), sub = KC.i18n.lang !== "en", tp = F.tpl(), set = F.tplSet();
     const favs = {}; F.favList().forEach(id => { favs[id] = 1; });
-    const onlyFav = KC.$("onlyFav").checked, inScope = id => (!set || set[id]) && (!onlyFav || favs[id]);
+    /* "only favourites and limits" (PDF window, off by default) wins over the ♥ toggle; favourites stay in it
+       even without an answer — they are wishes */
+    const favLim = KC.$("pdfFavLimits").checked, onlyFav = !favLim && KC.$("onlyFav").checked;
+    const isLimit = id => (st.items[id] || {}).interest === "limit";
+    const inScope = id => (!set || set[id]) && (favLim ? !!favs[id] || isLimit(id) : (!onlyFav || favs[id]));
     const heart = id => favs[id] ? '<span style="color:' + P.accent + ';">♥</span> ' : "";
     const w = document.createElement("div");
     w.style.cssText = "position:fixed;left:-10000px;top:0;width:760px;padding:30px;background:" + P.bg + ";color:" + P.ink + ";font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.5;";
@@ -35,6 +39,7 @@
     const scope = [];
     if (tp) scope.push(esc(t("pdf.tpl", { name: tp.name || t("unnamed"), n: tp.ids.length })));
     if (onlyFav) scope.push(esc(t("pdf.onlyFav")));
+    if (favLim) scope.push(esc(t("pdf.onlyFavLimits")));
     if (scope.length) html += '<div style="margin-top:5px;font-size:12.5px;color:' + P.accent + ';font-weight:600;">' + scope.join("&nbsp;·&nbsp;") + "</div>";
     html += '<div style="margin-top:12px;">' + ["love", "yes", "maybe", "limit"].map(pill).join("&nbsp;") + "</div></div>";
 
@@ -48,7 +53,7 @@
 
     /* favourites at a glance (not needed when the sheet shows only favourites) */
     const favIds = []; KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (favs[id] && (!set || set[id])) favIds.push(id); }));
-    if (favIds.length && !onlyFav) {
+    if (favIds.length && !onlyFav && !favLim) {
       html += '<div style="' + card + '"><div style="' + serif + "font-size:16px;color:" + P.accent + ';margin-bottom:6px;">' + esc(t("pdf.favs")) + "</div>"
         + '<div style="font-size:13px;line-height:1.7;">' + favIds.map(id => esc(KC.i18n.item(id).name)).join("&nbsp;·&nbsp;") + "</div></div>";
     }
@@ -56,7 +61,7 @@
     let any = false;
     KC.CATS.forEach(cat => {
       let rows = cat.items.map(([, id]) => id).filter(inScope);
-      if (st.onlyMarked !== false) rows = rows.filter(id => st.items[id]);
+      if (st.onlyMarked !== false) rows = rows.filter(id => st.items[id] || (favLim && favs[id]));
       if (!rows.length) return; any = true;
       const rank = id => { const s = st.items[id]; return s ? KC.match.RANK[s.interest] : 4; };
       rows.sort((a, b) => rank(a) - rank(b));
@@ -83,13 +88,19 @@
 
   /* "Download PDF" opens a small window: export options, then "Download" */
   const pdfModal = KC.modal("pdfOverlay", "pdfClose");
-  KC.$("pdfBtn").addEventListener("click", () => {
-    const tp = F.tpl(), scope = [];
+  /* the line under the title: what the PDF is limited to */
+  function pdfScope() {
+    const tp = F.tpl(), scope = [], favLim = KC.$("pdfFavLimits").checked;
     if (tp) scope.push(t("pdf.tpl", { name: tp.name || t("unnamed"), n: tp.ids.length }));
-    if (KC.$("onlyFav").checked) scope.push(t("pdf.onlyFav"));
+    if (favLim) scope.push(t("pdf.onlyFavLimits")); else if (KC.$("onlyFav").checked) scope.push(t("pdf.onlyFav"));
     KC.$("pdfScope").hidden = !scope.length; KC.$("pdfScope").textContent = scope.join(" · ");
+  }
+  KC.$("pdfBtn").addEventListener("click", () => {
+    KC.$("pdfFavLimits").checked = false; /* off every time the window opens */
+    pdfScope();
     pdfModal.open();
   });
+  KC.$("pdfFavLimits").addEventListener("change", pdfScope);
   KC.$("pdfGo").addEventListener("click", async function () {
     const btn = this, old = btn.textContent; btn.disabled = true; btn.textContent = t("pdf.busy");
     const sheet = F.buildSheet(); document.body.appendChild(sheet);
