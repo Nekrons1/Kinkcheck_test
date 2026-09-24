@@ -2,32 +2,60 @@
    Everything here can be re-run at any time (language switch calls F.renderAll()). */
 (function (KC) {
   const F = KC.form = { state: KC.store.blank(), viewingShared: false,
-    viewTpl: null,   /* someone's list viewed "through a template" (not stored) */
+    viewTpl: null,   /* template applied to the page now, {id, name, ids}: a view choice, never stored */
+    sharedBy: null,  /* someone's list: {id, name} of the template it was filled by (fi= in its link) */
     favKey: null };  /* someone's list: key of its favourites in KC.store.favs */
   const t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   F.SCALE = ["limit", "maybe", "yes", "love"];
 
-  /* ---- template in effect: own list -> the one it is filled by; someone's list -> the one it is viewed through.
-     Items outside it are hidden and left out of links, PDF and compare, but their answers are never deleted. ---- */
-  F.tpl = () => (F.viewingShared ? F.viewTpl : F.state.template) || null;
+  /* ---- templates. Two different things:
+     bound   = the template a list was CREATED by (own list: state.template; someone's list: F.sharedBy).
+               It is part of the list and is applied every time the list opens, while that template exists here.
+     applied = F.viewTpl, what the page shows now. The Filters panel and the note above the list only change
+               this view; they never change what the list was created by.
+     Items outside the applied template are hidden and left out of links, PDF and compare; answers stay. ---- */
+  F.tpl = () => F.viewTpl || null;
+  F.bound = () => (F.viewingShared ? F.sharedBy : F.state.template) || null;
+  /* on opening a list: apply the template it was created by (if it still exists here) */
+  F.initTpl = () => { F.viewTpl = KC.store.tpl.resolve(F.bound()); };
   let tplSrc = null, tplMap = null;
   F.tplSet = () => { const tp = F.tpl(); if (!tp) return null; if (tplSrc !== tp) { tplSrc = tp; tplMap = {}; tp.ids.forEach(id => { tplMap[id] = 1; }); } return tplMap; };
   /* the list as it leaves the page: only the template's answers */
   F.shown = () => { const tp = F.tpl(); return tp ? KC.store.trim(F.state, tp.ids) : F.state; };
-  /* tp: {id, name, ids} or null */
+  /* apply a template to the view: tp {id, name, ids} or null. Not stored. */
   F.setTpl = function (tp) {
-    if (F.viewingShared) F.viewTpl = tp || null;
-    else { if (tp) F.state.template = tp; else delete F.state.template; F.saveNow(); }
+    F.viewTpl = tp || null;
     F.renderTplUI(); F.applySearch(); F.updateProgress();
   };
 
-  /* "Fill by this template": the own list (the one selected in My lists) gets the template; its answers stay */
-  F.fillByTpl = function (tp) {
-    if (!F.viewingShared) { F.setTpl(tp); KC.toast(t("toast.tplOn", { name: tp.name || t("unnamed") })); return; }
-    const own = KC.store.loadOwn(); own.template = tp;
-    if (!own.uid) own.uid = KC.store.newUid();
-    KC.store.writeOwn(own); KC.store.mine.sync(own);
-    location.href = location.pathname;
+  /* Fill in by a template (a template link, or "Fill in" in the template lists).
+     tp = {id, name, ids}. Opens MY list created by this template: the current one if it is, else the newest in
+     My lists, else a NEW list that takes my answers to the template's items (and name, profile, ♥) from the list
+     I have open, so nothing has to be answered twice. The list I had open stays in My lists untouched.
+     notice = what to tell after the page reloads (form/main.js shows it). */
+  F.openByTemplate = function (tp, notice) {
+    if (!F.viewingShared) F.saveNow();
+    const S = KC.store, M = S.mine, own = S.loadOwn(), set = {};
+    tp.ids.forEach(id => { set[id] = 1; });
+    /* the list I had open must be safe in My lists before another one replaces it (rule: nothing is lost) */
+    const act = M.active();
+    if (!S.isEmpty(own) && !(act && M.list().some(x => x.id === act))) { if (!own.uid) own.uid = S.newUid(); S.writeOwn(own); M.sync(own); }
+    notice = Object.assign({ name: tp.name, n: tp.ids.length }, notice || {});
+    if (own.template && own.template.id === tp.id) notice.fill = "same";
+    else {
+      const x = M.byTpl(tp.id);
+      if (x) { const st = S.normalize(x.data); st.onlyMarked = own.onlyMarked; S.writeOwn(st); M.setActive(x.id); notice.fill = "reuse"; }
+      else {
+        const st = S.blank(); st.name = own.name; st.meta = S.clone(own.meta); st.onlyMarked = own.onlyMarked;
+        Object.keys(own.items).forEach(id => { if (set[id]) st.items[id] = own.items[id]; });
+        const fav = (own.fav || []).filter(id => set[id]); if (fav.length) st.fav = fav;
+        st.template = { id: tp.id, name: tp.name }; st.uid = S.newUid();
+        S.writeOwn(st); M.setActive(""); M.sync(st);
+        notice.fill = "new"; notice.kept = Object.keys(st.items).length;
+      }
+    }
+    try { sessionStorage.setItem("kcNotice", JSON.stringify(notice)); } catch (e) {}
+    location.href = location.pathname + "?lang=" + KC.i18n.lang;
   };
 
   /* ---- favourites (♥): own list -> state.fav; someone's list -> KC.store.favs under F.favKey. Never in links. ---- */
@@ -200,25 +228,30 @@
 
   /* template picker in the filter panel + the note above the list */
   F.renderTplUI = function () {
-    const sel = KC.$("tplSel"), tp = F.tpl(), T = KC.store.tpl, lib = T.list();
-    const inLib = tp && lib.some(x => x.tid === tp.id);
+    const sel = KC.$("tplSel"), tp = F.tpl(), T = KC.store.tpl;
     const opt = (v, label) => '<option value="' + esc(v) + '">' + esc(label) + "</option>";
     const group = (key, a) => a.length ? '<optgroup label="' + esc(t(key)) + '">' + a.map(x => opt(x.tid, T.label(x) || t("unnamed"))).join("") + "</optgroup>" : "";
-    sel.innerHTML = opt("", t("filt.tplNone")) + (tp && !inLib ? opt("cur", t("filt.tplCur", { name: tp.name || t("unnamed") })) : "")
-      + group("filt.tplMine", T.own()) + group("filt.tplRec", T.received());
-    sel.value = tp ? (inLib ? tp.id : "cur") : "";
-    const note = KC.$("tplNote");
-    note.hidden = !tp;
-    if (tp) {
-      const known = {}; KC.CATS.forEach(c => c.items.forEach(([, id]) => { known[id] = 1; }));
-      KC.$("tplNoteText").innerHTML = t(F.viewingShared ? "tpl.noteShared_html" : "tpl.noteOwn_html", { name: esc(tp.name || t("unnamed")), n: tp.ids.filter(id => known[id]).length });
-    }
+    sel.innerHTML = opt("", t("filt.tplNone")) + group("filt.tplMine", T.own()) + group("filt.tplRec", T.received());
+    sel.value = tp ? tp.id : "";
+    /* the note above the list: what the list was created by, what is shown now, one button to switch */
+    const b = F.bound(), lib = b && T.resolve(b), note = KC.$("tplNote"), btn = KC.$("tplAct");
+    const known = {}; KC.CATS.forEach(c => c.items.forEach(([, id]) => { known[id] = 1; }));
+    const nm = x => esc((x && x.name) || t("unnamed")), cnt = x => x.ids.filter(id => known[id]).length;
+    let html = "", act = "";
+    if (b && tp && tp.id === b.id) { html = t("tpl.noteBound_html", { name: nm(tp), n: cnt(tp) }); act = "all"; }
+    else if (tp) { html = (b ? t(lib ? "tpl.noteBoundOff_html" : "tpl.noteGone_html", { name: nm(b) }) + " " : "") + t("tpl.noteView_html", { name: nm(tp), n: cnt(tp) }); act = lib ? "bound" : "off"; }
+    else if (b) { html = t(lib ? "tpl.noteBoundOff_html" : "tpl.noteGone_html", { name: nm(b) }) + " " + t("tpl.allShown"); act = lib ? "bound" : ""; }
+    note.hidden = !html;
+    KC.$("tplNoteText").innerHTML = html;
+    btn.hidden = !act; btn.dataset.act = act;
+    btn.textContent = act === "all" ? t("tpl.showAll") : act === "bound" ? t("tpl.showBound") : t("tpl.off");
     F.renderFiltDot();
   };
   /* dot on "Filters" while something in the panel is active (the panel may be folded) */
   F.renderFiltDot = function () {
-    const on = !!F.tpl() || KC.$("onlyFav").checked;
+    const on = !!F.tpl() || KC.$("view").value !== "all";
     KC.$("filtDot").hidden = !on; KC.$("filtBtn").classList.toggle("on", on);
+    KC.$("onlyFav").closest(".fav-toggle").classList.toggle("on", KC.$("onlyFav").checked);
   };
 
   /* banner for a list opened from a link: says what happened with "Received" */
@@ -228,14 +261,7 @@
       : r.status === "exists" ? (name ? t("banner.exists", { name: KC.esc(name) }) : t("banner.existsUnnamed"))
       : r.status === "updated" ? (name ? t("banner.updated", { name: KC.esc(name) }) : t("banner.updatedUnnamed"))
       : r.status === "added" ? t("banner.saved") : "";
-    let html = r.status === "damaged" ? t("banner.damaged_html") : t("banner_html", { status });
-    /* template link: what happened with the template */
-    const lt = F.linkTpl;
-    if (lt && r.status !== "damaged") {
-      const ts = { added: "banner.tplSaved", exists: "banner.tplExists", updated: "banner.tplUpdated", own: "banner.tplOwn" }[lt.status];
-      html += '<span class="banner-tpl">' + t("banner.tpl_html", { name: esc(lt.name || t("unnamed")), n: lt.ids.length, status: ts ? t(ts) : "" }) + "</span>";
-    }
-    KC.$("bannerText").innerHTML = html;
+    KC.$("bannerText").innerHTML = r.status === "damaged" ? t("banner.damaged_html") : t("banner_html", { status });
   };
 
   F.renderAll = function () {

@@ -373,18 +373,26 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 .mini.fav{width:29px;padding:6px 0;text-align:center;font-size:14px;line-height:1;color:var(--muted);opacity:.6}
 .mini.fav:hover{opacity:1}
 .mini.fav.on{opacity:1;color:var(--love);border-color:var(--love);background:var(--love-bg)}
-/* "Filters ▾" + folding panel under the search row */
-.subbar .filt-btn{flex:0 0 auto;padding:8px 11px;font-size:13.5px;white-space:nowrap;position:relative}
+/* search row: [search][Section][Filters ▾][♥]; "Filters" folds out template + "Show" */
+.subbar .search{flex:1 1 180px;min-width:120px}
+.subbar #jump{flex:0 1 190px;max-width:none;min-width:0}
+.subbar .filt-btn{flex:0 0 auto;padding:8px 12px;font-size:14px;white-space:nowrap}
 .subbar .filt-btn::after{content:" ▾";font-size:11px}
 .subbar .filt-btn[aria-expanded="true"]::after{content:" ▴"}
 .subbar .filt-btn.on{border-color:var(--accent);color:var(--accent)}
 .filt-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:5px;vertical-align:middle;position:relative;top:-1px}
 .filt-dot[hidden]{display:none}
-.filt-bar{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
+/* "only favourites": a heart toggle (the checkbox itself is visually hidden) */
+.fav-toggle{flex:0 0 auto;position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:17px;cursor:pointer;user-select:none}
+.fav-toggle input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.fav-toggle:hover{border-color:var(--love)}
+.fav-toggle.on{color:var(--love);border-color:var(--love);background:var(--love-bg)}
+.fav-toggle:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.filt-bar{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}
 .filt-bar[hidden]{display:none}
-.filt-tpl{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);flex:1 1 260px;min-width:0}
-.filt-tpl select{font:inherit;font-size:14px;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);flex:1 1 auto;min-width:0;max-width:100%}
-.filt-bar .only-toggle{font-size:13px;color:var(--ink);white-space:nowrap}
+.filt-row{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);flex:1 1 250px;min-width:0}
+.filt-row > span{white-space:nowrap}
+.filt-row select{font:inherit;font-size:14px;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);flex:1 1 auto;min-width:0;max-width:100%}
 /* note above the list while a template is on */
 .tpl-note{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:10px 13px;margin:16px 0 0;font-size:13px;line-height:1.5;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .tpl-note[hidden]{display:none}
@@ -396,8 +404,11 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 .share-kind{font-size:12.5px;font-weight:600;color:var(--ink);margin:0 0 6px}
 .tpl-share{border-top:1px solid var(--line2);margin-top:14px;padding-top:12px}
 .tpl-share h4, .sub-h{font-family:Fraunces,Georgia,serif;font-size:17px;margin:0 0 2px}
-.tpl-share input{width:100%;font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin-bottom:8px}
+.tpl-share input{width:100%;font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin-bottom:3px}
 .tpl-share input.bad{border-color:var(--limit);outline:1px solid var(--limit)}
+.tpl-hint{font-size:11.5px;color:var(--muted);margin:0 0 8px}
+.tpl-hint.warn{animation:kc-hint 1.8s ease-out forwards}
+@keyframes kc-hint{0%,70%{color:var(--limit);font-weight:600}100%{color:var(--muted);font-weight:400}}
 .tpl-share .row{display:flex;gap:8px;flex-wrap:wrap}
 .tpl-share .row .btn{flex:1 1 170px}
 .tpl-share #shareBack{margin-top:8px}
@@ -405,28 +416,30 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 .sub-h{margin-top:18px;border-top:1px solid var(--line2);padding-top:12px}
 .modal p.sub-p{margin:2px 0 6px}
 #resetFav:disabled{opacity:.45;cursor:default}
-/* phones: row 1 = search + Show, row 2 = Section + export toggle + Filters, then the panel */
+#pdfOverlay .only-toggle{font-size:14px;margin-top:6px}
+/* phones: one row [search][Section][Filters][♥]; very narrow phones: search gets its own row */
 @media (max-width:560px){
-  .subbar select.jump:not(.view-sel){flex:1 1 30%}
-  .subbar .only-toggle{flex:1 1 30%}
-  .subbar .filt-btn{order:5;padding:8px 8px;font-size:12.5px}
-  .subbar .filt-bar{order:6;padding:7px 8px}
-  .filt-bar .only-toggle{flex:0 1 auto;font-size:12.5px}
-  .filt-tpl{flex-basis:100%}
+  .subbar .search{order:1;flex:1 1 100px;min-width:0}
+  .subbar #jump{order:2;flex:0 1 100px;padding:8px 6px;font-size:14px}
+  .subbar .filt-btn{order:3;padding:8px 8px;font-size:13px}
+  .subbar .fav-toggle{order:4;width:38px}
+  .subbar .filt-bar{order:5;padding:7px 8px}
+  .filt-row{flex-basis:100%}
 }
-/* desktop: the export toggle may take two lines so "Filters" fits in the same row */
-@media (min-width:561px){
-  .subbar .only-toggle{white-space:normal;flex:0 1 165px;line-height:1.25}
-  .subbar .search{min-width:130px}
+/* 350–370 px: still one row, everything a bit tighter */
+@media (max-width:370px){
+  .subbar{gap:6px}
+  .subbar .search{flex:1 1 90px}
+  .subbar .search input{padding-left:30px}
+  .subbar .search svg{left:9px}
+  .subbar #jump{flex:0 1 84px;padding:8px 4px;font-size:13px}
+  .subbar .filt-btn{padding:8px 6px;font-size:12.5px}
+  .subbar .fav-toggle{width:34px}
 }
-@media (max-width:560px){
-  .subbar select.jump:not(.view-sel){flex:1 1 24%}
-  .subbar .only-toggle{flex:1 1 40%}
-  .subbar .filt-btn{padding:7px 7px;font-size:12px}
-}
-@media (max-width:560px){
-  .subbar select.jump:not(.view-sel){flex:1 1 30%}
-  .subbar .only-toggle{flex:1 1 32%}
+/* narrower than 350 px: search gets its own row */
+@media (max-width:349px){
+  .subbar .search{flex-basis:100%}
+  .subbar #jump{flex:1 1 40%}
 }
 /* narrow phones: ♥ + ? + the scale stay on one line */
 @media (max-width:370px){
@@ -434,7 +447,46 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
   .mini.fav, .mini.help{width:26px}
   .scale button{padding:7px 6px}
 }
+
+/* ---------- help "?", help window, notice after a template link, template rows ---------- */
+.help-q{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:600 12.5px/1 Inter,Arial,sans-serif;cursor:pointer;vertical-align:middle}
+.help-q:hover{border-color:var(--accent);color:var(--accent)}
+.help-q:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.brand-row .help-q{margin-left:-2px}
+.modal h3 .help-q, .modal h4 .help-q{position:relative;top:-2px;margin-left:4px}
+.filt-bar .help-q{margin-left:auto}
+.tpl-note .help-q{margin-left:-4px}
+.help-modal{max-width:560px}
+.help-toc{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+.help-toc .btn.mini{padding:4px 9px;font-size:12px}
+.help-body section{border-top:1px solid var(--line2);padding-top:10px;margin-top:12px;scroll-margin-top:8px}
+.help-body h4{font-family:Fraunces,Georgia,serif;font-size:17px;margin:0 0 4px}
+.help-body p, .help-body li{font-size:13.5px;line-height:1.55;color:var(--ink)}
+.help-body p{margin:4px 0 8px}
+.help-body ul{margin:4px 0 6px;padding-left:20px}
+.help-body li{margin:3px 0}
+.notice-bar{background:var(--yes-bg);border:1px solid var(--yes);border-radius:10px;padding:12px 15px;margin:16px 0 0;font-size:13px;line-height:1.5;color:var(--ink)}
+.notice-bar[hidden]{display:none}
+.notice-bar .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.notice-bar .row [hidden]{display:none}
+/* template rows: name + count on top, the four buttons under it */
+.saved-row.tpl-row{flex-wrap:wrap;row-gap:6px}
+.saved-row.tpl-row .meta{flex:1 1 100%}
+.saved-row.tpl-row .acts{flex:1 1 100%;justify-content:flex-start}
+#mineTplSave[hidden]{display:none}
 @media (max-width:560px){
-  .subbar select.jump:not(.view-sel){flex:0 1 96px}
-  .subbar .only-toggle{flex:1 1 0}
+  .brand-row .help-q{width:20px;height:20px;font-size:11.5px}
+}
+/* phones: title + "?" + languages share one line; a long title is cut with "…" instead of wrapping
+   (flex wraps before it shrinks, so the title gets a max width: row minus languages, "?" and gaps) */
+@media (max-width:560px){
+  .brand-row .brand{max-width:calc(100% - 186px)}
+}
+/* phones: the row must fit "Filters" with its dot next to ♥ — flex wraps before it shrinks, so keep the bases small */
+@media (max-width:560px){
+  .subbar .search{flex:1 1 60px}
+  .subbar #jump{flex:0 1 92px}
+}
+@media (max-width:349px){
+  .subbar #jump{flex:1 1 60px}
 }

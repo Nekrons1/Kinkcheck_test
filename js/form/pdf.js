@@ -81,7 +81,16 @@
     w.innerHTML = html; return w;
   };
 
-  KC.$("pdfBtn").addEventListener("click", async function () {
+  /* "Download PDF" opens a small window: export options, then "Download" */
+  const pdfModal = KC.modal("pdfOverlay", "pdfClose");
+  KC.$("pdfBtn").addEventListener("click", () => {
+    const tp = F.tpl(), scope = [];
+    if (tp) scope.push(t("pdf.tpl", { name: tp.name || t("unnamed"), n: tp.ids.length }));
+    if (KC.$("onlyFav").checked) scope.push(t("pdf.onlyFav"));
+    KC.$("pdfScope").hidden = !scope.length; KC.$("pdfScope").textContent = scope.join(" · ");
+    pdfModal.open();
+  });
+  KC.$("pdfGo").addEventListener("click", async function () {
     const btn = this, old = btn.textContent; btn.disabled = true; btn.textContent = t("pdf.busy");
     const sheet = F.buildSheet(); document.body.appendChild(sheet);
     try {
@@ -103,6 +112,6 @@
       try { pdf.save(fn); } catch (e) { window.open(URL.createObjectURL(pdf.output("blob")), "_blank"); }
       KC.toast(t("toast.pdfReady"));
     } catch (err) { console.error(err); KC.toast(t("toast.pdfFail")); }
-    finally { document.body.removeChild(sheet); btn.disabled = false; btn.textContent = old; }
+    finally { document.body.removeChild(sheet); btn.disabled = false; btn.textContent = old; pdfModal.close(); }
   });
 })(window.KC);

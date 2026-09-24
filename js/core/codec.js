@@ -3,8 +3,12 @@
    Params:  a = answers (binary, base64url)   m = profile ("About me")
             n = name   s/f/c/l = safeword/fantasies/comments/allergies (free text, not in UI now)
             lg = language the link opens in   i = 6-char id of the list (tells apart copies with equal content)
-            ti = 6-char template id, tn = template name: a TEMPLATE link. The template is the set of items
-                 answered in it, so the answers (a) carry both things: the template and the sender's list.
+            ti = 6-char template id, tn = template name: a TEMPLATE link. Two kinds:
+                 - without t: the template = the items answered in a, so the link carries both the template
+                   and the sender's list filled by it;
+                 - with t = set of item codes: an empty template, no answers (re-shared from a template list).
+            fi / fn = id / name of the template a LIST was filled by (a plain list link, not a template).
+   Sets of items (t) use their own tags: 5 = sparse varint(gap), 6 = varint(N) + presence bitmap.
    Answers use PERMANENT item codes from data/practices.js, so adding/moving items never
    breaks old links. Two encodings are built and the shorter one is used (leading tag byte):
      2 = sparse: varint(gap*4 + value)                 — best for few marks
@@ -101,6 +105,42 @@
     return items;
   }
 
+  /* a set of item ids -> tag 5 (sparse gaps) or tag 6 (bitmap), shorter wins */
+  function packSet(ids) {
+    maps();
+    const N = byCode.length, codes = [];
+    ids.forEach(id => { const c = codeOf[id]; if (c != null && codes.indexOf(c) < 0) codes.push(c); });
+    codes.sort((a, b) => a - b);
+    const A = [5]; let prev = -1; codes.forEach(c => { varint(c - prev - 1, A); prev = c; });
+    const B = [6]; varint(N, B); const bm = new Array(Math.ceil(N / 8)).fill(0);
+    codes.forEach(c => { bm[c >> 3] |= (1 << (c & 7)); }); B.push.apply(B, bm);
+    return b64(B.length < A.length ? B : A);
+  }
+  function unpackSet(str) {
+    maps();
+    let bytes; try { bytes = unb64(str); } catch (e) { return []; }
+    const out = [], put = c => { const id = byCode[c]; if (id && out.indexOf(id) < 0) out.push(id); };
+    if (bytes[0] === 5) { const pos = { i: 1 }; let c = -1; while (pos.i < bytes.length) { c += readVarint(bytes, pos) + 1; put(c); } }
+    else if (bytes[0] === 6) { const pos = { i: 1 }, N = readVarint(bytes, pos); for (let c = 0; c < N; c++) if (bytes[pos.i + (c >> 3)] & (1 << (c & 7))) put(c); }
+    return out;
+  }
+  function setIntact(str) {
+    maps();
+    let bytes; try { bytes = unb64(str); } catch (e) { return false; }
+    if (bytes.length < 2 || b64(bytes) !== str) return false;
+    if (bytes[0] === 5) {
+      const pos = { i: 1 }; let c = -1;
+      while (pos.i < bytes.length) { if (pos.i === bytes.length - 1 && bytes[pos.i] & 128) return false; c += readVarint(bytes, pos) + 1; if (c >= byCode.length) return false; }
+      return true;
+    }
+    if (bytes[0] === 6) {
+      const pos = { i: 1 }, N = readVarint(bytes, pos);
+      if (N < 1 || N > 4096 || bytes.length !== pos.i + Math.ceil(N / 8)) return false;
+      return !(N % 8 && (bytes[bytes.length - 1] >> (N % 8)));
+    }
+    return false;
+  }
+
   function packMeta(meta) {
     meta = KC.normalizeMeta(meta); const bytes = [];
     KC.PROFILE.forEach(f => {
@@ -131,16 +171,23 @@
   const TEXT = { n: "name", s: "safeword", f: "fantasies", c: "comments", l: "allergies" };
 
   KC.codec = {
-    packAnswers, unpackAnswers, packMeta, unpackMeta,
+    packAnswers, unpackAnswers, packMeta, unpackMeta, packSet, unpackSet,
     /* state -> hash string (no leading #). lang: code of page language, or omit */
     encode(st, lang) {
       const parts = ["a=" + packAnswers(st.items || {})];
       Object.keys(TEXT).forEach(k => { const v = st[TEXT[k]]; if (v) parts.push(k + "=" + encodeURIComponent(v)); });
       const m = packMeta(st.meta); if (m) parts.push("m=" + m);
       if (st.uid && UID.test(st.uid)) parts.push("i=" + st.uid);
-      if (st.tpl && TID.test(st.tpl.id || "")) { parts.push("ti=" + st.tpl.id); if (st.tpl.name) parts.push("tn=" + encodeURIComponent(st.tpl.name)); }
+      let ts = "";
+      if (st.tpl && TID.test(st.tpl.id || "")) {
+        parts.push("ti=" + st.tpl.id); if (st.tpl.name) parts.push("tn=" + encodeURIComponent(st.tpl.name));
+        if (Array.isArray(st.tpl.ids) && st.tpl.ids.length) { ts = packSet(st.tpl.ids); parts.push("t=" + ts); }
+      } else if (st.by && TID.test(st.by.id || "")) {
+        parts.push("fi=" + st.by.id); if (st.by.name) parts.push("fn=" + encodeURIComponent(st.by.name));
+      }
       if (lang) parts.push("lg=" + lang);
-      parts.push("k=" + sum(parts[0].slice(2) + "|" + (m || "") + "|" + (st.uid || "")));
+      /* the checksum covers the template set too (links without t keep the old formula) */
+      parts.push("k=" + sum(parts[0].slice(2) + "|" + (m || "") + "|" + (st.uid || "") + (ts ? "|" + ts : "")));
       return parts.join("&");
     },
     /* hash / full link / bare code -> state (+ .lang, null if absent or unknown) */
@@ -153,10 +200,13 @@
       if (q.get("m")) st.meta = unpackMeta(q.get("m"));
       const lg = q.get("lg"); if (lg && KC.i18n && KC.i18n.known(lg)) st.lang = lg;
       const i = q.get("i"); if (i && UID.test(i)) st.uid = i;
-      const ti = q.get("ti"); if (ti && TID.test(ti)) st.tpl = { id: ti, name: q.get("tn") || "" };
+      const ti = q.get("ti"), ts = q.get("t") || "";
+      if (ti && TID.test(ti)) { st.tpl = { id: ti, name: q.get("tn") || "" }; if (ts) st.tpl.ids = unpackSet(ts); }
+      else { const fi = q.get("fi"); if (fi && TID.test(fi)) st.by = { id: fi, name: q.get("fn") || "" }; }
       /* damaged link (e.g. a chat app removed characters): answers would be wrong */
       const a = q.get("a") || "", k = q.get("k");
-      st.damaged = !answersIntact(a) || (!!k && k !== sum(a + "|" + (q.get("m") || "") + "|" + (q.get("i") || ""), k.length));
+      st.damaged = !answersIntact(a) || (!!ts && !setIntact(ts))
+        || (!!k && k !== sum(a + "|" + (q.get("m") || "") + "|" + (q.get("i") || "") + (ts ? "|" + ts : ""), k.length));
       return st;
     },
     /* accept a full URL, "#..." or a bare code */
@@ -166,7 +216,7 @@
     key(text) {
       const st = KC.codec.decode(text);
       /* nothing recognisable inside: never treat two such codes as the same list */
-      if (!Object.keys(st.items).length && !Object.keys(st.meta).length && !st.name && !st.uid) return "raw:" + KC.codec.extract(text);
+      if (!Object.keys(st.items).length && !Object.keys(st.meta).length && !st.name && !st.uid && !st.tpl) return "raw:" + KC.codec.extract(text);
       return KC.codec.encode(st);
     },
   };

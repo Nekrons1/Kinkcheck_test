@@ -56,12 +56,17 @@
     KC.$("filtBtn").setAttribute("aria-expanded", bar.hidden ? "false" : "true");
   };
   KC.$("onlyFav").addEventListener("change", F.applySearch);
+  /* template in the Filters panel: only changes what is shown now (never what the list was created by) */
   KC.$("tplSel").addEventListener("change", e => {
-    const v = e.target.value; if (v === "cur") return;
-    const x = v && KC.store.tpl.byTid(v);
-    F.setTpl(x ? KC.store.tpl.toState(x) : null);
+    const x = e.target.value && KC.store.tpl.byTid(e.target.value);
+    F.setTpl(x ? KC.store.tpl.use(x) : null);
   });
-  KC.$("tplOff").addEventListener("click", () => F.setTpl(null));
+  /* the button in the note above the list */
+  KC.$("tplAct").addEventListener("click", e => {
+    const act = e.target.dataset.act;
+    if (act === "bound") F.setTpl(KC.store.tpl.resolve(F.bound()));
+    else F.setTpl(null);
+  });
 
   /* "Clear": a small window — clear the list or only its favourites (also guards against a stray tap) */
   const t = (k, v) => KC.i18n.t(k, v);

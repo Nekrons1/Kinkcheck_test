@@ -2,13 +2,18 @@
    State shape: { name, meta:{field:key|[keys]}, items:{id:{interest}}, onlyMarked,
                   safeword, fantasies, comments, allergies,
                   fav?:[ids]                       favourites (♥) of this list, device only, never in links
-                  template?:{id, name, ids:[...]}  template this list is filled by (a full copy) } */
+                  template?:{id, name}             template this list was CREATED by (a reference by template id).
+                                                   Opening the list applies that template while it exists in the
+                                                   device's templates; if it was deleted, the list still says so
+                                                   but opens with all items. } */
 (function (KC) {
   const VALID = { limit: 1, maybe: 1, yes: 1, love: 1 };
   const TID = /^[A-Za-z0-9]{6}$/;
-  const newEntryId = p => p + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+  /* id of a saved entry: time + random part, so two entries made in the same millisecond never share an id */
+  const newEntryId = p => p + Date.now() + Math.floor(Math.random() * 46656).toString(36);
 
   const S = KC.store = {
+    newEntryId,
     /* 6 random url-safe characters: the list's own id inside links */
     newUid() {
       /* letters and digits only: "_" and "-" can be eaten by chat apps */
@@ -42,8 +47,8 @@
     },
     cleanTpl(t) {
       if (!t || typeof t !== "object" || !TID.test(t.id || "")) return null;
-      const ids = S.cleanIds(t.ids); if (!ids.length) return null;
-      return { id: t.id, name: typeof t.name === "string" ? t.name : "", ids };
+      /* lists saved by v552–553 also kept a copy of the items (ids): no longer used */
+      return { id: t.id, name: typeof t.name === "string" ? t.name : "" };
     },
     /* the list with only the answers inside a template (ids) */
     trim(st, ids) {
@@ -51,8 +56,9 @@
       out.items = {}; Object.keys(st.items || {}).forEach(id => { if (set[id]) out.items[id] = st.items[id]; });
       return out;
     },
-    /* what leaves the device (link, compare): a list filled by a template gives only the template's answers */
-    forShare(st) { return st && st.template ? S.trim(st, st.template.ids) : st; },
+    /* what leaves the device for compare: a list created by a template gives only the template's answers
+       (as it opens by default); with the template deleted, the whole list */
+    forShare(st) { const x = st && st.template && S.tpl.byTid(st.template.id); return x ? S.trim(st, x.ids) : st; },
     /* answered items in list order, optionally only those inside ids -> contents of a new template */
     answeredIds(st, ids) {
       const set = ids ? {} : null; if (ids) ids.forEach(id => { set[id] = 1; });
@@ -106,14 +112,21 @@
           i = a.findIndex(x => !x.manual && KC.codec.decode(x.code).uid === uid);
           if (i >= 0) { const item = a.splice(i, 1)[0]; item.code = code; item.ts = Date.now(); a.unshift(item); this.write(a); return { status: "updated", item }; }
         }
-        const item = { id: "p" + Date.now(), name: (name || "").trim(), code, ts: Date.now() };
+        const item = { id: newEntryId("p"), name: (name || "").trim(), code, ts: Date.now() };
         a.unshift(item); if (a.length > 60) a.length = 60; this.write(a);
         return { status: "added", item };
       },
-      /* "Save as…": always a new entry with the given name, even if the same content exists */
+      /* opening a Received entry: entries saved by v552–553 from template links still carry the template
+       (ti=); open them as a list filled by it (fi=), so they never start the "template link" flow again */
+    asListCode(code) {
+      const d = KC.codec.decode(code); if (!d.tpl || d.damaged) return code;
+      const st = S.normalize(d); st.by = { id: d.tpl.id, name: d.tpl.name };
+      return KC.codec.encode(st, d.lang);
+    },
+    /* "Save as…": always a new entry with the given name, even if the same content exists */
       saveAs(code, name) {
         const a = this.list();
-        const item = { id: "p" + Date.now(), name: (name || "").trim(), code, ts: Date.now(), manual: true };
+        const item = { id: newEntryId("p"), name: (name || "").trim(), code, ts: Date.now(), manual: true };
         a.unshift(item); if (a.length > 60) a.length = 60; this.write(a);
         return item;
       },
@@ -141,7 +154,8 @@
       if (Array.isArray(b.templates)) {
         const tl = S.tpl.list(), tIds = {}; tl.forEach(x => { tIds[x.id] = 1; });
         b.templates.forEach(x => {
-          if (!x || !x.id || !TID.test(x.tid || "") || tIds[x.id] || tl.some(y => y.tid === x.tid && !!y.own === !!x.own)) return;
+          /* skip a template already here under the same template id, mine or received (one copy per template) */
+          if (!x || !x.id || !TID.test(x.tid || "") || tIds[x.id] || tl.some(y => y.tid === x.tid)) return;
           const ids = S.cleanIds(x.ids); if (!ids.length) return;
           const it = { id: x.id, tid: x.tid, name: typeof x.name === "string" ? x.name : "", ids, own: !!x.own, ts: x.ts || Date.now() };
           if (typeof x.label === "string" && x.label) it.label = x.label;
@@ -171,11 +185,13 @@
       /* copy st into the active entry, creating it if needed */
       sync(st) {
         const a = this.list(); let id = this.active(); let item = id && a.find(x => x.id === id);
-        if (!item) { id = "m" + Date.now(); item = { id, name: "", data: null, ts: 0 }; a.unshift(item); this.setActive(id); }
+        if (!item) { id = newEntryId("m"); item = { id, name: "", data: null, ts: 0 }; a.unshift(item); this.setActive(id); }
         item.data = S.clone(st); item.ts = Date.now(); this.write(a); return id;
       },
       /* display name: own label, else the name inside the list */
       label(x) { return x.name || (x.data && x.data.name) || ""; },
+      /* newest list created by template tid */
+      byTpl(tid) { return this.list().find(x => x.data && x.data.template && x.data.template.id === tid) || null; },
     },
 
     /* templates: [{id, tid, name, label?, ids:[item ids], own, ts}]
@@ -189,8 +205,11 @@
       received() { return this.list().filter(x => !x.own); },
       label(x)   { return (x && (x.label || x.name)) || ""; },
       byTid(tid) { const a = this.list(); return a.find(x => x.own && x.tid === tid) || a.find(x => x.tid === tid) || null; },
-      /* as stored inside a list (state.template) */
-      toState(x) { return { id: x.tid, name: this.label(x), ids: x.ids.slice() }; },
+      /* the template to apply for a reference {id, name} (a list's template): {id, name, ids} or null when
+         it is not among the device's templates (deleted, or never received here) */
+      resolve(ref) { const x = ref && this.byTid(ref.id); return x ? this.use(x) : null; },
+      /* an entry as an applied template */
+      use(x) { return { id: x.tid, name: this.label(x), ids: x.ids.slice() }; },
       /* id of a template made from a list: my template with the same name, else derived from list id + name,
          so sharing the same name from the same list again updates the recipient's copy */
       tidFor(uid, name) {

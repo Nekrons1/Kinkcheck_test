@@ -1,26 +1,28 @@
 /* form/share.js — "Share": link + QR. The link carries the current page language (lg=).
-   A list filled by (or viewed through) a template gives only the template's answers.
-   "Share as template": the answered items become the template; the same link also carries the
-   sender's answers to them, so the recipient gets both the template and the sender's list. */
+   - Plain link: the list as shown (only the applied template's answers, if one is applied) + the template it
+     was created by (fi=), so the recipient sees "by template «X»".
+   - "Share as template": the answered items become the template (saved in My templates too); the link also
+     carries my answers to them. The recipient gets an empty list by the template to fill in, and my list
+     lands in their Received.
+   - A saved template shared from the template lists: the template only, no answers (F.shareTemplate).
+   - "Save as my template": the template + a copy of this list marked as created by it (F.saveAsTemplate). */
 (function (KC) {
-  const F = KC.form, t = (k, v) => KC.i18n.t(k, v), T = KC.store.tpl;
+  const F = KC.form, t = (k, v) => KC.i18n.t(k, v), T = KC.store.tpl, S = KC.store;
   const modal = KC.modal("overlay", "overlayClose");
   const base = () => location.origin + location.pathname + "#";
 
   F.shareLink = () => {
     if (!F.viewingShared && !F.state.uid) F.saveNow(); /* gives the list its id */
-    return base() + KC.codec.encode(F.shown(), KC.i18n.lang);
+    const b = F.bound();
+    return base() + KC.codec.encode(Object.assign({}, F.shown(), { by: b ? { id: b.id, name: b.name } : null }), KC.i18n.lang);
   };
-  /* ids of a template made from this list: answered items (inside the current template, if any) */
-  F.templateIds = () => KC.store.answeredIds(F.state, F.tpl() && F.tpl().ids);
-  /* -> {link, ids, tid} or null when nothing is answered */
-  F.templateLink = function (name) {
-    if (!F.viewingShared && !F.state.uid) F.saveNow();
-    const ids = F.templateIds(); if (!ids.length) return null;
-    const st = KC.store.trim(F.state, ids), tid = T.tidFor(F.state.uid, name);
-    st.tpl = { id: tid, name: name.trim() };
-    return { link: base() + KC.codec.encode(st, KC.i18n.lang), ids, tid };
-  };
+  /* ids of a template made from this list: answered items (inside the applied template, if any) */
+  F.templateIds = () => S.answeredIds(F.state, F.tpl() && F.tpl().ids);
+
+  /* template names: Latin letters, digits, space and simple punctuation (owner's rule: names travel in links).
+     Input is never changed (B1): a wrong character only turns the hint red and blocks saving. */
+  const NAME_OK = /^[A-Za-z0-9 .,!?'()+-]+$/;
+  F.tplNameOk = v => NAME_OK.test(String(v || "").trim());
 
   function show(link, kind) {
     KC.$("shareLink").value = link;
@@ -33,6 +35,10 @@
     show(F.shareLink(), t("share.kindList"));
     KC.$("shareBack").hidden = true;
   }
+  function markName() {
+    const inp = KC.$("tplName"), v = inp.value, bad = !!v.trim() && !F.tplNameOk(v);
+    inp.classList.toggle("bad", bad); KC.$("tplHint").classList.toggle("warn", bad);
+  }
 
   KC.$("shareBtn").addEventListener("click", () => {
     const tp = F.tpl(), note = KC.$("shareTplNote");
@@ -40,33 +46,60 @@
     if (tp) note.textContent = t("share.tplNote", { name: tp.name || t("unnamed"), n: tp.ids.length });
     /* templates are made from your own list */
     KC.$("tplShare").hidden = F.viewingShared;
-    KC.$("tplName").classList.remove("bad");
+    KC.$("tplName").classList.remove("bad"); markName();
     showList();
     modal.open();
   });
 
-  /* the template name is required for both buttons */
+  /* a saved template, as it is: same id and name, no answers */
+  F.shareTemplate = function (x) {
+    const st = S.blank(); st.tpl = { id: x.tid, name: x.name, ids: x.ids };
+    KC.$("shareTplNote").hidden = true; KC.$("tplShare").hidden = true; KC.$("shareBack").hidden = true;
+    show(base() + KC.codec.encode(st, KC.i18n.lang), t("share.kindTplOnly", { name: T.label(x) || t("unnamed"), n: x.ids.length }));
+    modal.open();
+  };
+
+  /* name check for both template buttons -> name or null */
   function askName() {
     const inp = KC.$("tplName"), nm = inp.value.trim();
-    inp.classList.toggle("bad", !nm);
-    if (!nm) { KC.toast(t("tplShare.needName")); inp.focus(); return null; }
+    if (!nm) { inp.classList.add("bad"); KC.toast(t("tplShare.needName")); inp.focus(); return null; }
+    if (!F.tplNameOk(nm)) { markName(); KC.toast(t("tplShare.badName")); inp.focus(); return null; }
     if (!F.templateIds().length) { KC.toast(t("tplShare.empty")); return null; }
     return nm;
   }
-  KC.$("tplName").addEventListener("input", e => { if (e.target.value.trim()) e.target.classList.remove("bad"); });
+  KC.$("tplName").addEventListener("input", () => { KC.$("tplName").classList.remove("bad"); markName(); });
+
+  /* -> {status, item} of My templates */
+  function saveTpl(nm, ids) {
+    if (!F.state.uid) F.saveNow();
+    return T.saveOwn(nm, ids, T.tidFor(F.state.uid, nm));
+  }
+  /* template + a copy of this list created by it (not when that template already has a list here) */
+  F.saveAsTemplate = function (nm) {
+    const ids = F.templateIds(); if (!ids.length) { KC.toast(t("tplShare.empty")); return null; }
+    const res = saveTpl(nm, ids), x = res.item, M = S.mine;
+    let copied = false;
+    if (!M.byTpl(x.tid)) {
+      const set = {}; ids.forEach(id => { set[id] = 1; });
+      const c = S.trim(F.state, ids); c.uid = S.newUid(); c.template = { id: x.tid, name: x.name };
+      const fav = (F.state.fav || []).filter(id => set[id]); if (fav.length) c.fav = fav; else delete c.fav;
+      const a = M.list(); a.unshift({ id: KC.store.newEntryId("m"), name: "", data: c, ts: Date.now() }); M.write(a);
+      copied = true;
+    }
+    KC.toast(t(copied ? "toast.tplSavedList" : res.status === "updated" ? "toast.tplUpdated" : "toast.tplSaved", { name: nm, n: ids.length }));
+    F.renderTplUI();
+    return res;
+  };
+
   KC.$("tplShareBtn").addEventListener("click", () => {
     const nm = askName(); if (!nm) return;
-    const r = F.templateLink(nm);
-    show(r.link, t("share.kindTpl", { name: nm, n: r.ids.length }));
+    const ids = F.templateIds(), x = saveTpl(nm, ids).item;
+    const st = S.trim(F.state, ids); st.tpl = { id: x.tid, name: nm };
+    show(base() + KC.codec.encode(st, KC.i18n.lang), t("share.kindTpl", { name: nm, n: ids.length }));
     KC.$("shareBack").hidden = false;
-  });
-  KC.$("tplSaveBtn").addEventListener("click", () => {
-    const nm = askName(); if (!nm) return;
-    if (!F.state.uid) F.saveNow();
-    const ids = F.templateIds(), res = T.saveOwn(nm, ids, T.tidFor(F.state.uid, nm));
-    KC.toast(t(res.status === "updated" ? "toast.tplUpdated" : "toast.tplSaved", { name: nm, n: ids.length }));
     F.renderTplUI();
   });
+  KC.$("tplSaveBtn").addEventListener("click", () => { const nm = askName(); if (nm) F.saveAsTemplate(nm); });
   KC.$("shareBack").addEventListener("click", showList);
 
   KC.$("copyLink").addEventListener("click", async () => {
