@@ -1069,6 +1069,25 @@ const S = (title) => console.log("\n## " + title);
   let hn = open("form", { storage: own5 }); click(hn.w, hn.d.getElementById("shareBtn"));
   ok(hn.d.getElementById("tplCurBtn").hidden, "no current template: no button");
 
+  S("v558: favourites and answers are not lost (B20)");
+  // 1) a heart right before leaving the page is written at once
+  let f1 = open("form", { storage: own5 });
+  click(f1.w, heart(f1, "chains"));
+  eq(LS(f1, OK_).fav, undefined, "the save is still waiting…");
+  f1.w.dispatchEvent(new f1.w.Event("pagehide"));
+  eq(LS(f1, OK_).fav, ["chains"], "…and is written when the page is left");
+  // 2) two tabs: the other tab's change is taken over, never written back over
+  const other = Object.assign(JSON.parse(f1.w.localStorage.getItem(OK_)), { fav: ["chains", "orgy"] });
+  other.items.stocks = { interest: "love" };
+  f1.w.localStorage.setItem(OK_, JSON.stringify(other));
+  f1.w.dispatchEvent(new f1.w.StorageEvent("storage", { key: "practices-checklist-v1" }));
+  eq([f1.KC.form.favList().sort(), heart(f1, "orgy").textContent, f1.KC.form.state.items.stocks], [["chains", "orgy"], "♥", { interest: "love" }], "change from another tab shown here");
+  click(f1.w, f1.d.querySelector('.item[data-id="gag-ball"] .scale button[data-v="yes"]')); await sleep(300);
+  const after = LS(f1, OK_);
+  eq([after.fav.sort(), after.items.stocks, after.items["gag-ball"]], [["chains", "orgy"], { interest: "love" }, { interest: "yes" }], "an answer here keeps the other tab's heart and answer");
+  // 3) the filter lists show a dot, not a filled field
+  ok(/radial-gradient/.test(fs.readFileSync(require("./harness").ROOT + "/css/style.css", "utf8").split("#view.on")[1] || ""), "active list marked with a dot");
+
   const R = report(); console.log("\nPASS", R.PASS, "FAIL", R.FAIL);
   process.exit(R.FAIL ? 1 : 0);
 })().catch(e => { console.error("CRASH", e && e.stack); process.exit(2); });

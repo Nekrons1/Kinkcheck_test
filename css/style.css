@@ -513,3 +513,8 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
   .subbar .search{flex:1 1 90px}
   .subbar #jump{flex:0 1 96px}
 }
+/* a list that filters something: a small accent dot inside it instead of a coloured field (owner: the filled
+   field was a loud colour patch). The dot is a background, so the native list keeps working everywhere. */
+.subbar #tplSel.on, .subbar #view.on{border-color:var(--line);color:var(--ink);font-weight:400;
+  background:var(--panel) radial-gradient(circle, var(--accent) 0 3.5px, transparent 4px) no-repeat 10px 50% / 10px 10px;
+  padding-left:26px}

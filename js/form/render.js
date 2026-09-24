@@ -85,8 +85,26 @@
     const M = KC.store.mine;
     if (!KC.store.isEmpty(F.state) || M.list().some(x => x.id === M.active())) M.sync(F.state);
   }
-  F.save = function () { if (F.viewingShared) return; clearTimeout(timer); timer = setTimeout(persist, 200); };
-  F.saveNow = function () { if (F.viewingShared) return; clearTimeout(timer); persist(); };
+  F.save = function () { if (F.viewingShared) return; clearTimeout(timer); timer = setTimeout(() => { timer = null; persist(); }, 200); };
+  F.saveNow = function () { if (F.viewingShared) return; clearTimeout(timer); timer = null; persist(); };
+  /* leaving the page (reload, link, closing the tab) right after a click: write what is still waiting (B20) */
+  const flush = () => { if (timer) F.saveNow(); };
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+
+  /* the site open in another tab changed the saved data: take it over here, so this tab never writes its
+     older copy back over it (B20). Only the own list is kept in memory; someone's list reads storage directly. */
+  window.addEventListener("storage", e => {
+    const K = KC.KEYS;
+    if (e.key === K.state && !F.viewingShared) {
+      clearTimeout(timer); timer = null;
+      const was = F.bound() && F.bound().id;
+      F.state = KC.store.loadOwn();
+      if ((F.bound() && F.bound().id) !== was) F.initTpl(); /* another list was opened there */
+      F.hydrate(); F.renderTplUI(); F.applySearch();
+    } else if (e.key === K.fav && F.viewingShared) { F.hydrate(); }
+    else if (e.key === K.tpl) { F.renderTplUI(); }
+  });
   /* leave the current list (it stays in My lists) and start an empty one */
   F.startNew = function () {
     if (!F.viewingShared) F.saveNow();
