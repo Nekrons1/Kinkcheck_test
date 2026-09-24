@@ -270,11 +270,11 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .top-actions .btn{padding:6px 8px;font-size:13px}
 }
 .subbar select.jump{flex:0 1 190px;min-width:0}
-/* phones: action buttons in one horizontally scrollable row */
+/* phones: all action buttons visible at once (no sideways scrolling), wrapped into compact rows */
 @media (max-width:560px){
-  .top-actions{flex-wrap:nowrap;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:1px}
-  .top-actions::-webkit-scrollbar{display:none}
-  .top-actions > *{flex:0 0 auto}
+  .top-actions{flex-wrap:wrap;width:100%;gap:5px}
+  .top-actions .btn{padding:6px 7px;font-size:12.5px;flex:1 1 auto;text-align:center}
+  .top-actions .icon-btn{flex:0 0 auto}
 }
 
 /* "Show: all / unanswered / new" next to the section menu */
@@ -320,3 +320,51 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
 /* pair table: role under the name, Top+Bottom switch */
 .pair-table .role-tag{display:block;font-size:10.5px;font-weight:500;color:var(--muted)}
 .pair-mode{margin:8px 0 4px}
+
+/* damaged link warning */
+.banner.damaged{border-color:var(--limit);background:color-mix(in srgb, var(--limit) 12%, var(--panel))}
+/* phones: two fixed rows — [theme][Compare][Received] / [My lists][Share][PDF][Clear] */
+@media (max-width:560px){
+  .top-actions .btn{padding:6px 5px;font-size:12px}
+  .top-actions #compareBtn{flex:2 1 42%}
+  .top-actions #savedBtn{flex:1 1 30%}
+  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #resetBtn{flex:1 1 20%}
+}
+/* phones: fixed 8-column grid, always exactly two rows of buttons */
+@media (max-width:560px){
+  .top-actions{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;overflow:visible}
+  .top-actions > *{min-width:0}
+  .top-actions .btn{white-space:normal;line-height:1.15;padding:6px 3px;font-size:12px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .top-actions #themeBtn{grid-column:span 1}
+  .top-actions #compareBtn{grid-column:span 4}
+  .top-actions #savedBtn{grid-column:span 3}
+  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #resetBtn{grid-column:span 2}
+}
+@media (max-width:560px){
+  .top-actions{align-items:stretch}
+  .top-actions .btn{font-size:11.5px;padding:6px 2px}
+}
+/* phones (final): row 1 is filled exactly by theme + Compare + Received, so the other four
+   always start row 2 and share it according to their label lengths */
+@media (max-width:560px){
+  .top-actions{display:flex;flex-wrap:wrap;gap:5px}
+  .top-actions .btn{white-space:nowrap;line-height:1;padding:7px 6px;font-size:11.5px}
+  .top-actions #themeBtn{flex:0 0 34px;padding:7px 0}
+  .top-actions #compareBtn{flex:0 1 calc(58% - 40px)}
+  .top-actions #savedBtn{flex:0 1 42%}
+  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #resetBtn{flex:1 1 auto}
+}
+@media (max-width:560px){
+  .top-actions #savedBtn{flex:1 0 calc(42% - 12px)}
+}
+@media (max-width:370px){
+  .top-actions{gap:4px}
+  .top-actions .btn{font-size:11px;padding:7px 4px}
+}
+/* six languages: keep the switcher on the title line on narrow phones */
+@media (max-width:480px){
+  .brand-row .brand{font-size:15px}
+  .lang-btn{padding:5px 4px;font-size:10.5px}
+}
+/* Thai has marks above and below the line: a bit more line height in compact buttons */
+html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}

@@ -7,9 +7,10 @@
   const S = KC.store = {
     /* 6 random url-safe characters: the list's own id inside links */
     newUid() {
-      const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_", b = new Uint8Array(6);
+      /* letters and digits only: "_" and "-" can be eaten by chat apps */
+      const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", b = new Uint8Array(6);
       (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach((_, i) => b[i] = Math.random() * 256);
-      return Array.from(b, x => A[x & 63]).join("");
+      return Array.from(b, x => A[x % 62]).join("");
     },
     blank() { return { name: "", meta: {}, items: {}, onlyMarked: true, safeword: "", fantasies: "", comments: "", allergies: "" }; },
 

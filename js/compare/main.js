@@ -132,42 +132,54 @@
   }
 
   /* ---------- group view (3+) ---------- */
-  const pairCount = (A, B) => { let n = 0; KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (KC.match.classify((A.items[id] || {}).interest || null, (B.items[id] || {}).interest || null) === "match") n++; })); return n; };
+  const POSM = { yes: 1, love: 1, maybe: 1 };
+  /* matches of a pair: both Yes/Love; withMaybe: both Yes/Love/Maybe (a "No" never counts) */
+  const pairCount = (A, B, withMaybe) => {
+    const ok = withMaybe ? POSM : POS; let n = 0;
+    KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (ok[(A.items[id] || {}).interest] && ok[(B.items[id] || {}).interest]) n++; }));
+    return n;
+  };
+  function pairTable(P, withMaybe) {
+    const role = p => p.st.meta.role || "";
+    const fits = (a, b) => PMODE === "any" || (role(a) && role(b) && role(a) !== role(b)); /* dom + sub */
+    const head = p => esc(p.name) + (role(p) ? '<span class="role-tag">' + esc(t("role.short." + role(p))) + "</span>" : "");
+    let tb = '<div class="pair-wrap"><table class="pair-table" data-kind="' + (withMaybe ? "ym" : "yes") + '"><tr><th></th>' + P.map(p => "<th>" + head(p) + "</th>").join("") + "</tr>";
+    let shown = 0;
+    P.forEach((a, i) => {
+      tb += "<tr><th>" + head(a) + "</th>" + P.map((b, j) => {
+        if (i === j || !fits(a, b)) return '<td class="self">—</td>';
+        if (i < j) shown++;
+        return '<td><button class="pair-n" data-pair="' + Math.min(i, j) + "," + Math.max(i, j) + '">' + pairCount(a.st, b.st, withMaybe) + "</button></td>";
+      }).join("") + "</tr>";
+    });
+    tb += "</table></div>";
+    return blockOf(t(withMaybe ? "cmp.pairsTitleYM" : "cmp.pairsTitle"), withMaybe ? "var(--maybe)" : "var(--love)", t(withMaybe ? "cmp.pairsSubYM" : "cmp.pairsSub"), tb, shown);
+  }
   function renderGroup() {
     const P = GROUP, searching = !!KC.$("cmpSearch").value.trim();
-    let html = '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
+    let html = '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
       + P.map(p => profileLine(p.name, p.st)).join("");
     if (GFILTER === "pairs") {
       const role = p => p.st.meta.role || "";
-      const fits = (a, b) => PMODE === "any" || (role(a) && role(b) && role(a) !== role(b)); /* dom + sub */
-      const head = p => esc(p.name) + (role(p) ? '<span class="role-tag">' + esc(t("role.short." + role(p))) + "</span>" : "");
-      let tb = '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
+      html += '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
         + '<button class="btn mini' + (PMODE === "role" ? " on" : "") + '" data-pm="role">' + esc(t("cmp.pairsRole")) + "</button></div>"
-        + (PMODE === "role" ? '<div class="sub">' + esc(t("cmp.pairsRoleSub")) + "</div>" : "")
-        + '<div class="pair-wrap"><table class="pair-table"><tr><th></th>' + P.map(p => "<th>" + head(p) + "</th>").join("") + "</tr>";
-      let shown = 0;
-      P.forEach((a, i) => {
-        tb += "<tr><th>" + head(a) + "</th>" + P.map((b, j) => {
-          if (i === j) return '<td class="self">—</td>';
-          if (!fits(a, b)) return '<td class="self">—</td>';
-          if (i < j) shown++;
-          return '<td><button class="pair-n" data-pair="' + Math.min(i, j) + "," + Math.max(i, j) + '">' + pairCount(a.st, b.st) + "</button></td>";
-        }).join("") + "</tr>";
-      });
-      tb += "</table></div>";
+        + (PMODE === "role" ? '<div class="sub">' + esc(t("cmp.pairsRoleSub")) + "</div>" : "");
       const noRole = P.filter(p => !role(p)).map(p => p.name);
-      if (PMODE === "role" && noRole.length) tb += '<div class="sub" style="margin-top:6px">' + esc(t("cmp.noRole", { names: noRole.join(", ") })) + "</div>";
-      return html + blockOf(t("cmp.pairsTitle"), "var(--love)", t("cmp.pairsSub"), tb, shown);
+      if (PMODE === "role" && noRole.length) html += '<div class="sub" style="margin-top:6px">' + esc(t("cmp.noRole", { names: noRole.join(", ") })) + "</div>";
+      return html + pairTable(P, false) + pairTable(P, true);
     }
+    /* everyone Yes/Love (allYes) or everyone Yes/Love/Maybe (allYM); more "Love", then more "Yes" first */
+    const ok = GFILTER === "allYM" ? POSM : POS;
     const rows = [];
     KC.CATS.forEach(c => c.items.forEach(([, id]) => {
       if (!matches(id)) return;
       const vals = P.map(p => (p.st.items[id] || {}).interest || null);
-      if (vals.every(v => POS[v])) rows.push({ id, vals, loves: vals.filter(v => v === "love").length });
+      if (vals.every(v => ok[v])) rows.push({ id, vals, loves: vals.filter(v => v === "love").length, yeses: vals.filter(v => v === "yes").length });
     }));
-    rows.sort((x, y) => y.loves - x.loves);
-    if (!rows.length) return html + note(searching ? t("noresults") : t("cmp.noAllYes"));
-    return html + blockOf(t("cmp.allYesTitle", { n: P.length }), "var(--love)", t("cmp.allYesSub"),
+    rows.sort((x, y) => (y.loves - x.loves) || (y.yeses - x.yeses));
+    const ym = GFILTER === "allYM";
+    if (!rows.length) return html + note(searching ? t("noresults") : t(ym ? "cmp.noAllYM" : "cmp.noAllYes"));
+    return html + blockOf(t(ym ? "cmp.allYMTitle" : "cmp.allYesTitle", { n: P.length }), ym ? "var(--maybe)" : "var(--love)", t(ym ? "cmp.allYMSub" : "cmp.allYesSub"),
       rows.map(r => rowHTML(r.id, P.map((p, i) => ({ name: p.name, v: r.vals[i] })))).join(""), rows.length);
   }
 
@@ -179,12 +191,14 @@
   }
 
   KC.$("cmpBtn").addEventListener("click", () => {
-    const P = [];
+    const P = [], bad = [];
     [...box.children].forEach((col, i) => {
       const raw = col.querySelector("textarea").value.trim(); if (!raw) return;
       const st = KC.codec.decode(raw);
+      if (st.damaged) bad.push(i + 1);
       P.push({ name: col.querySelector(".cmp-name").value.trim() || st.name || t("cmp.person", { n: i + 1 }), st });
     });
+    if (bad.length) { KC.toast(t("cmp.damaged", { n: bad.join(", ") })); return; }
     if (P.length < 2) { KC.toast(t("cmp.needBoth")); return; }
     KC.$("cmpSearch").value = "";
     if (P.length === 2) { GROUP = null; LAST = { A: P[0].st, B: P[1].st, nA: P[0].name, nB: P[1].name }; FILTER = "all"; }

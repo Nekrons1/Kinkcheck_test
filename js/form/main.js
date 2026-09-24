@@ -10,6 +10,7 @@
   if (hash) {
     const d = KC.codec.decode(hash);
     linkLang = d.lang;
+    F.linkDamaged = !!d.damaged;
     F.state = KC.store.normalize(d);
     F.viewingShared = true;
     F.sharedCode = KC.codec.encode(F.state, linkLang);
@@ -42,9 +43,11 @@
 
   /* 4. opened from a link: remember it under "Received", show banner */
   if (F.viewingShared) {
-    F.receivedResult = KC.store.received.add(F.sharedCode, F.state.name);
+    /* a damaged link shows wrong answers: warn, never store it */
+    F.receivedResult = F.linkDamaged ? { status: "damaged" } : KC.store.received.add(F.sharedCode, F.state.name);
     F.renderBanner();
     KC.$("sharedBanner").style.display = "block";
+    if (F.linkDamaged) { ["bannerCmp", "bannerKeep", "bannerSaveAs"].forEach(id => KC.$(id).hidden = true); KC.$("sharedBanner").classList.add("damaged"); }
   }
   KC.$("bannerOwn").addEventListener("click", () => { location.href = location.pathname; });
   KC.$("bannerKeep").addEventListener("click", () => {

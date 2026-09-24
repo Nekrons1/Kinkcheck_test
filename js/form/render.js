@@ -138,7 +138,7 @@
       : r.status === "exists" ? (name ? t("banner.exists", { name: KC.esc(name) }) : t("banner.existsUnnamed"))
       : r.status === "updated" ? (name ? t("banner.updated", { name: KC.esc(name) }) : t("banner.updatedUnnamed"))
       : r.status === "added" ? t("banner.saved") : "";
-    KC.$("bannerText").innerHTML = t("banner_html", { status });
+    KC.$("bannerText").innerHTML = r.status === "damaged" ? t("banner.damaged_html") : t("banner_html", { status });
   };
 
   F.renderAll = function () {

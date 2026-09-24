@@ -18,8 +18,44 @@
     KC.CATS.forEach(c => c.items.forEach(([code, id]) => { byCode[code] = id; codeOf[id] = code; }));
   }
 
-  function b64(bytes) { let s = ""; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
-  function unb64(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; const bin = atob(s), out = []; for (let i = 0; i < bin.length; i++) out.push(bin.charCodeAt(i)); return out; }
+  /* base64 with "-" and "." (older links used "_", still accepted). No "_": chat apps treat "__" as
+     markdown and silently delete it, which corrupts the link. */
+  function b64(bytes) { let s = ""; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, "-").replace(/\//g, ".").replace(/=+$/, ""); }
+  function unb64(s) {
+    s = s.replace(/-/g, "+").replace(/[_.]/g, "/");
+    if (s.length % 4 === 1) throw new Error("bad length");
+    while (s.length % 4) s += "="; const bin = atob(s), out = []; for (let i = 0; i < bin.length; i++) out.push(bin.charCodeAt(i)); return out;
+  }
+  /* 3-char checksum of the data part of a link (older links may carry a 2-char one) */
+  function sum(str, len) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0; len = len || 3; return (h % Math.pow(36, len)).toString(36).padStart(len, "0"); }
+  /* structural check: does the answers blob hang together? */
+  function answersIntact(str) {
+    maps();
+    let bytes; try { bytes = unb64(str); } catch (e) { return false; }
+    if (!bytes.length) return true;
+    /* the encoder always writes canonical base64: re-encoding must give the same text */
+    if (b64(bytes) !== str.replace(/_/g, ".")) return false;
+    const tag = bytes[0];
+    if (tag === 3 || tag === 4) {
+      const pos = { i: 1 }; const N = tag === 4 ? readVarint(bytes, pos) : LEGACY_N;
+      if (tag === 4 && (N < 1 || N > 4096)) return false;
+      const bmLen = Math.ceil(N / 8); if (bytes.length < pos.i + bmLen) return false;
+      let marks = 0; for (let k = 0; k < bmLen; k++) { let b = bytes[pos.i + k]; while (b) { marks += b & 1; b >>= 1; } }
+      if (N % 8 && (bytes[pos.i + bmLen - 1] >> (N % 8))) return false;            /* bits past N are always 0 */
+      if (bytes.length - pos.i - bmLen !== Math.ceil(marks / 4)) return false;
+      if (marks % 4 && (bytes[bytes.length - 1] & ((1 << (8 - 2 * (marks % 4))) - 1))) return false; /* value padding is 0 */
+      return true;
+    }
+    if (tag === 2) {
+      const pos = { i: 1 }; let code = -1;
+      while (pos.i < bytes.length) {
+        if (pos.i === bytes.length - 1 && bytes[pos.i] & 128) return false;       /* unfinished number */
+        const n = readVarint(bytes, pos); code += (n >> 2) + 1; if (code >= Math.max(byCode.length, LEGACY_N)) return false;
+      }
+      return true;
+    }
+    return tag === 1;
+  }
   function varint(n, out) { while (n >= 128) { out.push((n & 127) | 128); n >>>= 7; } out.push(n); }
   function readVarint(bytes, pos) { let n = 0, shift = 0, b; do { b = bytes[pos.i++]; n |= (b & 127) << shift; shift += 7; } while ((b & 128) && pos.i < bytes.length); return n; }
 
@@ -89,6 +125,7 @@
   }
 
   const UID = /^[A-Za-z0-9_-]{6}$/;
+  KC.codecSum = sum;
   const TEXT = { n: "name", s: "safeword", f: "fantasies", c: "comments", l: "allergies" };
 
   KC.codec = {
@@ -100,6 +137,7 @@
       const m = packMeta(st.meta); if (m) parts.push("m=" + m);
       if (st.uid && UID.test(st.uid)) parts.push("i=" + st.uid);
       if (lang) parts.push("lg=" + lang);
+      parts.push("k=" + sum(parts[0].slice(2) + "|" + (m || "") + "|" + (st.uid || "")));
       return parts.join("&");
     },
     /* hash / full link / bare code -> state (+ .lang, null if absent or unknown) */
@@ -112,6 +150,9 @@
       if (q.get("m")) st.meta = unpackMeta(q.get("m"));
       const lg = q.get("lg"); if (lg && KC.i18n && KC.i18n.known(lg)) st.lang = lg;
       const i = q.get("i"); if (i && UID.test(i)) st.uid = i;
+      /* damaged link (e.g. a chat app removed characters): answers would be wrong */
+      const a = q.get("a") || "", k = q.get("k");
+      st.damaged = !answersIntact(a) || (!!k && k !== sum(a + "|" + (q.get("m") || "") + "|" + (q.get("i") || ""), k.length));
       return st;
     },
     /* accept a full URL, "#..." or a bare code */
