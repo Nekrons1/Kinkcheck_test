@@ -82,12 +82,12 @@
     const esc = KC.esc, name = esc(n.name || t("unnamed")), parts = [];
     if (n.tpl) {
       const ts = { added: "banner.tplSaved", exists: "banner.tplExists", updated: "banner.tplUpdated", own: "banner.tplOwn" }[n.tpl];
-      parts.push(t("notice.tpl_html", { name, n: n.n }) + (ts ? " " + t(ts) : ""));
+      parts.push(t("notice.tpl_html", { name, n: n.n }) + (ts ? KC.i18n.sep() + t(ts) : ""));
     }
     parts.push(t(n.fill === "reuse" ? "notice.fillReuse_html" : n.fill === "same" ? "notice.fillSame_html" : "notice.fillNew_html", { name }));
     if (n.fill === "new" && n.kept) parts.push(t("notice.kept", { n: n.kept }));
     if (n.sender) parts.push(t(n.sender === "added" ? "notice.senderSaved" : "notice.senderExists", { name: esc(n.senderName || t("unnamed")) }));
-    KC.$("noticeText").innerHTML = parts.join(" ");
+    KC.$("noticeText").innerHTML = parts.join(KC.i18n.sep());
     KC.$("noticeOpen").hidden = !n.rec;
   };
   F.renderNotice();

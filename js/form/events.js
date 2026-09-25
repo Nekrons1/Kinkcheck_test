@@ -45,9 +45,12 @@
   KC.$("onlyMarked").addEventListener("change", e => { F.state.onlyMarked = e.target.checked; F.save(); });
   KC.$("search").addEventListener("input", F.applySearch);
   KC.$("view").addEventListener("change", F.applySearch);
+  /* "Section…": jump, then show "Section…" again — but only once the list is closed (blur). Phone pickers with
+     Back/Next/Done stay open after a tap; resetting at once made the tapped option look unselected (B21). */
   KC.$("jump").addEventListener("change", e => {
-    const el = e.target.value && KC.$(e.target.value); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); e.target.value = "";
+    const el = e.target.value && KC.$(e.target.value); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+  KC.$("jump").addEventListener("blur", e => { e.target.value = ""; });
 
   KC.$("onlyFav").addEventListener("change", F.applySearch);
   /* template list in the header: only changes what is shown now (never what the list was created by) */

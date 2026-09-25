@@ -462,6 +462,7 @@ KC.addLang("en", "items", {
   "mirror-play": ["Mirror play", "Watching yourself and your partner in a mirror during a scene."],
   /* bodily-fluids */
   "cum-on-body": ["Cum – on body", "Ejaculation onto the body."],
+  "forced-staying-in-sweat-cum": ["Forced to stay in sweat/cum for a while after play", "Not allowed to wipe off or wash after play: sweat and cum stay on the body for a while. Agree how long beforehand; keep cum out of the eyes."],
   "cum-on-face": ["Cum – on face", "Ejaculation onto the face."],
   "bukkake": ["Bukkake", "Several partners ejaculate onto one person's face."],
   "cum-in-eyes": ["Cum in eyes", "Ejaculation straight into the eyes: it stings and can transmit infections."],

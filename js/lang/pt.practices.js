@@ -463,6 +463,7 @@ KC.addLang("pt", "items", {
   "mirror-play": ["Mirror play (espelho)", "Olhar você e o parceiro no espelho durante a cena."],
   /* bodily-fluids */
   "cum-on-body": ["Gozar – no corpo", "Ejaculação no corpo."],
+  "forced-staying-in-sweat-cum": ["Ficar à força com suor/sêmen no corpo por um tempo depois da prática", "Depois da prática, não pode se limpar nem tomar banho: o suor e o sêmen ficam no corpo por um tempo. Combinem a duração antes; o sêmen não deve cair nos olhos."],
   "cum-on-face": ["Gozar – no rosto", "Ejaculação no rosto."],
   "bukkake": ["Bukkake", "Vários parceiros ejaculam no rosto de uma pessoa."],
   "cum-in-eyes": ["Gozar nos olhos", "Ejaculação direto nos olhos: arde e pode transmitir infecções."],

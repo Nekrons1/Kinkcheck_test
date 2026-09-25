@@ -259,8 +259,8 @@
     const nm = x => esc((x && x.name) || t("unnamed")), cnt = x => x.ids.filter(id => known[id]).length;
     let html = "", act = "";
     if (b && tp && tp.id === b.id) { html = t("tpl.noteBound_html", { name: nm(tp), n: cnt(tp) }); act = "all"; }
-    else if (tp) { html = (b ? t(lib ? "tpl.noteBoundOff_html" : "tpl.noteGone_html", { name: nm(b) }) + " " : "") + t("tpl.noteView_html", { name: nm(tp), n: cnt(tp) }); act = lib ? "bound" : "off"; }
-    else if (b) { html = t(lib ? "tpl.noteBoundOff_html" : "tpl.noteGone_html", { name: nm(b) }) + " " + t("tpl.allShown"); act = lib ? "bound" : ""; }
+    else if (tp) { html = (b ? t(lib ? "tpl.noteBoundOff_html" : "tpl.noteGone_html", { name: nm(b) }) + KC.i18n.sep() : "") + t("tpl.noteView_html", { name: nm(tp), n: cnt(tp) }); act = lib ? "bound" : "off"; }
+    else if (b) { html = t(lib ? "tpl.noteBoundOff_html" : "tpl.noteGone_html", { name: nm(b) }) + KC.i18n.sep() + t("tpl.allShown"); act = lib ? "bound" : ""; }
     note.hidden = !html;
     KC.$("tplNoteText").innerHTML = html;
     btn.hidden = !act; btn.dataset.act = act;

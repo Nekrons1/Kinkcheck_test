@@ -461,6 +461,7 @@ KC.CATS = [
  ]},
  {id:"bodily-fluids", items:[
    [349,"cum-on-body"],
+   [466,"forced-staying-in-sweat-cum"],
    [350,"cum-on-face"],
    [378,"bukkake"],
    [379,"cum-in-eyes"],
@@ -502,8 +503,9 @@ KC.CATS = [
 ];
 
 /* Items with code >= NEW_FROM_CODE get a green "new" dot in the form.
-   371 = everything added after the v371 release. Raise it to retire the dots. */
-KC.NEW_FROM_CODE = 371;
+   418 = everything added after v533 (codes 0–417); earlier it was 371 (after the v371 release).
+   Raise it to retire the dots. */
+KC.NEW_FROM_CODE = 418;
 
 /* Item ids used by the earliest versions (before v371), when ids were made from the English name.
    Answers saved under these ids in browsers are moved to the current item on load. */

@@ -65,6 +65,8 @@
     has(part, id, lang) { const p = packs[lang]; return !!(p && p[part][id] != null); },
     /* ids of the list that the current language does not translate (shown in English instead) */
     missing() { const out = []; KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (!I.has("items", id, cur)) out.push(id); })); return out; },
+    /* what goes between two sentences: Japanese puts none after 。 */
+    sep: () => (cur === "ja" ? "" : " "),
     fieldLabel: f => I.t("profile." + f),
     optLabel: (f, o) => I.t("profile." + f + "." + o),
 

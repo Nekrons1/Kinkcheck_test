@@ -518,3 +518,8 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 .subbar #tplSel.on, .subbar #view.on{border-color:var(--line);color:var(--ink);font-weight:400;
   background:var(--panel) radial-gradient(circle, var(--accent) 0 3.5px, transparent 4px) no-repeat 10px 50% / 10px 10px;
   padding-left:26px}
+/* "Share the current template «X»": full width like the buttons under it */
+.tpl-share .tpl-cur{display:block;width:100%;margin:0 0 8px}
+.tpl-share .tpl-cur[hidden]{display:none}
+/* the header lists may take the whole second row on phones (old select.jump max-width no longer applies) */
+.subbar #tplSel, .subbar #view{max-width:none}

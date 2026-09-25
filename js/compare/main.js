@@ -60,8 +60,9 @@
     const sel = e.target.closest(".cmp-pick"); if (!sel || !sel.value) return;
     const s = sources().find(x => x.v === sel.value); const col = sel.closest(".cmp-col");
     if (s) { col.querySelector("textarea").value = s.code; col.querySelector(".cmp-name").value = s.name || ""; }
-    sel.value = "";
   });
+  /* back to "Fill from saved lists…" only once the list is closed: phone pickers stay open after a tap (B21) */
+  box.addEventListener("focusout", e => { const sel = e.target.closest && e.target.closest(".cmp-pick"); if (sel) sel.value = ""; });
   box.addEventListener("click", e => {
     const rm = e.target.closest('[data-act="rm"]'); if (!rm || box.children.length <= 2) return;
     rm.closest(".cmp-col").remove();
