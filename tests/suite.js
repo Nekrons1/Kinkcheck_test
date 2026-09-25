@@ -1233,6 +1233,11 @@ const S = (title) => console.log("\n## " + title);
       eq([pg.KC.stats.enabled || false, pg.d.querySelectorAll('script[src*="goatcounter"], script[src*="zgo.at"]').length], [false, 0], "no code: counter off, no external script");
       pg.KC.help.open("privacy"); ok(!/GoatCounter/.test(pg.d.getElementById("help-privacy").textContent), "no code: help does not mention the counter");
     }
+    if (code) {
+      eq(pg.KC.stats.enabled, true, "code “" + code + "”: counter on");
+      pg.KC.help.open("privacy"); ok(/GoatCounter/.test(pg.d.getElementById("help-privacy").textContent), "code set: help explains the counter");
+      ok(/goatcounter-count\.js/.test(src) && !/zgo\.at/.test(src), "the counter script is loaded from the site itself, not from an outside server");
+    }
     ok(!/location\.hash|state\.items|\.name\b/.test(src.replace(/\/\*[\s\S]*?\*\//g, "")), "the counter never reads the hash, answers or names");
     const tg = open("form", { hash: "toggle-goatcounter", storage: { local: { "practices-checklist-v1": JSON.stringify({ name: "Me", items: { hugging: { interest: "love" } }, meta: {} }) }, session: {} } });
     eq([tg.KC.form.viewingShared, tg.KC.form.state.name, tg.KC.store.received.list().length], [false, "Me", 0], "#toggle-goatcounter (exclude my own visits) opens my list, nothing added to Received");
