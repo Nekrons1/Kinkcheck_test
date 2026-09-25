@@ -7,7 +7,9 @@
   /* 1. whose list: someone's link (#...) or my own saved one */
   let linkLang = null, tplLink = null;
   const hash = location.hash.replace(/^#/, "");
-  if (hash) {
+  /* only a list/template link counts; anything else after "#" (e.g. the counter's #toggle-goatcounter)
+     opens my own list and is left alone */
+  if (hash && /(^|&)(a|n|m|i|ti|fi|k)=/.test(hash)) {
     const d = KC.codec.decode(hash);
     linkLang = d.lang;
     F.linkDamaged = !!d.damaged;
@@ -49,6 +51,7 @@
       const r = S.received.add(F.sharedCode, F.state.name);
       if (r.status !== "own") { notice.sender = r.status; notice.senderName = F.state.name; notice.rec = r.item && r.item.id; }
     }
+    KC.stats.event("open-template");
     F.openByTemplate({ id: tplLink.id, name: tplLink.name, ids: tplLink.ids }, notice);
     return;
   }
@@ -70,6 +73,7 @@
   if (F.viewingShared) {
     /* a damaged link shows wrong answers: warn, never store it */
     F.receivedResult = F.linkDamaged ? { status: "damaged" } : S.received.add(F.sharedCode, F.state.name);
+    KC.stats.event("open-link");
     F.renderBanner();
     KC.$("sharedBanner").style.display = "block";
     if (F.linkDamaged) { ["bannerCmp", "bannerKeep", "bannerSaveAs", "bannerTpl"].forEach(id => KC.$(id).hidden = true); KC.$("sharedBanner").classList.add("damaged"); }

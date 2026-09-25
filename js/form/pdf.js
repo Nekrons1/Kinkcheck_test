@@ -103,6 +103,7 @@
   KC.$("pdfFavLimits").addEventListener("change", pdfScope);
   KC.$("pdfGo").addEventListener("click", async function () {
     const btn = this, old = btn.textContent; btn.disabled = true; btn.textContent = t("pdf.busy");
+    KC.stats.event("pdf");
     const sheet = F.buildSheet(); document.body.appendChild(sheet);
     try {
       if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }

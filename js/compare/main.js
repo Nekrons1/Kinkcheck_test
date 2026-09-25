@@ -103,6 +103,7 @@
     const nm = prompt(t("prompt.cmpName"), def); if (nm === null) return;
     const r = C.save(nm, GROUP.map(p => ({ name: p.typed, code: p.code })), SAVED && SAVED.id);
     SAVED = { id: r.item.id, name: r.item.name }; drawSaved(); render(false);
+    KC.stats.event("compare-saved");
     KC.toast(t(r.status === "updated" ? "toast.cmpUpdated" : "toast.cmpSaved"));
   }
 
@@ -250,6 +251,7 @@
     if (bad.length) { KC.toast(t("cmp.damaged", { n: bad.join(", ") })); return; }
     if (P.length < 2) { KC.toast(t("cmp.needBoth")); return; }
     KC.$("cmpSearch").value = ""; NOTE = null;
+    KC.stats.event(P.length === 2 ? "compare-2" : "compare-3plus");
     if (P.length < C.MIN) SAVED = null;
     if (P.length === 2) { GROUP = null; LAST = { A: P[0].st, B: P[1].st, nA: P[0].name, nB: P[1].name }; FILTER = "all"; }
     else { LAST = null; GROUP = P; GFILTER = "allYes"; }

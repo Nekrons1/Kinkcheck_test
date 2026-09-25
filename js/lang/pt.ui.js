@@ -288,4 +288,6 @@ KC.addLang("pt", "ui", {
   "mine.cmpEmpty": "Nenhuma comparação salva ainda. Compare três pessoas ou mais e toque em “Salvar comparação”.",
   "confirm.cmpDel": "Excluir a comparação “{name}”? As listas continuam.",
   "help.compareSave_html": "<ul><li>Uma comparação de três pessoas ou mais pode ser salva com “Salvar comparação”, acima do resultado. As comparações salvas ficam em “Minhas listas” → “Minhas comparações” e na lista no topo da página de comparação.</li><li>Ao abrir, entram as versões mais recentes das listas deste aparelho: as suas e as “Recebidas”. Se alguém mandar um link novo, a comparação se atualiza sozinha. Se uma lista foi excluída, é usada a última versão salva.</li><li>As comparações entram na cópia de segurança.</li></ul>",
+  /* v565: anonymous visit counter (shown only while it is on) */
+  "help.privacyStats_html": "<ul><li>O site conta as visitas de forma anônima com o GoatCounter: qual página está aberta, o idioma e ações como “abriu um link” ou “baixou o PDF”. Sem cookies, sem endereço IP, nada fica salvo no aparelho. Respostas, nomes e links nunca são enviados.</li></ul>",
 });

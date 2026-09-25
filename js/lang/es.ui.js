@@ -286,4 +286,6 @@ KC.addLang("es", "ui", {
   "mine.cmpEmpty": "Todavía no hay comparaciones guardadas. Compara a tres personas o más y toca «Guardar comparación».",
   "confirm.cmpDel": "¿Eliminar la comparación «{name}»? Las listas se quedan.",
   "help.compareSave_html": "<ul><li>Una comparación de tres personas o más se puede guardar con «Guardar comparación», encima del resultado. Las comparaciones guardadas están en «Mis listas» → «Mis comparaciones» y en la lista de arriba de la página de comparación.</li><li>Al abrirla, se usan las versiones más recientes de las listas de este dispositivo: las tuyas y las «Recibidas». Si alguien te manda un enlace nuevo, la comparación se actualiza sola. Si una lista se eliminó, se usa su última versión guardada.</li><li>Las comparaciones van incluidas en la copia de seguridad.</li></ul>",
+  /* v565: anonymous visit counter (shown only while it is on) */
+  "help.privacyStats_html": "<ul><li>El sitio cuenta las visitas de forma anónima con GoatCounter: qué página está abierta, el idioma y acciones como «abrió un enlace» o «descargó el PDF». Sin cookies, sin direcciones IP, no se guarda nada en tu dispositivo. Las respuestas, los nombres y los enlaces nunca se envían.</li></ul>",
 });

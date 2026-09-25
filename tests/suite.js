@@ -1222,6 +1222,24 @@ const S = (title) => console.log("\n## " + title);
     ok(!q.errors.length && !f.errors.length, "no script errors");
   }
 
+  S("v565: anonymous counter (off until a code is set)");
+  {
+    const src = fs.readFileSync(require("./harness").ROOT + "/js/core/stats.js", "utf8");
+    const code = (src.match(/const CODE = "([^"]*)"/) || [])[1];
+    const pg = open("form");
+    ok(typeof pg.KC.stats.event === "function", "KC.stats.event exists on the form page");
+    ok(typeof open("compare").KC.stats.event === "function", "…and on the compare page");
+    if (!code) {
+      eq([pg.KC.stats.enabled || false, pg.d.querySelectorAll('script[src*="goatcounter"], script[src*="zgo.at"]').length], [false, 0], "no code: counter off, no external script");
+      pg.KC.help.open("privacy"); ok(!/GoatCounter/.test(pg.d.getElementById("help-privacy").textContent), "no code: help does not mention the counter");
+    }
+    ok(!/location\.hash|state\.items|\.name\b/.test(src.replace(/\/\*[\s\S]*?\*\//g, "")), "the counter never reads the hash, answers or names");
+    const tg = open("form", { hash: "toggle-goatcounter", storage: { local: { "practices-checklist-v1": JSON.stringify({ name: "Me", items: { hugging: { interest: "love" } }, meta: {} }) }, session: {} } });
+    eq([tg.KC.form.viewingShared, tg.KC.form.state.name, tg.KC.store.received.list().length], [false, "Me", 0], "#toggle-goatcounter (exclude my own visits) opens my list, nothing added to Received");
+    const junk = open("form", { hash: "top" });
+    eq([junk.KC.form.viewingShared, junk.KC.store.received.list().length], [false, 0], "any other non-link #… is ignored too");
+  }
+
   const R = report(); console.log("\nPASS", R.PASS, "FAIL", R.FAIL);
   process.exit(R.FAIL ? 1 : 0);
 })().catch(e => { console.error("CRASH", e && e.stack); process.exit(2); });

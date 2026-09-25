@@ -43,6 +43,7 @@
   }
 
   KC.$("shareBtn").addEventListener("click", () => {
+    KC.stats.event("share");
     const tp = F.tpl(), note = KC.$("shareTplNote");
     note.hidden = !tp;
     if (tp) note.textContent = t("share.tplNote", { name: tp.name || t("unnamed"), n: tp.ids.length });

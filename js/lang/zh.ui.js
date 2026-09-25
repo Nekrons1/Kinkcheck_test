@@ -315,4 +315,6 @@ KC.addLang("zh", "ui", {
   "mine.cmpEmpty": "還沒有已儲存的比較。比較三個人以上，再按「儲存比較」。",
   "confirm.cmpDel": "要刪除比較「{name}」嗎？清單本身會保留。",
   "help.compareSave_html": "<ul><li>三人以上的比較可以用結果上方的「儲存比較」保存。已儲存的比較在「我的清單」→「我的比較」，以及比較頁面上方的選單裡。</li><li>開啟時會使用這台裝置上最新版本的清單：你自己的清單和「已收到」的清單。對方傳來新連結時，比較會自動更新。清單被刪除時，會使用最後儲存的版本。</li><li>比較也會包含在備份裡。</li></ul>",
+  /* v565: anonymous visit counter (shown only while it is on) */
+  "help.privacyStats_html": "<ul><li>本網站用 GoatCounter 匿名計算造訪次數：只記錄開啟的頁面、語言，以及「開啟連結」、「下載 PDF」這類動作。不使用 Cookie、不保存 IP 位址，也不會在你的裝置上儲存任何資料。答案、名字和連結都不會被傳送。</li></ul>",
 });

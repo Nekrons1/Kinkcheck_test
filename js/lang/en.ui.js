@@ -287,4 +287,6 @@ KC.addLang("en", "ui", {
   "mine.cmpEmpty": "No saved comparisons yet. Compare three or more people and tap “Save comparison”.",
   "confirm.cmpDel": "Delete the comparison “{name}”? The lists themselves stay.",
   "help.compareSave_html": "<ul><li>A comparison of three or more people can be saved with “Save comparison” above the result. Saved comparisons are in “My lists” → “My comparisons” and in the list at the top of the compare page.</li><li>When opened, it takes the newest versions of the lists on this device: your lists and “Received”. If someone sends you a new link, the comparison updates by itself. If a list was deleted, its last saved version is used.</li><li>Comparisons are included in the backup.</li></ul>",
+  /* v565: anonymous visit counter (shown only while it is on) */
+  "help.privacyStats_html": "<ul><li>The site counts visits anonymously with GoatCounter: which page is open, the language and actions such as “opened a link” or “downloaded a PDF”. No cookies, no IP addresses, nothing stored on your device. Answers, names and links are never sent.</li></ul>",
 });
