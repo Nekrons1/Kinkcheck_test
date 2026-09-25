@@ -4,6 +4,8 @@
    Texts: help.h (title), help.<section>.h + help.<section>_html in lang/<lang>.ui.js. */
 (function (KC) {
   const SECTIONS = ["start", "answer", "filters", "lists", "share", "received", "tpl", "pdf", "compare", "privacy"];
+  /* texts added to a section later, kept as separate keys so the original text stays as it was */
+  const MORE = { compare: ["help.compareSave_html"] };
   const t = k => KC.i18n.t(k);
   let modal = null;
 
@@ -30,7 +32,7 @@
       KC.$("helpTitle").textContent = t("help.h");
       KC.$("helpClose").textContent = t("close");
       KC.$("helpToc").innerHTML = SECTIONS.map(s => '<button type="button" class="btn ghost mini" data-go="' + s + '">' + KC.esc(t("help." + s + ".h")) + "</button>").join("");
-      KC.$("helpBody").innerHTML = SECTIONS.map(s => '<section id="help-' + s + '"><h4>' + KC.esc(t("help." + s + ".h")) + "</h4>" + t("help." + s + "_html") + "</section>").join("");
+      KC.$("helpBody").innerHTML = SECTIONS.map(s => '<section id="help-' + s + '"><h4>' + KC.esc(t("help." + s + ".h")) + "</h4>" + t("help." + s + "_html") + (MORE[s] || []).map(k => t(k)).join("") + "</section>").join("");
       modal.open();
       go(SECTIONS.indexOf(sec) >= 0 ? sec : "start");
     },

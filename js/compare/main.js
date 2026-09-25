@@ -3,7 +3,9 @@
    on this device (my current list, "My lists", "Received").
    2 participants  -> detailed view: groups + filters "Yes from A/B", "Yes and Maybe from A/B".
    3+ participants -> group view: "Yes/Love from everyone" and a pair table (matches per pair);
-                      a number in the table opens the detailed view for that pair. */
+                      a number in the table opens the detailed view for that pair.
+   A comparison of 3+ can be saved (KC.store.cmp) and reopened from the picker at the top or from
+   "My lists"; it then takes the newest version of every list on this device. */
 (function (KC) {
   const t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   const BADGE = { love: "b-match", yes: "b-good", maybe: "b-maybe", limit: "b-limit" };
@@ -11,11 +13,14 @@
   let LAST = null, FILTER = "all";   /* detailed pair view */
   let GROUP = null, GFILTER = "allYes"; /* group view: [{name, st}] */
   let PMODE = "any";                    /* pair table: "any" | "role" (only Top + Bottom pairs) */
+  let SAVED = null;                     /* the saved comparison on screen: {id, name} */
+  let NOTE = null;                      /* after opening a saved one: {updated: [names], gone: [names]} */
+  const C = KC.store.cmp;
 
   KC.initTheme();
   KC.i18n.set(KC.i18n.detect(null));
   function applyStatic() { KC.i18n.apply(document); KC.$("backLink").href = "index.html?lang=" + KC.i18n.lang; }
-  KC.i18n.mountSwitcher(() => { applyStatic(); relabel(); drawPickers(); if (LAST || GROUP) render(false); });
+  KC.i18n.mountSwitcher(() => { applyStatic(); relabel(); drawPickers(); drawSaved(); if (LAST || GROUP) render(false); });
   applyStatic();
 
   /* ---------- participants ---------- */
@@ -70,6 +75,36 @@
     relabel();
   });
   KC.$("addPart").addEventListener("click", () => { const c = addPart(); if (c) c.querySelector("textarea").focus(); });
+
+  /* ---------- saved comparisons ---------- */
+  function drawSaved() {
+    const a = C.list(), sel = KC.$("cmpSaved");
+    sel.hidden = !a.length;
+    sel.innerHTML = '<option value="">' + esc(t("cmp.savedPick")) + "</option>"
+      + a.map(x => '<option value="' + esc(x.id) + '">' + esc(C.label(x) || t("unnamed")) + " (" + x.parts.length + ")</option>").join("");
+  }
+  function openSaved(id) {
+    const e = C.byId(id), parts = e && C.resolve(id); if (!parts) return;
+    box.innerHTML = "";
+    parts.slice(0, MAX).forEach(p => addPart(p.name, p.code));
+    const who = (p, i) => p.name || KC.codec.decode(p.code).name || t("cmp.person", { n: i + 1 });
+    const note = { updated: [], gone: [] };
+    parts.forEach((p, i) => { if (p.state !== "same") note[p.state].push(who(p, i)); });
+    KC.$("cmpBtn").click();
+    SAVED = { id: e.id, name: e.name || "" }; NOTE = note;
+    if (GROUP) render(false);
+  }
+  KC.$("cmpSaved").addEventListener("change", e => { const v = e.target.value; if (v) openSaved(v); });
+  /* back to "Open a saved comparison…" once the list is closed (B21) */
+  KC.$("cmpSaved").addEventListener("focusout", e => { e.target.value = ""; });
+  function saveCurrent() {
+    if (!GROUP || GROUP.length < C.MIN) return;
+    const def = SAVED ? SAVED.name : GROUP.map(p => p.name).join(", ");
+    const nm = prompt(t("prompt.cmpName"), def); if (nm === null) return;
+    const r = C.save(nm, GROUP.map(p => ({ name: p.typed, code: p.code })), SAVED && SAVED.id);
+    SAVED = { id: r.item.id, name: r.item.name }; drawSaved(); render(false);
+    KC.toast(t(r.status === "updated" ? "toast.cmpUpdated" : "toast.cmpSaved"));
+  }
 
   /* ---------- shared bits ---------- */
   const badge = v => v ? '<span class="badge ' + BADGE[v] + '">' + esc(t("scale." + v)) + "</span>" : '<span class="badge b-one">—</span>';
@@ -158,9 +193,19 @@
     tb += "</table></div>";
     return blockOf(t(withMaybe ? "cmp.pairsTitleYM" : "cmp.pairsTitle"), withMaybe ? "var(--maybe)" : "var(--love)", t(withMaybe ? "cmp.pairsSubYM" : "cmp.pairsSub"), tb, shown);
   }
+  function savedBar() {
+    let h = '<div class="cmp-savebar"><button class="btn ghost" type="button" data-act="save">' + esc(t("cmp.save")) + "</button></div>";
+    if (SAVED) {
+      const bits = [t("cmp.savedNote", { name: SAVED.name || C.label(C.byId(SAVED.id)) || t("unnamed") })];
+      if (NOTE && NOTE.updated.length) bits.push(t("cmp.savedUpd", { names: NOTE.updated.join(", ") }));
+      if (NOTE && NOTE.gone.length) bits.push(t("cmp.savedGone", { names: NOTE.gone.join(", ") }));
+      h += '<div class="sub cmp-savednote">' + esc(bits.join(KC.i18n.sep())) + "</div>";
+    }
+    return h;
+  }
   function renderGroup() {
     const P = GROUP, searching = !!KC.$("cmpSearch").value.trim();
-    let html = '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
+    let html = savedBar() + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
       + P.map(p => profileLine(p.name, p.st)).join("");
     if (GFILTER === "pairs") {
       const role = p => p.st.meta.role || "";
@@ -199,17 +244,20 @@
       const raw = col.querySelector("textarea").value.trim(); if (!raw) return;
       const st = KC.codec.decode(raw);
       if (st.damaged) bad.push(i + 1);
-      P.push({ name: col.querySelector(".cmp-name").value.trim() || st.name || t("cmp.person", { n: i + 1 }), st });
+      const typed = col.querySelector(".cmp-name").value.trim();
+      P.push({ name: typed || st.name || t("cmp.person", { n: i + 1 }), typed, code: raw, st });
     });
     if (bad.length) { KC.toast(t("cmp.damaged", { n: bad.join(", ") })); return; }
     if (P.length < 2) { KC.toast(t("cmp.needBoth")); return; }
-    KC.$("cmpSearch").value = "";
+    KC.$("cmpSearch").value = ""; NOTE = null;
+    if (P.length < C.MIN) SAVED = null;
     if (P.length === 2) { GROUP = null; LAST = { A: P[0].st, B: P[1].st, nA: P[0].name, nB: P[1].name }; FILTER = "all"; }
     else { LAST = null; GROUP = P; GFILTER = "allYes"; }
     render(true);
   });
   KC.$("cmpSearch").addEventListener("input", () => { if (LAST || GROUP) render(false); });
   KC.$("results").addEventListener("click", e => {
+    if (e.target.closest('button[data-act="save"]')) { saveCurrent(); return; }
     const h = e.target.closest('button[data-act="help"]');
     if (h) { const d = h.parentNode.querySelector(".item-desc"); if (d) { d.hidden = !d.hidden; h.classList.toggle("on", !d.hidden); } return; }
     const pm = e.target.closest("button[data-pm]");
@@ -224,7 +272,12 @@
 
   /* ---------- start: two participants, the first one is my list ---------- */
   let handed = false;
+  drawSaved();
   try {
+    const sv = sessionStorage.getItem("cmpOpen");
+    if (sv !== null) { sessionStorage.removeItem("cmpOpen"); if (C.byId(sv)) { handed = true; openSaved(sv); } }
+  } catch (e) {}
+  if (!handed) try {
     const a = sessionStorage.getItem("cmpA"), b = sessionStorage.getItem("cmpB");
     if (a !== null || b !== null) {
       handed = true;

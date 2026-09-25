@@ -135,7 +135,7 @@
     /* backup of everything on this device -> plain object (saved as a .json file) */
     exportAll() {
       return { app: "kinkcheck", v: 1, ts: Date.now(), own: KC.ls.get(KC.KEYS.state, null), active: S.mine.active(),
-        mine: S.mine.list(), received: KC.ls.get(KC.KEYS.saved, []) || [], templates: S.tpl.list(), favs: S.favs.all() };
+        mine: S.mine.list(), received: KC.ls.get(KC.KEYS.saved, []) || [], templates: S.tpl.list(), favs: S.favs.all(), compares: S.cmp.list() };
     },
     /* merge a backup in: adds lists that are not here yet (by id), never deletes anything.
        -> {mine: added, received: added, templates: added} or null if it is not a backup.
@@ -168,6 +168,17 @@
         const o = S.favs.all();
         Object.keys(b.favs).forEach(k => { const add = S.cleanIds(b.favs[k]); if (!add.length) return; const cur = Array.isArray(o[k]) ? o[k] : []; o[k] = cur.concat(add.filter(id => cur.indexOf(id) < 0)); });
         KC.ls.set(KC.KEYS.fav, o);
+      }
+      /* saved comparisons: new ones by entry id */
+      if (Array.isArray(b.compares)) {
+        const cl = S.cmp.list(), cIds = {}; cl.forEach(x => { cIds[x.id] = 1; });
+        b.compares.forEach(x => {
+          if (!x || !x.id || cIds[x.id] || !Array.isArray(x.parts)) return;
+          const parts = x.parts.filter(p => p && typeof p.code === "string").map(p => ({ name: typeof p.name === "string" ? p.name : "", uid: typeof p.uid === "string" ? p.uid : "", code: p.code }));
+          if (parts.length < S.cmp.MIN) return;
+          cl.push({ id: x.id, name: typeof x.name === "string" ? x.name : "", parts, ts: x.ts || Date.now() });
+        });
+        cl.sort((x, y) => (y.ts || 0) - (x.ts || 0)); S.cmp.write(cl);
       }
       /* nothing filled in here yet: take the backup's current list as well */
       if (S.isEmpty(S.loadOwn()) && b.own) { S.writeOwn(S.normalize(b.own)); if (b.active) S.mine.setActive(b.active); }
@@ -238,6 +249,50 @@
         const item = { id: newEntryId("t"), tid, name, ids: ids.slice(), own: false, ts: Date.now() };
         a.unshift(item); if (a.length > 60) a.length = 60; this.write(a); return { status: "added", item };
       },
+    },
+
+    /* saved comparisons (3+ people): [{id, name, ts, parts: [{name, uid, code}]}]
+       A part points at a list by its list id (uid), so opening the comparison takes the newest version
+       on this device: my current list, "My lists", then "Received" (a newer link from the same person
+       replaces the old one there). code = the version last seen, used when the list is gone from the device;
+       name = the name typed on the compare page ("" = the name inside the list). */
+    cmp: {
+      MIN: 3,
+      list()   { const a = KC.ls.get(KC.KEYS.cmp, []); return Array.isArray(a) ? a.filter(x => x && x.id && Array.isArray(x.parts)) : []; },
+      write(a) { KC.ls.set(KC.KEYS.cmp, a); },
+      byId(id) { return this.list().find(x => x.id === id) || null; },
+      /* newest code of list uid on this device, or "" */
+      fresh(uid) {
+        if (!uid) return "";
+        if (S.hasOwn()) { const o = S.loadOwn(); if (o.uid === uid && !S.isEmpty(o)) return KC.codec.encode(S.forShare(o)); }
+        const m = S.mine.list().find(x => x.data && x.data.uid === uid);
+        if (m) return KC.codec.encode(S.forShare(S.normalize(m.data)));
+        const rl = S.received.list(), is = x => { try { return KC.codec.decode(x.code).uid === uid; } catch (e) { return false; } };
+        const r = rl.find(x => !x.manual && is(x)) || rl.find(is); /* "Save as" copies are snapshots: the link entry first */
+        return r ? r.code : "";
+      },
+      /* entry -> [{name, code, uid, state: "same"|"updated"|"gone"}]; remembers the fresh versions */
+      resolve(id) {
+        const a = this.list(), e = a.find(x => x.id === id); if (!e) return null;
+        const out = e.parts.map(p => {
+          const f = this.fresh(p.uid);
+          const state = !p.uid ? "same" : !f ? "gone" : f === p.code ? "same" : "updated";
+          if (f) p.code = f;
+          return { name: p.name || "", code: p.code || "", uid: p.uid || "", state };
+        });
+        this.write(a);
+        return out;
+      },
+      /* parts: [{name, code}] -> {status: added|updated, item}; the same name updates that comparison */
+      save(name, parts, id) {
+        const a = this.list(), nm = (name || "").trim();
+        const ps = parts.map(p => ({ name: (p.name || "").trim(), uid: (KC.codec.decode(p.code).uid || ""), code: p.code }));
+        const i = a.findIndex(x => (id && x.id === id && (x.name || "") === nm) || (nm && (x.name || "").trim().toLowerCase() === nm.toLowerCase()));
+        if (i >= 0) { const it = a.splice(i, 1)[0]; it.name = nm; it.parts = ps; it.ts = Date.now(); a.unshift(it); this.write(a); return { status: "updated", item: it }; }
+        const item = { id: newEntryId("c"), name: nm, parts: ps, ts: Date.now() };
+        a.unshift(item); this.write(a); return { status: "added", item };
+      },
+      label(x) { return (x && x.name) || (x ? x.parts.map(p => p.name || KC.codec.decode(p.code).name || "?").join(", ") : ""); },
     },
 
     /* favourites (♥) of lists opened from links, by list: {"u:<list id>" | "k:<content key>": [ids]}.

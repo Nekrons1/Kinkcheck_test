@@ -361,13 +361,15 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .top-actions{gap:4px}
   .top-actions .btn{font-size:11px;padding:7px 4px}
 }
-/* six languages: keep the switcher on the title line on narrow phones */
+/* seven languages: keep the switcher on the title line on narrow phones */
 @media (max-width:480px){
   .brand-row .brand{font-size:15px}
   .lang-btn{padding:5px 4px;font-size:10.5px}
 }
 /* Thai has marks above and below the line: a bit more line height in compact buttons */
 html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
+/* Traditional Chinese: Taiwanese system fonts first, so Han characters get Traditional glyph shapes */
+html[lang="zh-Hant"] body{font-family:Inter,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Noto Sans CJK TC",system-ui,sans-serif}
 
 /* ---------- favourites (♥), filter panel, templates ---------- */
 .mini.fav{width:29px;padding:6px 0;text-align:center;font-size:14px;line-height:1;color:var(--muted);opacity:.6}
@@ -480,7 +482,15 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 /* phones: title + "?" + languages share one line; a long title is cut with "…" instead of wrapping
    (flex wraps before it shrinks, so the title gets a max width: row minus languages, "?" and gaps) */
 @media (max-width:560px){
-  .brand-row .brand{max-width:calc(100% - 186px)}
+  .brand-row .brand{max-width:calc(100% - 254px)}
+}
+/* seven languages: switcher is ~171px at ≤480px, ~160px at ≤370px */
+@media (max-width:480px){
+  .brand-row .brand{max-width:calc(100% - 208px)}
+}
+@media (max-width:370px){
+  .lang-btn{padding:5px 3px}
+  .brand-row .brand{max-width:calc(100% - 196px)}
 }
 /* phones: the row must fit "Filters" with its dot next to ♥ — flex wraps before it shrinks, so keep the bases small */
 @media (max-width:560px){
@@ -523,3 +533,9 @@ html[lang="th"] .top-actions .btn, html[lang="th"] .lang-btn{line-height:1.35}
 .tpl-share .tpl-cur[hidden]{display:none}
 /* the header lists may take the whole second row on phones (old select.jump max-width no longer applies) */
 .subbar #tplSel, .subbar #view{max-width:none}
+
+/* ---------- saved comparisons (3+ people) ---------- */
+.cmp-saved{width:100%;font:inherit;font-size:14px;padding:9px 10px;margin:16px 0 0;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.cmp-savebar{margin:12px 0 10px}
+.cmp-savebar .btn{width:100%}
+.cmp-savednote{margin:-2px 0 10px}

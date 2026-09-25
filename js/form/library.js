@@ -1,5 +1,5 @@
 /* form/library.js — the device-local lists: "Received" (other people's links + received templates)
-   and "My lists" (several own lists, stored in full + my templates). Also the hand-off to compare.html. */
+   and "My lists" (several own lists, stored in full + my templates + saved comparisons). Also the hand-off to compare.html. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), R = KC.store.received, M = KC.store.mine, T = KC.store.tpl;
 
@@ -83,7 +83,20 @@
     KC.$("mineList").innerHTML = a.length ? rows(a, x => isCurrent(x) ? ["rename", "del"] : ["load", "rename", "del"], M.label, isCurrent, mineTpl) : empty("mine.empty");
     const tl = T.own(); KC.$("mineTplList").innerHTML = tl.length ? rows(tl, TPL_ACTS, T.label, null, tplCount, "tpl-row") : empty("mine.tplEmpty");
     KC.$("mineTplSave").hidden = F.viewingShared; /* templates are made from my own list */
+    const cl = KC.store.cmp.list();
+    KC.$("mineCmpList").innerHTML = cl.length ? rows(cl, ["open", "rename", "del"], KC.store.cmp.label, null, x => t("cmp.nPeople", { n: x.parts.length }), "cmp-row") : empty("mine.cmpEmpty");
   }
+  /* saved comparisons: open on compare.html (with the newest versions of the lists), rename, delete */
+  KC.$("mineCmpList").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-act]"); if (!btn) return;
+    const C = KC.store.cmp, id = btn.closest(".saved-row").dataset.id, a = C.list(), item = a.find(x => x.id === id); if (!item) return;
+    switch (btn.dataset.act) {
+      case "open": F.saveNow(); try { sessionStorage.setItem("cmpOpen", id); } catch (err) {} location.href = "compare.html?lang=" + KC.i18n.lang; break;
+      case "rename": { const nn = prompt(t("prompt.cmpName"), C.label(item)); if (nn !== null && nn.trim()) { item.name = nn.trim(); C.write(a); drawMine(); } break; }
+      case "del": if (!confirm(t("confirm.cmpDel", { name: C.label(item) || t("unnamed") }))) return;
+        C.write(a.filter(x => x.id !== id)); drawMine(); break;
+    }
+  });
   /* "Save the current list as a template": the template + a copy of the list marked as created by it */
   KC.$("mineTplSave").addEventListener("click", () => {
     if (!F.templateIds().length) { KC.toast(t("tplShare.empty")); return; }
