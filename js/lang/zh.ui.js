@@ -317,4 +317,16 @@ KC.addLang("zh", "ui", {
   "help.compareSave_html": "<ul><li>三人以上的比較可以用結果上方的「儲存比較」保存。已儲存的比較在「我的清單」→「我的比較」，以及比較頁面上方的選單裡。</li><li>開啟時會使用這台裝置上最新版本的清單：你自己的清單和「已收到」的清單。對方傳來新連結時，比較會自動更新。清單被刪除時，會使用最後儲存的版本。</li><li>比較也會包含在備份裡。</li></ul>",
   /* v565: anonymous visit counter (shown only while it is on) */
   "help.privacyStats_html": "<ul><li>本網站用 GoatCounter 匿名計算造訪次數：只記錄開啟的頁面、語言，以及「開啟連結」、「下載 PDF」這類動作。不使用 Cookie、不保存 IP 位址，也不會在你的裝置上儲存任何資料。答案、名字和連結都不會被傳送。</li></ul>",
+  /* v568: 18+ and disclaimer */
+  "foot.legal": "18+。使用本網站即表示你確認已年滿 18 歲。本網站不鼓吹文中提及的任何玩法；本服務僅供娛樂用途。",
+  /* v573: moving to the new site address */
+  "migrate.bar_html": "<b>網站已搬到新網址。</b>一鍵把這個瀏覽器裡儲存的所有資料搬過去：清單、已收到、範本、最愛和比較。這裡的資料不會被刪除。",
+  "migrate.go": "搬到新網站",
+  "migrate.later": "稍後",
+  "migrate.h": "從舊網站搬家",
+  "migrate.ask": "要把舊網站的資料加到這裡嗎？清單：{mine}，已收到：{rec}，範本：{tpl}，比較：{cmp}，也包括最愛。這裡已儲存的資料會保留。",
+  "migrate.yes": "搬過來",
+  "migrate.done": "完成！已搬過來——清單：{mine}，已收到：{rec}，範本：{tpl}，比較：{cmp}。最愛也在。",
+  "migrate.nothing": "這些之前都已經搬過了，沒有新的資料。",
+  "migrate.bad": "無法讀取搬家資料：連結被截斷或損壞。請打開舊網站再按一次「搬到新網站」，或使用備份（「我的清單」→「下載備份」）。",
 });

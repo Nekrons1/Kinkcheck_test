@@ -127,4 +127,7 @@
   KC.$("bannerCmp").addEventListener("click", () => {
     F.startCompare(S.ownCode(), KC.codec.encode(F.shown(), KC.i18n.lang), t("label.mine"), F.state.name || t("label.this"));
   });
+
+  /* modules that need the page fully drawn first (e.g. the "moved from the old site" question) */
+  (F.onReady || []).forEach(f => { try { f(); } catch (e) { console.error(e); } });
 })(window.KC);

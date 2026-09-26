@@ -20,11 +20,11 @@ const S = (title) => console.log("\n## " + title);
   ok(!p.errors.length, "no script errors on load: " + p.errors.join(" | "));
   const ids = [], codes = [];
   KC.CATS.forEach(c => c.items.forEach(([code, id]) => { ids.push(id); codes.push(code); }));
-  eq(ids.length, 467, "item count");
+  eq(ids.length, 488, "item count");
   eq(new Set(ids).size, ids.length, "unique ids"); eq(new Set(codes).size, codes.length, "unique codes");
   const byCode = {}; KC.CATS.forEach(c => c.items.forEach(([code, id]) => byCode[code] = id));
   eq(OLD.ORDER.map((id, i) => byCode[i]), OLD.ORDER, "codes 0..370 still mean the same items as in old versions");
-  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(467).keys()], "codes are 0..466 with no gaps or reuse");
+  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(488).keys()], "codes are 0..487 with no gaps or reuse");
   eq(["furry","xenophilia-tentacles","trampling-barefoot","trampling-shoes","rubber-band-snapping","forced-drinking-beer-cider","irrumatio-to-vomiting","bukkake","cum-in-eyes","nerd-hikikomori","humiliating-body-writing","wax-burns","spitting-in-mouth","snowballing","used-as-toy-for-other-sub","bondage-bag"].map(id => ids.indexOf(id) >= 0), Array(16).fill(true), "16 added items present");
   eq(["sleep-sacks", "bondage-bag", "scarification", "electricity-violet-wand"].map(id => KC.i18n.item(id, "ru").name), ["Спальный мешок", "Бондажный мешок", "Шрамирование", "Электро — вайолет-ванд"], "RU names as requested");
   eq(KC.CATS.find(c => c.id === "marking").items.some(([, id]) => id === "wax-burns"), true, "wax burns under marking");
@@ -65,7 +65,7 @@ const S = (title) => console.log("\n## " + title);
     eq(miss.length, 0, l + ": every item has name+hint (" + miss.slice(0, 3) + ")");
     const mc = KC.CATS.filter(c => !KC.i18n._pick("cats", c.id, l)); eq(mc.length, 0, l + ": every category named");
   });
-  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 467, "EN names unique");
+  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 488, "EN names unique");
   const enCyr = ids.filter(id => /[а-яё]/i.test(KC.i18n.item(id, "en").desc)); eq(enCyr, [], "EN hints contain no Cyrillic");
   // ui key parity
   const src = l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8").match(/"([a-zA-Z0-9_.]+)":/g).map(s => s.slice(1, -2));
@@ -121,7 +121,7 @@ const S = (title) => console.log("\n## " + title);
   p = open("form", { navLang: "ru" });
   let { w, d } = p;
   eq(p.KC.i18n.lang, "ru", "RU browser -> RU page");
-  eq(d.querySelectorAll(".item").length, 467, "467 rows rendered");
+  eq(d.querySelectorAll(".item").length, 488, "488 rows rendered");
   ok(d.querySelector(".brand-row #langSw"), "language switcher sits in the title row");
   const dotted = [...d.querySelectorAll(".item .new-dot")].map(x => x.closest(".item").dataset.id).sort();
   const newer = []; p.KC.CATS.forEach(c => c.items.forEach(([code, id]) => { if (code >= 418) newer.push(id); }));
@@ -150,7 +150,7 @@ const S = (title) => console.log("\n## " + title);
   let saved = JSON.parse(w.localStorage.getItem("practices-checklist-v1"));
   eq(saved.items, { hugging: { interest: "love" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "limit" }, "impact-bruising": { interest: "yes" } }, "answers saved (toggle-off removed)");
   eq(saved.meta, { role: "sub", exp: "medium", rel: "poly", attire: ["lace", "leather"] }, "profile saved as keys");
-  eq(d.getElementById("progress").textContent, "Отмечено 4 из 467 практик", "progress text");
+  eq(d.getElementById("progress").textContent, "Отмечено 4 из 488 практик", "progress text");
   const link = p.KC.form.shareLink();
   ok(/[#&]lg=ru(&|$)/.test(link), "share link carries lg=ru");
   ok(/[#&]m=/.test(link), "share link carries profile (m=)");
@@ -172,7 +172,7 @@ const S = (title) => console.log("\n## " + title);
   ok(d.querySelector('#roleTop .opt[data-val="sub"]').getAttribute("aria-pressed") === "true", "role survived switch");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submissive / Bottom", "role label translated");
   eq(d.getElementById("metaName").value, "Андрей", "name survived switch");
-  eq(d.getElementById("progress").textContent, "4 of 467 practices marked", "EN progress");
+  eq(d.getElementById("progress").textContent, "4 of 488 practices marked", "EN progress");
   eq(d.getElementById("shareBtn").textContent, "Share", "header translated");
   eq(d.documentElement.lang, "en", "<html lang> updated");
   ok(/lg=en/.test(p.KC.form.shareLink()), "link now carries lg=en");
@@ -185,7 +185,7 @@ const S = (title) => console.log("\n## " + title);
   ok(row("hugging").querySelector('.scale button[data-v="love"]').classList.contains("sel"), "answer survived switch to PT");
   eq(row("hugging").querySelector('.scale button[data-v="love"]').textContent, "Adoro", "PT scale");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submisso(a) / Bottom", "PT role label");
-  eq(d.getElementById("progress").textContent, "4 de 467 práticas marcadas", "PT progress");
+  eq(d.getElementById("progress").textContent, "4 de 488 práticas marcadas", "PT progress");
   const ptHash = p.KC.form.shareLink().split("#")[1];
   ok(/lg=pt/.test(ptHash), "PT link carries lg=pt");
   eq(open("form", { hash: ptHash, storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "pt", "PT link opens in PT");
@@ -351,7 +351,7 @@ const S = (title) => console.log("\n## " + title);
   eq(Object.entries(gp.KC.form.state.items).filter(([id]) => ids.indexOf(id) >= 0).sort(), [["cbt", { interest: "limit" }], ["hugging", { interest: "love" }], ["knife-play", { interest: "maybe" }], ["orgy", { interest: "yes" }], ["puppy-play", { interest: "yes" }]], "old ids moved to current items; current answer wins");
   ok(gp.d.querySelector('.item[data-id="puppy-play"] .scale button[data-v="yes"]').classList.contains("sel"), "moved answer is visible on the page");
   const gShown = gp.d.querySelectorAll(".scale button.sel").length, gLink = Object.keys(KCn.codec.decode(gp.KC.form.shareLink()).items).length;
-  eq(gp.d.getElementById("progress").textContent, "Отмечено " + gShown + " из 467 практик", "counter = what is shown");
+  eq(gp.d.getElementById("progress").textContent, "Отмечено " + gShown + " из 488 практик", "counter = what is shown");
   eq(gLink, gShown, "link contains exactly what the counter says");
   Object.keys(KC.ID_ALIASES).forEach(k => { if (ids.indexOf(KC.ID_ALIASES[k]) < 0) ok(false, "alias target missing: " + k); });
 
@@ -381,7 +381,7 @@ const S = (title) => console.log("\n## " + title);
   const srt = o => Object.entries(o).sort();
   eq(srt(KCn.codec.decode(KCn.codec.encode(withNew)).items), srt(withNew.items), "link with new items round-trips");
   const allNew = {}; KCn.CATS.forEach(c => c.items.forEach(([, id], i) => allNew[id] = { interest: vals[i % 4] }));
-  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 467, "fully filled 467-item link round-trips");
+  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 488, "fully filled 488-item link round-trips");
 
   /* form: "Show" filter */
   S("Show filter");
@@ -390,7 +390,7 @@ const S = (title) => console.log("\n## " + title);
   const vsel = p.d.getElementById("view");
   eq([...vsel.options].map(o => o.textContent), ["Все пункты", "Только без ответа", "Только новые", "Отвеченные, по ответам", "Обожаю / Да / Может"], "Show menu labels");
   vsel.value = "unanswered"; vsel.dispatchEvent(new p.w.Event("change"));
-  eq([vis().length, vis().indexOf("hugging"), vis().indexOf("furry")], [465, -1, -1], "unanswered: answered items hidden");
+  eq([vis().length, vis().indexOf("hugging"), vis().indexOf("furry")], [486, -1, -1], "unanswered: answered items hidden");
   click(p.w, p.d.querySelector('.item[data-id="chains"] .scale button[data-v="yes"]'));
   ok(vis().indexOf("chains") >= 0, "a row just answered stays visible until the filter is re-applied");
   vsel.dispatchEvent(new p.w.Event("change")); ok(vis().indexOf("chains") < 0, "re-applying hides it");
@@ -399,7 +399,7 @@ const S = (title) => console.log("\n## " + title);
   eq(vis().sort(), newIds.sort(), "new: exactly the green-dot items (" + newIds.length + ")");
   const sb = p.d.getElementById("search"); sb.value = "секс"; sb.dispatchEvent(new p.w.Event("input"));
   ok(vis().length > 0 && vis().every(id => newIds.indexOf(id) >= 0), "search combines with the filter");
-  sb.value = ""; vsel.value = "all"; vsel.dispatchEvent(new p.w.Event("change")); eq(vis().length, 467, "all items again");
+  sb.value = ""; vsel.value = "all"; vsel.dispatchEvent(new p.w.Event("change")); eq(vis().length, 488, "all items again");
 
   /* backup */
   S("Backup");
@@ -460,13 +460,16 @@ const S = (title) => console.log("\n## " + title);
     if (KCn.codec.decode(lnk).damaged) fp++;
     const oldStyle = lnk.replace(/\./g, "_").replace(/&k=\w+/, "");   // what older versions produced
     if (KCn.codec.decode(oldStyle).damaged) fp++;
-    if (/__/.test(oldStyle)) { tries++; if (KCn.codec.decode(oldStyle.replace(/__/g, "")).damaged) caught++; }
+    /* "__" eaten from an OLD link: simulated with the real old encoders below (their item counts), not with
+       today's count — a today-sized bitmap re-made old-style is a link that never existed (was the flaky case) */
     const a = new URLSearchParams(lnk).get("a");
     if (a.length > 6) { const cut = lnk.replace(a, a.slice(0, 3) + a.slice(5)); tries++; if (KCn.codec.decode(cut).damaged) caught++; }
   }
   for (let t = 0; t < 60; t++) { const items = {}; for (let k = 0; k < [3, 60, 200, 371][t % 4]; k++) items[OLD.ORDER[Math.floor(Math.random() * 371)]] = { interest: vals[k % 4] };
-    if (KCn.codec.decode(OLD.encodeState({ items, meta: {}, name: "x" })).damaged) fp++;
-    if (KCn.codec.decode(V371.enc({ items, meta: {}, name: "x" })).damaged) fp++; }
+    const o374 = OLD.encodeState({ items, meta: {}, name: "x" }), o371 = V371.enc({ items, meta: {}, name: "x" });
+    if (KCn.codec.decode(o374).damaged) fp++;
+    if (KCn.codec.decode(o371).damaged) fp++;
+    [o374, o371].forEach(o => { if (/__/.test(o)) { tries++; if (KCn.codec.decode(o.replace(/__/g, "")).damaged) caught++; } }); }
   eq(fp, 0, "no intact link (new, pre-fix, v374, v371) is ever flagged as damaged");
   eq(caught, tries, "every simulated corruption is caught (" + tries + " cases)");
   ok(noUnd, "new links contain no underscore");
@@ -673,7 +676,7 @@ const S = (title) => console.log("\n## " + title);
   eq(tp.d.querySelector('.item[data-id="blindfolds"] .main').textContent, "ผ้าปิดตา", "TH name");
   eq(tp.d.querySelector('.item[data-id="blindfolds"] .sub').textContent, "Blindfolds", "TH page shows English subtitle");
   eq(tp.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "ชอบมาก", "TH scale + answer");
-  eq(tp.d.getElementById("progress").textContent, "เลือกแล้ว 4 จาก 467 รายการ", "TH progress");
+  eq(tp.d.getElementById("progress").textContent, "เลือกแล้ว 4 จาก 488 รายการ", "TH progress");
   ok(/lg=th/.test(tp.KC.form.shareLink()), "TH link carries lg=th");
   eq(open("form", { hash: tp.KC.form.shareLink().split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "th", "TH link opens in Thai");
   ok(/ลิมิตเด็ดขาด/.test(tp.KC.form.buildSheet().textContent), "TH PDF sheet");
@@ -685,7 +688,7 @@ const S = (title) => console.log("\n## " + title);
   eq(zp.d.querySelector('.item[data-id="blindfolds"] .main').textContent, "眼罩", "ZH name");
   eq(zp.d.querySelector('.item[data-id="blindfolds"] .sub').textContent, "Blindfolds", "ZH page shows English subtitle");
   eq(zp.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "超愛", "ZH scale + answer");
-  eq(zp.d.getElementById("progress").textContent, "已勾選 4／467 項", "ZH progress");
+  eq(zp.d.getElementById("progress").textContent, "已勾選 4／488 項", "ZH progress");
   ok(/lg=zh/.test(zp.KC.form.shareLink()), "ZH link carries lg=zh");
   eq(open("form", { hash: zp.KC.form.shareLink().split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "zh", "ZH link opens in Chinese");
   ok(/硬限制/.test(zp.KC.form.buildSheet().textContent), "ZH PDF sheet");
@@ -697,7 +700,7 @@ const S = (title) => console.log("\n## " + title);
   eq(p.d.querySelector('.item[data-id="face-sitting"] .main').textContent, "顔面騎乗", "JA name");
   eq(p.d.querySelector('.item[data-id="face-sitting"] .sub').textContent, "Face-sitting", "JA page shows English subtitle");
   eq(p.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "大好き", "JA scale + answer");
-  eq(p.d.getElementById("progress").textContent, "467項目中 4項目にチェック済み", "JA progress");
+  eq(p.d.getElementById("progress").textContent, "488項目中 4項目にチェック済み", "JA progress");
   ok(/lg=ja/.test(p.KC.form.shareLink()), "JA link carries lg=ja");
   ok(/ハードリミット/.test(p.KC.form.buildSheet().textContent), "JA PDF sheet");
   const js = p.d.getElementById("search"); js.value = "鞭"; js.dispatchEvent(new p.w.Event("input"));
@@ -847,13 +850,13 @@ const S = (title) => console.log("\n## " + title);
   const tact = b3.d.getElementById("tplAct");
   eq(tact.textContent, "Показать все пункты", "note button: show all");
   click(b3.w, tact);
-  eq([visP(b3).length, tact.textContent, b3.d.getElementById("tplSel").value], [467, "Только пункты шаблона", ""], "show all: every item, button to go back");
+  eq([visP(b3).length, tact.textContent, b3.d.getElementById("tplSel").value], [488, "Только пункты шаблона", ""], "show all: every item, button to go back");
   ok(/создана по шаблону «Evening»\. Показаны все пункты\./.test(b3.d.getElementById("tplNoteText").textContent), "note still says what the list was created by");
   await sleep(300);
   eq(LS(b3, OK_).template.name, "Evening", "showing all does not unbind the list");
   click(b3.w, tact); eq(visP(b3).length, 5, "back to the template's items");
   const bsel = b3.d.getElementById("tplSel"); bsel.value = ""; bsel.dispatchEvent(new b3.w.Event("change"));
-  eq([visP(b3).length, b3.KC.form.state.template.name], [467, "Evening"], "“No template” in Filters: a view choice only");
+  eq([visP(b3).length, b3.KC.form.state.template.name], [488, "Evening"], "“No template” in Filters: a view choice only");
   bsel.value = td.tpl.id; bsel.dispatchEvent(new b3.w.Event("change"));
   const bl = b3.KC.form.shareLink(), bld = b3.KC.codec.decode(bl);
   eq([Object.keys(bld.items), bld.by && bld.by.id, bld.tpl], [["hugging"], td.tpl.id, undefined], "plain link of a list by a template: its answers + fi= mark");
@@ -875,7 +878,7 @@ const S = (title) => console.log("\n## " + title);
   const borisRow = [...b3.d.querySelectorAll("#mineList .saved-row")].find(r => !/по шаблону/.test(r.textContent));
   click(b3.w, borisRow.querySelector('[data-act="load"]'));
   b3 = open("form", { storage: b3.storage() });
-  eq([b3.KC.form.state.name, b3.KC.form.state.template, visP(b3).length], ["Boris", undefined, 467], "switched to my plain list");
+  eq([b3.KC.form.state.name, b3.KC.form.state.template, visP(b3).length], ["Boris", undefined, 488], "switched to my plain list");
   r3 = open("form", { hash: tplLink.split("#")[1], storage: b3.storage() });
   b3 = open("form", { storage: r3.storage() });
   eq([b3.KC.form.state.template.name, Object.keys(b3.KC.form.state.items).sort(), LS(b3, MK).length], ["Evening", ["chains", "hugging"], 2], "template link from another list: my list by it is reopened (not a new one)");
@@ -901,7 +904,7 @@ const S = (title) => console.log("\n## " + title);
   S("Templates: someone's list shown by my template");
   const bobPlain = KCn.codec.encode({ uid: "BOB002", name: "Bob", items: { hugging: { interest: "yes" }, "spanking-hand": { interest: "love" }, chains: { interest: "maybe" } }, meta: {} }, "ru");
   rv = open("form", { hash: bobPlain, storage: recStorage });
-  eq([rv.KC.form.sharedBy, rv.d.getElementById("tplNote").hidden, visP(rv).length], [null, true, 467], "plain list: no template, no note");
+  eq([rv.KC.form.sharedBy, rv.d.getElementById("tplNote").hidden, visP(rv).length], [null, true, 488], "plain list: no template, no note");
   click(rv.w, rv.d.getElementById("bannerTpl"));
   ok(!rv.d.getElementById("tplSel").hidden, "“Show by a template…” points at the template list in the header");
   const rsel = rv.d.getElementById("tplSel"); rsel.value = td.tpl.id; rsel.dispatchEvent(new rv.w.Event("change"));
@@ -917,7 +920,7 @@ const S = (title) => console.log("\n## " + title);
   click(dz.w, dz.d.querySelector('#savedTplList button[data-act="del"]'));
   eq([conf, LS(dz, TK).length], [1, 0], "deleting a template asks first");
   dz = open("form", { storage: dz.storage() });
-  eq([visP(dz).length, dz.d.getElementById("tplAct").hidden], [467, true], "list by a deleted template: opens with all items");
+  eq([visP(dz).length, dz.d.getElementById("tplAct").hidden], [488, true], "list by a deleted template: opens with all items");
   ok(/создана по шаблону «Evening», но этого шаблона больше нет среди сохранённых\. Показаны все пункты\./.test(dz.d.getElementById("tplNoteText").textContent), "…and still says what it was created by");
   click(dz.w, dz.d.getElementById("mineBtn"));
   ok(/по удалённому шаблону «Evening»/.test(dz.d.getElementById("mineList").textContent), "My lists: “by the deleted template”");
@@ -951,7 +954,7 @@ const S = (title) => console.log("\n## " + title);
   eq(KCn.codec.decode(emptyLink.replace(/&k=\w+/, "")).damaged, false, "…a link without checksum still opens");
   const bigSet = []; KCn.CATS.forEach(c => c.items.forEach(([, id]) => bigSet.push(id)));
   const bigL = KCn.codec.encode(Object.assign(KCn.store.blank(), { tpl: { id: "ABCDEF", name: "All", ids: bigSet } }), "ru"), bigD = KCn.codec.decode(bigL);
-  eq([bigD.tpl.ids.length, bigD.damaged], [467, false], "a template of every item round-trips (bitmap form)");
+  eq([bigD.tpl.ids.length, bigD.damaged], [488, false], "a template of every item round-trips (bitmap form)");
   ok(new URLSearchParams(bigL).get("t").length <= 90, "…in about 80 characters (grows 1 bit per item)");
 
   S("Templates: updates and own template");
@@ -1079,7 +1082,7 @@ const S = (title) => console.log("\n## " + title);
   eq([ts.hidden, ts.value, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [false, td.tpl.id, "Evening", true], "list by a template: the header list shows its name, highlighted");
   eq(ts.options[0].textContent, "✕ Без шаблона", "first option removes it");
   ts.value = ""; ts.dispatchEvent(new hq.w.Event("change"));
-  eq([visP(hq).length, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [467, "Шаблон…", false], "one pick: no template, the list says “Template…”");
+  eq([visP(hq).length, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [488, "Шаблон…", false], "one pick: no template, the list says “Template…”");
 
   S("v557: share the current template");
   hq = open("form", { storage: recStorage });
@@ -1243,6 +1246,271 @@ const S = (title) => console.log("\n## " + title);
     eq([tg.KC.form.viewingShared, tg.KC.form.state.name, tg.KC.store.received.list().length], [false, "Me", 0], "#toggle-goatcounter (exclude my own visits) opens my list, nothing added to Received");
     const junk = open("form", { hash: "top" });
     eq([junk.KC.form.viewingShared, junk.KC.store.received.list().length], [false, 0], "any other non-link #… is ignored too");
+  }
+
+  S("v568: 18+ and disclaimer on both pages");
+  ["form", "compare"].forEach(pgName => {
+    const lp = open(pgName, { storage: { local: { "checklist-lang": "ru" }, session: {} } }), el = lp.d.querySelector(".foot-legal");
+    ok(el && /подтверждаете, что вам исполнилось 18 лет/.test(el.textContent) && /Не является пропагандой упоминаемых практик; сервис носит развлекательный характер\./.test(el.textContent), pgName + ": 18+ line and disclaimer under the footer");
+    lp.KC.i18n.set("zh"); lp.KC.i18n.apply(lp.d); ok(/18 歲/.test(lp.d.querySelector(".foot-legal").textContent), pgName + ": translated (ZH)");
+  });
+
+  S("v569: damaged saved data never breaks a page");
+  {
+    const keys = ["practices-checklist-v1", "checklist-saved-profiles-v1", "checklist-my-profiles-v1", "checklist-templates-v1", "checklist-favs-v1", "checklist-compares-v1", "checklist-active-mine-id"];
+    const junk = ["{", "null", "42", "\"str\"", "{\"a\":1}", "[1,2,{}]", "[{\"id\":\"x\",\"data\":5,\"code\":7}]"];
+    const crashes = [];
+    keys.forEach(k => junk.forEach(j => ["form", "compare"].forEach(pgName => {
+      const p = open(pgName, { storage: { local: { [k]: j }, session: {} } });
+      if (pgName === "form") ["savedBtn", "mineBtn", "shareBtn", "pdfBtn"].forEach(id => click(p.w, p.d.getElementById(id)));
+      else { click(p.w, p.d.getElementById("addPart")); click(p.w, p.d.getElementById("cmpBtn")); }
+      if (p.errors.length) crashes.push(k + "=" + j + " " + pgName + ": " + p.errors[0]);
+    })));
+    eq(crashes, [], "both pages open (and their windows) with any damaged value in storage");
+  }
+
+  S("v570: 8 new practices, leather paddles renamed");
+  {
+    const K = open("form").KC, codeOf = {}, catOf = {}, next = {};
+    K.CATS.forEach(c => c.items.forEach(([code, id], i) => { codeOf[id] = code; catOf[id] = c.id; next[id] = (c.items[i + 1] || [])[1]; }));
+    const want = { rattan: 467, "hot-wax-high-temp": 468, "pressure-points": 469, "rough-grabbing": 470, "gentle-touch": 471, "leash-walk-outside": 472, "bottle-neck-vaginal": 473, "bottle-neck-anal": 474 };
+    eq(Object.keys(want).map(id => codeOf[id]), Object.values(want), "codes 467–474");
+    eq([next["caning-sensation"], next["hot-wax-dripping"], next["pain-massage"], next["hair-pulling"], next["hugging"], next["leash"], next["object-insertion"], next["bottle-neck-vaginal"]],
+      ["rattan", "hot-wax-high-temp", "pressure-points", "rough-grabbing", "gentle-touch", "leash-walk-outside", "bottle-neck-vaginal", "bottle-neck-anal"], "each placed next to its related item");
+    eq(K.i18n.item("rattan", "ru").name, "Ротанг", "RU: Ротанг");
+    ok(/законы|Законы/.test(K.i18n.item("leash-walk-outside", "ru").desc) && /стран/.test(K.i18n.item("leash-walk-outside", "ru").desc), "leash walk hint: laws and attitudes differ by country");
+    ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(want).filter(id => { const it = K.i18n.item(id, l); return !it.name || !it.desc || (l !== "en" && it.desc === K.i18n.item(id, "en").desc); }), [], l + ": new items translated"));
+    eq([K.i18n.item("spanking-leather-slappers", "ru").name, K.i18n.item("spanking-leather-slappers", "en").name], ["Шлепки кожаными паддлами", "Spanking – leather paddles"], "leather slappers renamed to leather paddles (id kept)");
+    const dn = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }).d;
+    eq(Object.keys(want).filter(id => !dn.querySelector('.item[data-id="' + id + '"] .new-dot')), [], "all 8 marked as new (green dot)");
+  }
+
+  S("v571: other sub serves you; urinating in front of a partner");
+  {
+    const K = open("form").KC, codeOf = {}, next = {};
+    K.CATS.forEach(c => c.items.forEach(([code, id], i) => { codeOf[id] = code; next[id] = (c.items[i + 1] || [])[1]; }));
+    eq([codeOf["other-sub-serves-you"], codeOf["urination-in-front"]], [475, 476], "codes 475, 476");
+    eq([next["used-as-toy-for-other-sub"], next["urination-in-front"]], ["other-sub-serves-you", "golden-showers"], "placed next to related items");
+    eq([K.i18n.item("other-sub-serves-you", "ru").name, K.i18n.item("urination-in-front", "ru").name], ["Вас удовлетворяет другой сабмиссив по принуждению", "Мочеиспускание при партнёре / во время сессии"], "RU names");
+    ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => eq(["other-sub-serves-you", "urination-in-front"].filter(id => { const it = K.i18n.item(id, l); return !it.name || !it.desc || (l !== "en" && it.desc === K.i18n.item(id, "en").desc); }), [], l + ": translated"));
+    const dn = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }).d;
+    eq(["other-sub-serves-you", "urination-in-front"].filter(id => !dn.querySelector('.item[data-id="' + id + '"] .new-dot')), [], "green dots");
+  }
+
+  S("v572: 11 new practices");
+  {
+    const K = open("form").KC, codeOf = {}, next = {};
+    K.CATS.forEach(c => c.items.forEach(([code, id], i) => { codeOf[id] = code; next[id] = (c.items[i + 1] || [])[1]; }));
+    const want = [["rough-grabbing", "hair-drag-snow", 477], ["hair-drag-snow", "hair-drag-rain", 478], ["zip-tie-bondage", "tape-bondage", 479], ["xenophilia-tentacles", "egg-laying", 480],
+      ["glory-hole", "stuck-in-wall", 481], ["mutual-masturbation", "dutch-rudder", 482], ["verbal-humiliation", "forced-thanking", 483], ["forced-thanking", "forced-self-degradation", 484],
+      ["begging", "forced-begging-acts", 485], ["menthol-balm-labia", "menthol-eye-drops", 486], ["vacbed", "fuck-box", 487]];
+    eq(want.filter(([a, id, c]) => codeOf[id] !== c || next[a] !== id).map(w => w[1]), [], "codes 477–487, each placed after its related item");
+    const ids = want.map(w => w[1]);
+    ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => eq(ids.filter(id => { const it = K.i18n.item(id, l); return !it.name || !it.desc || (l !== "en" && it.desc === K.i18n.item(id, "en").desc); }), [], l + ": translated"));
+    eq([K.i18n.item("dutch-rudder", "ru").name, K.i18n.item("forced-self-degradation", "ru").name], ["Голландский штурвал", "Принуждение называть себя уничижительно"], "RU names (typos fixed)");
+    ok(/Спасибо, что вставили в меня фаллоимитатор/.test(K.i18n.item("forced-thanking", "ru").desc) && /Пожалуйста, трахните меня/.test(K.i18n.item("forced-begging-acts", "ru").desc), "owner's examples in the hints");
+    const dn = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }).d;
+    eq(ids.filter(id => !dn.querySelector('.item[data-id="' + id + '"] .new-dot')), [], "green dots");
+  }
+
+  S("v573: moving to the new site (old build sends, new build receives)");
+  {
+    const OLDB = { "core/migrate.js": s => s.replace('const ROLE = "receiver"', 'const ROLE = "sender"') };
+    const NEWBASE = "https://klevatess.github.io/kinkmatch/";
+    const oldPage = (o = {}) => open("form", Object.assign({ patch: OLDB }, o));
+    const newPage = (o = {}) => open("form", Object.assign({ base: NEWBASE }, o));
+    /* a rich old-site device, made through the old build's own code */
+    const K0 = oldPage().KC, ids = []; K0.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const V = ["love", "yes", "maybe", "limit"], its = (n, off) => { const o = {}; ids.slice(off, off + n).forEach((id, i) => { o[id] = { interest: V[i % 4] }; }); return o; };
+    const own = { name: "Андрей <b>&", uid: "OWN001", items: its(300, 0), meta: { role: "dom", attire: ["latex", "lace"], exp: "large" }, fav: ids.slice(5, 25),
+      safeword: "красный", fantasies: "много «текста»\nс переносом", comments: "a&b=c#d", allergies: "латекс", onlyMarked: true, template: { id: "tplev1", name: "Evening" } };
+    const other = { name: "Для Киры", uid: "OWN002", items: its(120, 50), meta: { role: "sub" }, fav: [] };
+    const recCode = (n, uid, extra) => K0.codec.encode(Object.assign({ name: n, uid, items: its(80, 100), meta: {} }, extra || {}), "ru");
+    const received = [
+      { id: "p1", name: "Anna", code: recCode("Anna", "ANNA01"), ts: 5 },
+      { id: "p2", name: "Boris", code: recCode("Boris", "BORI01", { by: { id: "tplev1", name: "Evening" } }), ts: 4 },
+      { id: "p3", name: "Кира (копия)", code: recCode("Kira", "KIRA01"), ts: 3, manual: true },
+    ];
+    const templates = [
+      { id: "t1", tid: "tplev1", name: "Evening", ids: ids.slice(0, 60), own: true, ts: 9 },
+      { id: "t2", tid: "tplpt2", name: "Party", label: "Вечеринка", ids: ids.slice(200, 480), own: false, ts: 8 },
+    ];
+    const favs = { "u:ANNA01": ids.slice(100, 110) };
+    const compares = [{ id: "c1", name: "Friends", ts: 7, parts: [{ name: "Me", uid: "OWN001", code: K0.codec.encode(own) }, { name: "", uid: "ANNA01", code: received[0].code }, { name: "Boris", uid: "BORI01", code: received[1].code }] }];
+    const oldStore = { local: { "checklist-lang": "en", "checklist-theme": "dark", "practices-checklist-v1": JSON.stringify(own),
+      "checklist-my-profiles-v1": JSON.stringify([{ id: "m1", name: "", data: own, ts: 10 }, { id: "m2", name: "Для Киры", data: other, ts: 6 }]), "checklist-active-mine-id": "m1",
+      "checklist-saved-profiles-v1": JSON.stringify(received), "checklist-templates-v1": JSON.stringify(templates), "checklist-favs-v1": JSON.stringify(favs),
+      "checklist-compares-v1": JSON.stringify(compares) }, session: {} };
+
+    // old build: button and bar; the new build never shows them
+    let op = oldPage({ storage: oldStore });
+    eq([op.d.getElementById("migrateBar").hidden, op.d.getElementById("mineMigrate").hidden, op.KC.migrate.sender()], [false, false, true], "old build: bar at the top + button in My lists");
+    ok(/moved to a new address/.test(op.d.getElementById("migrateBar").textContent), "bar text (EN, the chosen language)");
+    let np = newPage();
+    eq([np.d.getElementById("migrateBar").hidden, np.d.getElementById("mineMigrate").hidden, np.KC.migrate.sender()], [true, true, false], "new build: no bar, no button");
+    const oldOnNew = open("form", { patch: OLDB, base: NEWBASE });
+    eq(oldOnNew.d.getElementById("migrateBar").hidden, true, "even the old build hides the bar when opened on the new address");
+    click(op.w, op.d.getElementById("migrateLater"));
+    eq(op.d.getElementById("migrateBar").hidden, true, "“Later” hides the bar…");
+    eq(oldPage({ storage: op.storage() }).d.getElementById("migrateBar").hidden, true, "…for this visit (session)");
+
+    // the link
+    op = oldPage({ storage: oldStore });
+    const link = op.KC.migrate.link();
+    ok(link.indexOf("https://klevatess.github.io/kinkmatch/index.html?lang=en#kcmigrate=") === 0, "link goes to the new site, keeps the language, data after #");
+    ok(!/_/.test(link), "no “_” in the link");
+    ok(link.length < 25000, "compact: " + link.length + " characters for 2 lists, 3 received, 2 templates, a comparison");
+    const payload = link.split("#kcmigrate=")[1];
+
+    // receive: question, nothing stored before “Move”
+    np = newPage({ hash: "kcmigrate=" + payload });
+    eq([np.w.location.hash, np.KC.form.viewingShared, np.KC.store.received.list().length], ["", false, 0], "payload taken out of the address; not opened or stored as a list link");
+    eq(np.d.getElementById("migrateOverlay").classList.contains("show"), true, "question shown");
+    ok(/Анкет: 2, полученных: 3, шаблонов: 2, сравнений: 1/.test(np.d.getElementById("migrateText").textContent), "question counts what will come: " + np.d.getElementById("migrateText").textContent);
+    eq(np.KC.store.mine.list().length + np.KC.store.tpl.list().length, 0, "nothing imported before the answer");
+    // cancel
+    click(np.w, np.d.getElementById("migrateNo"));
+    const afterCancel = np.storage();
+    eq(["checklist-my-profiles-v1", "checklist-saved-profiles-v1", "checklist-templates-v1", "checklist-compares-v1"].filter(k => afterCancel.local[k] && afterCancel.local[k] !== "[]"), [], "Cancel: nothing imported");
+
+    // move
+    np = newPage({ hash: "kcmigrate=" + payload });
+    click(np.w, np.d.getElementById("migrateYes"));
+    const st1 = np.storage();
+    ok(!!st1.session.kcMoved, "result kept for after the reload");
+    const n2 = newPage({ storage: st1 });
+    ok(n2.d.getElementById("migrateOverlay").classList.contains("show") && /Перенесено — анкет: 2, полученных: 3, шаблонов: 2, сравнений: 1/.test(n2.d.getElementById("migrateText").textContent) === false, "…");
+    const doneText = n2.d.getElementById("migrateText").textContent;
+    ok(/lists: 2, received: 3, templates: 2, comparisons: 1/.test(doneText), "after the reload: result in the moved language (EN): " + doneText);
+    const NK = n2.KC, S2 = NK.store;
+    eq([NK.i18n.lang, n2.w.localStorage.getItem("checklist-theme")], ["en", "dark"], "language and theme came along");
+    // everything is exactly there
+    /* same content: object key order and the order inside sets (♥, template items) do not matter */
+    const canon = x => Array.isArray(x) ? (x.every(v => typeof v === "string") ? x.slice().sort() : x.map(canon))
+      : x && typeof x === "object" ? Object.keys(x).sort().reduce((o, k) => { o[k] = canon(x[k]); return o; }, {}) : x;
+    const oS = op.KC.store, norm = x => JSON.stringify(canon(oS.normalize(x)));
+    eq(norm(S2.loadOwn()), norm(own), "own list identical (answers, profile, texts, ♥, template mark, uid)");
+    eq([n2.KC.form.state.name, Object.keys(n2.KC.form.state.items).length, (n2.KC.form.state.fav || []).length], ["Андрей <b>&", 300, 20], "the page opens my moved list");
+    eq(S2.mine.list().map(x => [x.id, x.name, norm(x.data)]), oS.mine.list().map(x => [x.id, x.name, norm(x.data)]), "My lists identical");
+    eq(S2.mine.active(), "m1", "the same entry is active");
+    eq(S2.received.list().map(x => [x.id, x.name, x.code, !!x.manual]).sort(), oS.received.list().map(x => [x.id, x.name, x.code, !!x.manual]).sort(), "Received identical (incl. “by template” mark and a manual copy)");
+    eq(canon(S2.tpl.list()), canon(oS.tpl.list()), "templates identical (own + received with its label)");
+    eq(canon(S2.favs.all()), canon(oS.favs.all()), "favourites of received lists identical");
+    eq(canon(S2.cmp.list()), canon(oS.cmp.list()), "saved comparisons identical");
+    eq(n2.errors, [], "no script errors");
+    // the moved data works: template applied, compare opens with fresh lists, a received list opens
+    eq(n2.KC.form.bound() && n2.KC.form.bound().id, "tplev1", "my list is still “by template Evening”");
+    const cp = open("compare", { base: NEWBASE, storage: n2.storage() });
+    eq([cp.d.getElementById("cmpSaved").hidden, cp.d.getElementById("cmpSaved").options.length], [false, 2], "saved comparison available on the new compare page");
+
+    // repeat: nothing twice
+    let n3 = newPage({ hash: "kcmigrate=" + payload, storage: n2.storage() });
+    click(n3.w, n3.d.getElementById("migrateYes"));
+    const n4 = newPage({ storage: n3.storage() });
+    ok(/already moved/.test(n4.d.getElementById("migrateText").textContent), "moving again: “nothing new”");
+    eq([n4.KC.store.mine.list().length, n4.KC.store.received.list().length, n4.KC.store.tpl.list().length, n4.KC.store.cmp.list().length], [2, 3, 2, 1], "…and no duplicates");
+
+    // the new site already has my list: kept, the old one lands in My lists
+    const mineNew = { name: "Новая", uid: "NEW001", items: its(10, 400), meta: {} };
+    let nn = newPage({ hash: "kcmigrate=" + payload, storage: { local: { "practices-checklist-v1": JSON.stringify(mineNew), "checklist-my-profiles-v1": JSON.stringify([{ id: "mN", name: "", data: mineNew, ts: 20 }]), "checklist-active-mine-id": "mN", "checklist-lang": "ru" }, session: {} } });
+    click(nn.w, nn.d.getElementById("migrateYes"));
+    const nn2 = newPage({ storage: nn.storage() });
+    eq([nn2.KC.form.state.name, nn2.KC.store.mine.active(), nn2.KC.store.mine.list().map(x => x.id).sort()], ["Новая", "mN", ["m1", "m2", "mN"]], "a list already on the new site stays current; the moved ones are added to My lists");
+    eq(nn2.KC.i18n.lang, "ru", "a language already chosen on the new site is kept");
+
+    // unsaved typing on the old site is included
+    const tp = oldPage({ storage: oldStore });
+    tp.KC.form.state.items["hugging"] = { interest: "love" }; tp.KC.form.state.name = "Только что"; tp.KC.form.save();
+    click(tp.w, tp.d.getElementById("migrateGo"));
+    eq(JSON.parse(tp.w.localStorage.getItem("practices-checklist-v1")).name, "Только что", "pressing the button saves what was just typed first");
+    const tl = tp.KC.migrate.unpack(tp.KC.migrate.link().split("#kcmigrate=")[1]);
+    eq([tl.backup.own.name, tl.backup.own.items.hugging.interest], ["Только что", "love"], "…and it is in the moved data");
+
+    // old site while viewing someone's link: my data still goes, the link too (it is in Received)
+    const lk = recCode("Lev", "LEV001");
+    const vp = oldPage({ storage: oldStore, hash: lk });
+    eq([vp.KC.form.viewingShared, vp.d.getElementById("migrateBar").hidden], [true, false], "bar also shown while viewing someone's link");
+    const vl = vp.KC.migrate.unpack(vp.KC.migrate.link().split("#kcmigrate=")[1]);
+    eq([vl.backup.own.name, vl.backup.received.some(x => vp.KC.codec.decode(x.code).uid === "LEV001")], ["Андрей <b>&", true], "moves MY list (not the viewed one) + the viewed link from Received");
+
+    // empty old device
+    const ep = oldPage();
+    const el = ep.KC.migrate.unpack(ep.KC.migrate.link().split("#kcmigrate=")[1]);
+    eq(ep.KC.migrate.counts(el.backup), { mine: 0, rec: 0, tpl: 0, cmp: 0 }, "empty old device: an empty, valid payload");
+    const en = newPage({ hash: "kcmigrate=" + ep.KC.migrate.link().split("#kcmigrate=")[1] });
+    click(en.w, en.d.getElementById("migrateYes"));
+    ok(/уже было перенесено|already moved/.test(newPage({ storage: en.storage() }).d.getElementById("migrateText").textContent), "…moving it says “nothing new” and breaks nothing");
+
+    // damaged / foreign data: a clear message, nothing stored, no errors
+    const bads = { cut: payload.slice(0, Math.floor(payload.length / 2)), changed: payload.slice(0, 40) + (payload[40] === "A" ? "B" : "A") + payload.slice(41), junk: "@@@###",
+      empty: "", foreign: Buffer.from(JSON.stringify({ app: "other", b: "{}" })).toString("base64"), wrongSum: Buffer.from(JSON.stringify({ app: "kinkcheck-move", v: 1, sum: "x", b: "{\"app\":\"kinkcheck\"}" })).toString("base64") };
+    Object.keys(bads).forEach(k => {
+      const bp = newPage({ hash: "kcmigrate=" + bads[k] });
+      const txt = bp.d.getElementById("migrateText").textContent;
+      ok(/Не удалось прочитать/.test(txt) && bp.d.getElementById("migrateYes").hidden && !bp.errors.length, "damaged payload (" + k + "): clear message, no “Move” button, no errors");
+      eq(bp.KC.store.mine.list().length + bp.KC.store.received.list().length + bp.KC.store.tpl.list().length, 0, "damaged payload (" + k + "): nothing stored");
+    });
+    // the old build ignores a payload (it is not a list link), the new build ignores normal links' look-alikes
+    const ob = oldPage({ hash: "kcmigrate=" + payload });
+    eq([ob.KC.form.viewingShared, ob.KC.store.received.list().length, ob.d.getElementById("migrateOverlay").classList.contains("show")], [false, 0, false], "old build: a move link opens nothing and stores nothing");
+    const nl = newPage({ hash: recCode("Anna", "ANNA01") });
+    eq([nl.KC.form.viewingShared, nl.d.getElementById("migrateOverlay").classList.contains("show")], [true, false], "new build: ordinary list links work as before");
+
+    // heavy user stays within safe URL sizes
+    const hv = { local: Object.assign({}, oldStore.local, {
+      "checklist-my-profiles-v1": JSON.stringify([...Array(8)].map((_, i) => ({ id: "h" + i, name: "L" + i, data: { name: "L" + i, uid: "HEAVY" + i, items: its(ids.length, 0), meta: { role: "sub" }, fav: ids.slice(0, 100), fantasies: "x".repeat(500) }, ts: i }))),
+      "checklist-saved-profiles-v1": JSON.stringify([...Array(30)].map((_, i) => ({ id: "r" + i, name: "R" + i, code: K0.codec.encode({ name: "R" + i, uid: "RR" + String(i).padStart(4, "0"), items: its(ids.length, 0), meta: {} }, "ru"), ts: i }))) }), session: {} };
+    const hl = oldPage({ storage: hv }).KC.migrate.link();
+    ok(hl.length < 120000, "heavy user (8 full lists, 30 received): " + hl.length + " characters — well under browser limits (Chrome/Firefox ≥ 1 MB)");
+    const hn = newPage({ hash: hl.split("#")[1] }); click(hn.w, hn.d.getElementById("migrateYes"));
+    const hn2 = newPage({ storage: hn.storage() });
+    eq([hn2.KC.store.mine.list().length, hn2.KC.store.received.list().length], [8, 30], "heavy user: everything arrives");
+  }
+
+  S("v573: moving twice — edits made on either site");
+  {
+    const OLDB = { "core/migrate.js": s => s.replace('const ROLE = "receiver"', 'const ROLE = "sender"') };
+    const NEWBASE = "https://klevatess.github.io/kinkmatch/";
+    const oldPage = (o = {}) => open("form", Object.assign({ patch: OLDB }, o));
+    const newPage = (o = {}) => open("form", Object.assign({ base: NEWBASE }, o));
+    const moveFrom = (oldSt, newSt) => {
+      const o = oldPage({ storage: oldSt }); click(o.w, o.d.getElementById("migrateGo"));
+      const link = o.KC.migrate.link();
+      const n = newPage({ hash: link.split("#")[1], storage: newSt });
+      if (n.d.getElementById("migrateYes").hidden) return { o, n: null };
+      click(n.w, n.d.getElementById("migrateYes"));
+      return { o, n: newPage({ storage: n.storage() }) };
+    };
+    const wait = ms => { const t = Date.now() + ms; while (Date.now() < t); };
+    // 1. old site: a list with two answers; move
+    let o = oldPage({ storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    click(o.w, o.d.querySelector('.item[data-id="hugging"] .scale button[data-v="love"]'));
+    click(o.w, o.d.querySelector('.item[data-id="chains"] .scale button[data-v="yes"]'));
+    o.KC.form.saveNow();
+    let r = moveFrom(o.storage(), { local: {}, session: {} });
+    eq(Object.keys(r.n.KC.form.state.items).sort(), ["chains", "hugging"], "first move: the list arrives");
+    let newSt = r.n.storage();
+    // 2. keep answering on the OLD site (e.g. an old link), move again -> the new site gets the update
+    wait(5);
+    o = oldPage({ storage: r.o.storage() });
+    click(o.w, o.d.querySelector('.item[data-id="orgy"] .scale button[data-v="limit"]')); o.KC.form.saveNow();
+    r = moveFrom(o.storage(), newSt);
+    eq(Object.keys(r.n.KC.form.state.items).sort(), ["chains", "hugging", "orgy"], "second move: the answer added on the old site arrives");
+    ok(/анкет: 1/.test(r.n.d.getElementById("migrateText").textContent), "…reported as moved: " + r.n.d.getElementById("migrateText").textContent);
+    eq(r.n.KC.store.mine.list().length, 1, "…the same list updated, not a copy");
+    newSt = r.n.storage();
+    // 3. answer on the NEW site, then press "Move" on the old site again without changes there -> new edits stay
+    wait(5);
+    let n = newPage({ storage: newSt });
+    click(n.w, n.d.querySelector('.item[data-id="blindfolds"] .scale button[data-v="yes"]')); n.KC.form.saveNow();
+    newSt = n.storage();
+    r = moveFrom(o.storage(), newSt);
+    eq(Object.keys(r.n.KC.form.state.items).sort(), ["blindfolds", "chains", "hugging", "orgy"], "a stale old version never overwrites newer answers made on the new site");
+    ok(/уже было перенесено/.test(r.n.d.getElementById("migrateText").textContent), "…and says nothing new was moved");
+    // 4. a backup restore stays add-only (no replacing)
+    const bk = r.o.KC.store.exportAll(); bk.mine[0].ts = Date.now() + 100000; bk.mine[0].data.items = { spooning: { interest: "yes" } };
+    const n5 = newPage({ storage: r.n.storage() }); n5.KC.store.importAll(JSON.parse(JSON.stringify(bk)));
+    eq(Object.keys(n5.KC.store.mine.list()[0].data.items).sort(), ["blindfolds", "chains", "hugging", "orgy"], "backup restore still only adds (never replaces a list)");
   }
 
   const R = report(); console.log("\nPASS", R.PASS, "FAIL", R.FAIL);

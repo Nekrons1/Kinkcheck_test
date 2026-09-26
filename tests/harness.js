@@ -13,10 +13,12 @@ function manifest() {
   const w = { document: {} }; new Function("window", "document", fs.readFileSync(ROOT + "/js/boot.js", "utf8"))(w, {}); return w.KC_MANIFEST;
 }
 /* open a page. storage: {local:{}, session:{}} carried between "page loads" */
-function open(page, { hash = "", search = "", storage = { local: {}, session: {} }, navLang = "ru", answers = {} } = {}) {
+/* patch: { "core/migrate.js": src => src.replace(...) } — test a build variant (e.g. the old-site sender)
+   base: page address (default: the old site) */
+function open(page, { hash = "", search = "", storage = { local: {}, session: {} }, navLang = "ru", answers = {}, patch = {}, base = BASE } = {}) {
   const file = page === "compare" ? "compare.html" : "index.html";
   const html = fs.readFileSync(path.join(ROOT, file), "utf8").replace(/<script[\s\S]*?<\/script>/g, "");
-  const dom = new JSDOM(html, { url: BASE + file + search + (hash ? "#" + hash : ""), runScripts: "outside-only", pretendToBeVisual: true, virtualConsole: vc });
+  const dom = new JSDOM(html, { url: base + file + search + (hash ? "#" + hash : ""), runScripts: "outside-only", pretendToBeVisual: true, virtualConsole: vc });
   const w = dom.window;
   Object.defineProperty(w.navigator, "language", { value: navLang, configurable: true });
   for (const k in storage.local) w.localStorage.setItem(k, storage.local[k]);
@@ -31,7 +33,7 @@ function open(page, { hash = "", search = "", storage = { local: {}, session: {}
   const errors = [];
   w.addEventListener("error", e => errors.push(e.message));
   for (const f of files) {
-    try { w.eval(fs.readFileSync(path.join(ROOT, "js", f), "utf8") + "\n//# sourceURL=" + f); }
+    try { const src = fs.readFileSync(path.join(ROOT, "js", f), "utf8"); w.eval((patch[f] ? patch[f](src) : src) + "\n//# sourceURL=" + f); }
     catch (e) { errors.push(f + ": " + e.message); }
   }
   return { dom, w, d: w.document, KC: w.KC, errors, storage: () => dump(w) };

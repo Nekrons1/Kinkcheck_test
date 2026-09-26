@@ -290,4 +290,16 @@ KC.addLang("pt", "ui", {
   "help.compareSave_html": "<ul><li>Uma comparação de três pessoas ou mais pode ser salva com “Salvar comparação”, acima do resultado. As comparações salvas ficam em “Minhas listas” → “Minhas comparações” e na lista no topo da página de comparação.</li><li>Ao abrir, entram as versões mais recentes das listas deste aparelho: as suas e as “Recebidas”. Se alguém mandar um link novo, a comparação se atualiza sozinha. Se uma lista foi excluída, é usada a última versão salva.</li><li>As comparações entram na cópia de segurança.</li></ul>",
   /* v565: anonymous visit counter (shown only while it is on) */
   "help.privacyStats_html": "<ul><li>O site conta as visitas de forma anônima com o GoatCounter: qual página está aberta, o idioma e ações como “abriu um link” ou “baixou o PDF”. Sem cookies, sem endereço IP, nada fica salvo no aparelho. Respostas, nomes e links nunca são enviados.</li></ul>",
+  /* v568: 18+ and disclaimer */
+  "foot.legal": "18+. Ao usar este site, você confirma que tem pelo menos 18 anos. O site não faz apologia das práticas mencionadas; o serviço tem caráter de entretenimento.",
+  /* v573: moving to the new site address */
+  "migrate.bar_html": "<b>O site mudou de endereço.</b> Leve para lá com um toque tudo o que está salvo neste navegador: listas, recebidas, modelos, favoritos e comparações. Nada é apagado aqui.",
+  "migrate.go": "Levar para o site novo",
+  "migrate.later": "Depois",
+  "migrate.h": "Mudança do site antigo",
+  "migrate.ask": "Adicionar aqui os dados do site antigo? Listas: {mine}, recebidas: {rec}, modelos: {tpl}, comparações: {cmp}, além dos favoritos. O que já está salvo aqui continua.",
+  "migrate.yes": "Levar",
+  "migrate.done": "Pronto! Foram trazidos — listas: {mine}, recebidas: {rec}, modelos: {tpl}, comparações: {cmp}. Os favoritos também.",
+  "migrate.nothing": "Tudo isso já tinha sido trazido antes — nada novo.",
+  "migrate.bad": "Não deu para ler os dados: o link foi cortado ou danificado. Abra o site antigo e toque em “Levar para o site novo” de novo, ou use a cópia de segurança (“Minhas listas” → “Baixar cópia de segurança”).",
 });

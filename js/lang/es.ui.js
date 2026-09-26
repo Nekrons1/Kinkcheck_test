@@ -288,4 +288,16 @@ KC.addLang("es", "ui", {
   "help.compareSave_html": "<ul><li>Una comparación de tres personas o más se puede guardar con «Guardar comparación», encima del resultado. Las comparaciones guardadas están en «Mis listas» → «Mis comparaciones» y en la lista de arriba de la página de comparación.</li><li>Al abrirla, se usan las versiones más recientes de las listas de este dispositivo: las tuyas y las «Recibidas». Si alguien te manda un enlace nuevo, la comparación se actualiza sola. Si una lista se eliminó, se usa su última versión guardada.</li><li>Las comparaciones van incluidas en la copia de seguridad.</li></ul>",
   /* v565: anonymous visit counter (shown only while it is on) */
   "help.privacyStats_html": "<ul><li>El sitio cuenta las visitas de forma anónima con GoatCounter: qué página está abierta, el idioma y acciones como «abrió un enlace» o «descargó el PDF». Sin cookies, sin direcciones IP, no se guarda nada en tu dispositivo. Las respuestas, los nombres y los enlaces nunca se envían.</li></ul>",
+  /* v568: 18+ and disclaimer */
+  "foot.legal": "18+. Al usar este sitio, confirmas que tienes al menos 18 años. No promueve las prácticas mencionadas; el servicio tiene fines de entretenimiento.",
+  /* v573: moving to the new site address */
+  "migrate.bar_html": "<b>El sitio se ha mudado a una nueva dirección.</b> Lleva allí con un toque todo lo guardado en este navegador: listas, recibidas, plantillas, favoritos y comparaciones. Aquí no se borra nada.",
+  "migrate.go": "Llevar al sitio nuevo",
+  "migrate.later": "Más tarde",
+  "migrate.h": "Mudanza desde el sitio antiguo",
+  "migrate.ask": "¿Añadir aquí los datos del sitio antiguo? Listas: {mine}, recibidas: {rec}, plantillas: {tpl}, comparaciones: {cmp}, además de los favoritos. Lo que ya está guardado aquí se queda.",
+  "migrate.yes": "Llevar",
+  "migrate.done": "¡Listo! Se han traído — listas: {mine}, recibidas: {rec}, plantillas: {tpl}, comparaciones: {cmp}. Los favoritos también.",
+  "migrate.nothing": "Todo esto ya se había traído antes; no hay nada nuevo.",
+  "migrate.bad": "No se pudieron leer los datos: el enlace está cortado o dañado. Abre el sitio antiguo y toca «Llevar al sitio nuevo» otra vez, o usa la copia de seguridad («Mis listas» → «Descargar copia de seguridad»).",
 });

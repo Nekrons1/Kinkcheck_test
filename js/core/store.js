@@ -10,6 +10,9 @@
   const VALID = { limit: 1, maybe: 1, yes: 1, love: 1 };
   const TID = /^[A-Za-z0-9]{6}$/;
   /* id of a saved entry: time + random part, so two entries made in the same millisecond never share an id */
+  /* a stored list: always an array of objects, whatever is in storage (damaged data never breaks a page) */
+  const arr = k => { const a = KC.ls.get(k, []); return Array.isArray(a) ? a.filter(x => x && typeof x === "object" && !Array.isArray(x)) : []; };
+  const recArr = () => arr(KC.KEYS.saved).filter(x => typeof x.code === "string");
   const newEntryId = p => p + Date.now() + Math.floor(Math.random() * 46656).toString(36);
 
   const S = KC.store = {
@@ -82,7 +85,7 @@
       /* also merges duplicates left by older versions: keeps the earliest entry,
          taking a custom name from a duplicate if the kept one has none */
       list() {
-        const a = KC.ls.get(KC.KEYS.saved, []) || [];
+        const a = recArr();
         const byKey = {}, out = [];
         a.slice().sort((x, y) => (x.ts || 0) - (y.ts || 0)).forEach(x => {
           if (x.manual) { out.push(x); return; } /* saved on purpose via "Save as": never merged */
@@ -135,25 +138,47 @@
     /* backup of everything on this device -> plain object (saved as a .json file) */
     exportAll() {
       return { app: "kinkcheck", v: 1, ts: Date.now(), own: KC.ls.get(KC.KEYS.state, null), active: S.mine.active(),
-        mine: S.mine.list(), received: KC.ls.get(KC.KEYS.saved, []) || [], templates: S.tpl.list(), favs: S.favs.all(), compares: S.cmp.list() };
+        mine: S.mine.list(), received: recArr(), templates: S.tpl.list(), favs: S.favs.all(), compares: S.cmp.list() };
     },
     /* merge a backup in: adds lists that are not here yet (by id), never deletes anything.
        -> {mine: added, received: added, templates: added} or null if it is not a backup.
        Backups made before templates/favourites existed simply lack those fields. */
-    importAll(b) {
+    importAll(b, opts) {
       if (!b || b.app !== "kinkcheck" || !Array.isArray(b.mine) || !Array.isArray(b.received)) return null;
-      const mine = S.mine.list(), rec = KC.ls.get(KC.KEYS.saved, []) || [];
-      const mIds = {}, rIds = {}; mine.forEach(x => mIds[x.id] = 1); rec.forEach(x => rIds[x.id] = 1);
+      /* newer: moving from the old site — an entry already here under the same id is replaced when the incoming
+         one is newer (edited on the old site after an earlier move). A backup restore only adds. */
+      const newer = !!(opts && opts.newer), fresher = (x, y) => newer && (x.ts || 0) > (y.ts || 0);
+      const mine = S.mine.list(), rec = recArr();
+      const mIds = {}, rIds = {}; mine.forEach(x => mIds[x.id] = x); rec.forEach(x => rIds[x.id] = x);
       let am = 0, ar = 0;
-      b.mine.forEach(x => { if (x && x.id && x.data && !mIds[x.id]) { mine.push({ id: x.id, name: x.name || "", data: S.normalize(x.data), ts: x.ts || Date.now() }); am++; } });
-      b.received.forEach(x => { if (x && x.id && typeof x.code === "string" && !rIds[x.id]) { rec.push(x); ar++; } });
+      b.mine.forEach(x => {
+        if (!x || !x.id || !x.data || typeof x.data !== "object") return;
+        const cur = mIds[x.id];
+        if (!cur) { mine.push({ id: x.id, name: x.name || "", data: S.normalize(x.data), ts: x.ts || Date.now() }); am++; return; }
+        if (fresher(x, cur)) {
+          cur.name = x.name || ""; cur.data = S.normalize(x.data); cur.ts = x.ts; am++;
+          if (cur.id === S.mine.active()) S.writeOwn(S.clone(cur.data));   /* the open list mirrors its entry */
+        }
+      });
+      b.received.forEach(x => {
+        if (!x || !x.id || typeof x.code !== "string") return;
+        const cur = rIds[x.id];
+        if (!cur) { rec.push(x); ar++; } else if (fresher(x, cur)) { Object.assign(cur, x); ar++; }
+      });
       mine.sort((x, y) => (y.ts || 0) - (x.ts || 0)); rec.sort((x, y) => (y.ts || 0) - (x.ts || 0));
       S.mine.write(mine); KC.ls.set(KC.KEYS.saved, rec);
       /* templates: new ones by entry id (a template already here under the same id stays as it is) */
       let at = 0;
       if (Array.isArray(b.templates)) {
-        const tl = S.tpl.list(), tIds = {}; tl.forEach(x => { tIds[x.id] = 1; });
+        const tl = S.tpl.list(), tIds = {}; tl.forEach(x => { tIds[x.id] = x; });
         b.templates.forEach(x => {
+          const cur = x && tIds[x.id];
+          if (cur && cur.tid === x.tid && fresher(x, cur)) {
+            const ids = S.cleanIds(x.ids); if (!ids.length) return;
+            cur.name = typeof x.name === "string" ? x.name : cur.name; cur.ids = ids; cur.ts = x.ts;
+            if (typeof x.label === "string" && x.label) cur.label = x.label; else delete cur.label;
+            at++; return;
+          }
           /* skip a template already here under the same template id, mine or received (one copy per template) */
           if (!x || !x.id || !TID.test(x.tid || "") || tIds[x.id] || tl.some(y => y.tid === x.tid)) return;
           const ids = S.cleanIds(x.ids); if (!ids.length) return;
@@ -170,26 +195,29 @@
         KC.ls.set(KC.KEYS.fav, o);
       }
       /* saved comparisons: new ones by entry id */
+      let ac = 0;
       if (Array.isArray(b.compares)) {
-        const cl = S.cmp.list(), cIds = {}; cl.forEach(x => { cIds[x.id] = 1; });
+        const cl = S.cmp.list(), cIds = {}; cl.forEach(x => { cIds[x.id] = x; });
         b.compares.forEach(x => {
-          if (!x || !x.id || cIds[x.id] || !Array.isArray(x.parts)) return;
+          if (!x || !x.id || !Array.isArray(x.parts)) return;
           const parts = x.parts.filter(p => p && typeof p.code === "string").map(p => ({ name: typeof p.name === "string" ? p.name : "", uid: typeof p.uid === "string" ? p.uid : "", code: p.code }));
           if (parts.length < S.cmp.MIN) return;
-          cl.push({ id: x.id, name: typeof x.name === "string" ? x.name : "", parts, ts: x.ts || Date.now() });
+          const cur = cIds[x.id];
+          if (cur) { if (fresher(x, cur)) { cur.name = typeof x.name === "string" ? x.name : ""; cur.parts = parts; cur.ts = x.ts; ac++; } return; }
+          cl.push({ id: x.id, name: typeof x.name === "string" ? x.name : "", parts, ts: x.ts || Date.now() }); ac++;
         });
         cl.sort((x, y) => (y.ts || 0) - (x.ts || 0)); S.cmp.write(cl);
       }
       /* nothing filled in here yet: take the backup's current list as well */
       if (S.isEmpty(S.loadOwn()) && b.own) { S.writeOwn(S.normalize(b.own)); if (b.active) S.mine.setActive(b.active); }
-      return { mine: am, received: ar, templates: at };
+      return { mine: am, received: ar, templates: at, compares: ac };
     },
 
     /* my lists: [{id, name, data:state, ts}] — full copies, nothing lost.
        The own list is auto-saved into the "active" entry (KC.KEYS.active):
          key absent = never set (older version) | "" = new list not saved yet | id */
     mine: {
-      list()   { return KC.ls.get(KC.KEYS.mine, []) || []; },
+      list()   { return arr(KC.KEYS.mine); },
       write(a) { KC.ls.set(KC.KEYS.mine, a); },
       active()      { return KC.ls.raw(KC.KEYS.active); },
       setActive(id) { KC.ls.setRaw(KC.KEYS.active, id || ""); },

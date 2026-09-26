@@ -89,6 +89,7 @@
   F.saveNow = function () { if (F.viewingShared) return; clearTimeout(timer); timer = null; persist(); };
   /* leaving the page (reload, link, closing the tab) right after a click: write what is still waiting (B20) */
   const flush = () => { if (timer) F.saveNow(); };
+  F.flushSave = flush;   /* write only what is still waiting — does not touch the "last changed" time otherwise */
   window.addEventListener("pagehide", flush);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
 
