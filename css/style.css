@@ -546,3 +546,34 @@ html[lang="zh-Hant"] body{font-family:Inter,"PingFang TC","Microsoft JhengHei","
 /* move to the new site (old build only): the bar sits at the very top of the page */
 .migrate-bar{margin-top:0;margin-bottom:14px;background:var(--accent-soft);border-color:var(--accent)}
 #mineMigrate[hidden]{display:none}
+
+/* ---------- portrait (folding block) and the picture card ---------- */
+details.portrait .portrait-body{padding:4px 18px 18px}
+.pt-meta{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+.pt-row{display:grid;grid-template-columns:minmax(0,1fr) 38% 44px;gap:10px;align-items:center;margin:5px 0;font-size:14px}
+.pt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-bar{height:10px;border-radius:5px;background:var(--accent-soft);overflow:hidden}
+.pt-bar i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.pt-pct{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.pt-how,.pt-empty{color:var(--muted);font-size:12.5px;margin:10px 0}
+.pt-h{margin:14px 0 8px;font-size:15px}
+.pt-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pt-chips span{background:var(--love-bg,#f4e0ec);color:var(--love,#9d2f68);border-radius:14px;padding:3px 10px;font-size:13px}
+.card-opts{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 10px}
+.card-opts .only-toggle{margin:0}
+.card-preview{display:block;width:100%;max-width:240px;margin:0 auto 12px;border:1px solid var(--line);border-radius:10px;aspect-ratio:9/16;background:var(--panel)}
+@media (max-width:560px){.pt-row{grid-template-columns:minmax(0,1fr) 30% 42px;font-size:13px}}
+
+/* ---------- roulette "What shall we try?" (compare page) ---------- */
+.cmp-rl{margin:10px 0}
+.cmp-rl .btn{width:100%}
+.rl-out{min-height:120px;margin-top:10px}
+.rl-item{background:var(--love-bg);border-radius:10px;padding:12px 14px;margin:8px 0}
+.rl-item b{display:block;font-size:17px;color:var(--ink)}
+.rl-item .sub{display:block;font-size:12px;color:var(--muted)}
+.rl-item .rl-desc{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+.rl-spinning .rl-item{opacity:.75}
+.rl-pair h4{margin:14px 0 4px;font-size:15px}
+.rl-note{color:var(--muted);font-size:13px;margin:6px 0}
+#rlOverlay .modal{max-height:88vh;overflow:auto}
+.help-body h5{font-size:13px;color:var(--accent);margin:12px 0 2px;font-weight:600}

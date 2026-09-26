@@ -16,6 +16,9 @@
   let SAVED = null;                     /* the saved comparison on screen: {id, name} */
   let NOTE = null;                      /* after opening a saved one: {updated: [names], gone: [names]} */
   const C = KC.store.cmp;
+  /* what is on screen, for the roulette (compare/roulette.js) */
+  KC.cmpState = () => ({ pair: LAST, group: LAST ? null : GROUP, pmode: PMODE });
+  const rlBtn = () => '<div class="cmp-rl"><button class="btn ghost" type="button" data-act="roulette">' + esc(t("rl.btn")) + "</button></div>";
 
   KC.initTheme();
   KC.i18n.set(KC.i18n.detect(null));
@@ -143,7 +146,7 @@
       + fbtn(FILTER, "all", t("cmp.all"))
       + fbtn(FILTER, "yesA", t("cmp.yesOf", { who: LAST.nA })) + fbtn(FILTER, "yesB", t("cmp.yesOf", { who: LAST.nB }))
       + fbtn(FILTER, "ymA", t("cmp.yesMaybeOf", { who: LAST.nA })) + fbtn(FILTER, "ymB", t("cmp.yesMaybeOf", { who: LAST.nB })) + "</div>"
-      + profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B);
+      + profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B) + rlBtn();
     if (FILTER !== "all") {
       const side = FILTER === "yesA" || FILTER === "ymA", who = side ? LAST.nA : LAST.nB, wm = FILTER.indexOf("ym") === 0;
       const rows = only(KC.match.yesOf(side ? LAST.A : LAST.B, wm)).map(r => ({ id: r.id, a: (LAST.A.items[r.id] || {}).interest || null, b: (LAST.B.items[r.id] || {}).interest || null }));
@@ -206,7 +209,7 @@
   }
   function renderGroup() {
     const P = GROUP, searching = !!KC.$("cmpSearch").value.trim();
-    let html = savedBar() + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
+    let html = savedBar() + rlBtn() + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
       + P.map(p => profileLine(p.name, p.st)).join("");
     if (GFILTER === "pairs") {
       const role = p => p.st.meta.role || "";
@@ -260,6 +263,7 @@
   KC.$("cmpSearch").addEventListener("input", () => { if (LAST || GROUP) render(false); });
   KC.$("results").addEventListener("click", e => {
     if (e.target.closest('button[data-act="save"]')) { saveCurrent(); return; }
+    if (e.target.closest('button[data-act="roulette"]')) { KC.roulette.open(); return; }
     const h = e.target.closest('button[data-act="help"]');
     if (h) { const d = h.parentNode.querySelector(".item-desc"); if (d) { d.hidden = !d.hidden; h.classList.toggle("on", !d.hidden); } return; }
     const pm = e.target.closest("button[data-pm]");

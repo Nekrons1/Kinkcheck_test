@@ -9,7 +9,7 @@
    codec, item sets as bitmaps (~20 KB for a heavy user).
    ROLE is the only difference between the two builds. */
 (function (KC) {
-  const ROLE = "sender";                 // "sender" = old site build, "receiver" = new site build, "" = off
+  const ROLE = "receiver";               // "sender" = old site build, "receiver" = new site build, "" = off
   const NEW_URL = "https://klevatess.github.io/kinkmatch/";
   const TAG = "kcmigrate=";              // index.html#kcmigrate=<payload>
   const APP = "kinkcheck-move";

@@ -3,7 +3,7 @@
    first use and re-filled on every open, so it always follows the current language.
    Texts: help.h (title), help.<section>.h + help.<section>_html in lang/<lang>.ui.js. */
 (function (KC) {
-  const SECTIONS = ["start", "answer", "filters", "lists", "share", "received", "tpl", "pdf", "compare", "privacy"];
+  const SECTIONS = ["start", "answer", "filters", "lists", "share", "received", "tpl", "pdf", "compare", "privacy", "news"];  /* news = "What's new": only entries the owner asks for, newest first */
   /* texts added to a section later, kept as separate keys so the original text stays as it was */
   const MORE = { compare: ["help.compareSave_html"], privacy: ["help.privacyStats_html"] };
   const shown = k => k !== "help.privacyStats_html" || !!(KC.stats && KC.stats.enabled); /* only while the counter is on */
