@@ -587,3 +587,5 @@ details.portrait .portrait-body{padding:4px 18px 18px}
 .help-tab .new-dot{position:absolute;top:1px;right:-10px}
 #helpNews h5:first-child{margin-top:8px}
 #helpNews h5:not(:first-child){border-top:1px solid var(--line2);padding-top:12px;margin-top:16px}
+/* the tabs stay at the top of the help window while its text scrolls */
+.help-tabs{position:sticky;top:-22px;margin-top:-22px;padding-top:22px;background:var(--panel);z-index:2}

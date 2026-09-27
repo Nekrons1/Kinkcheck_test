@@ -38,7 +38,9 @@
   }
   function go(sec) {
     const el = KC.$("help-" + sec), body = el && el.closest(".modal");
-    if (el && body) body.scrollTop = el.offsetTop - body.firstElementChild.offsetTop - 8;
+    if (!el || !body) return;
+    /* "start" = the top (tabs and the list of sections); others: just under the sticky tabs */
+    body.scrollTop = sec === SECTIONS[0] ? 0 : el.offsetTop - body.firstElementChild.offsetTop - body.firstElementChild.offsetHeight - 8;
   }
 
   KC.help = {
