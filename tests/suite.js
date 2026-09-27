@@ -1002,7 +1002,7 @@ const S = (title) => console.log("\n## " + title);
   const qs = [...hp0.d.querySelectorAll("[data-help]")].map(b => b.dataset.help);
   ok(hp0.d.querySelector(".brand-row .help-q") && ["start", "share", "lists", "received", "tpl", "pdf"].every(s => qs.indexOf(s) >= 0), "“?” in the header and in each window: " + qs.join(","));
   click(hp0.w, hp0.d.querySelector('.brand-row [data-help="start"]'));
-  ok(hp0.d.getElementById("helpOverlay").classList.contains("show") && hp0.d.querySelectorAll("#helpBody section").length === 11, "help window with 11 sections (incl. What's new)");
+  ok(hp0.d.getElementById("helpOverlay").classList.contains("show") && hp0.d.querySelectorAll("#helpBody section").length === 10, "help window with 10 sections (What's new is its own tab)");
   ok(/Чек-лист практик для разговора/.test(hp0.d.getElementById("helpBody").textContent) && /Шаблон — это набор пунктов/.test(hp0.d.getElementById("helpBody").textContent), "help text in Russian");
   click(hp0.w, hp0.d.querySelector('#langSw button[data-lang="en"]'));
   click(hp0.w, hp0.d.querySelector('#mineOverlay [data-help="lists"]'));
@@ -1664,10 +1664,18 @@ const S = (title) => console.log("\n## " + title);
     const hp = open("form");
     ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => {
       hp.KC.i18n.set(l); hp.KC.help.open("news");
-      const s3 = hp.d.getElementById("help-news");
-      ok(s3 && s3.querySelectorAll("h5").length === 1 && /2026/.test(s3.querySelector("h5").textContent) && s3.querySelectorAll("li").length === 3, l + ": “What's new” tab with the dated entry (3 features)");
+      const s3 = hp.d.getElementById("helpNews");
+      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 1 && /27/.test(s3.querySelector("h5").textContent) && s3.querySelectorAll("li").length === 3, l + ": “What's new” tab with the dated entry (27 Sept, 3 features)");
+      ok(hp.d.getElementById("helpNewsTab").textContent === hp.KC.i18n.t("help.news.h") && !!hp.d.querySelector("#helpNewsTab .new-dot"), l + ": tab name with a green dot");
     });
-    eq(hp.KC.help.SECTIONS[hp.KC.help.SECTIONS.length - 1], "news", "“What's new” is the last tab");
+    eq([hp.KC.help.SECTIONS.indexOf("news"), !!hp.d.getElementById("help-news"), hp.d.querySelectorAll('#helpToc button[data-go="news"]').length], [-1, false, 0], "“What's new” is not a section of “How to use”");
+    // switching tabs
+    hp.KC.i18n.set("ru"); hp.KC.help.open("pdf");
+    eq([hp.d.getElementById("helpPane").hidden, hp.d.getElementById("helpNews").hidden, hp.d.getElementById("helpTitle").classList.contains("on"), hp.d.getElementById("helpTitle").textContent], [false, true, true, "Как пользоваться"], "a “?” button opens the “How to use” tab");
+    click(hp.w, hp.d.getElementById("helpNewsTab"));
+    eq([hp.d.getElementById("helpPane").hidden, hp.d.getElementById("helpNews").hidden, hp.d.getElementById("helpNewsTab").getAttribute("aria-selected")], [true, false, "true"], "clicking “What's new” shows only the updates");
+    click(hp.w, hp.d.getElementById("helpTitle"));
+    eq([hp.d.getElementById("helpPane").hidden, hp.d.getElementById("helpNews").hidden], [false, true], "and back");
     _sc.end();
   }
 

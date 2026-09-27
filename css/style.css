@@ -578,3 +578,12 @@ details.portrait .portrait-body{padding:4px 18px 18px}
 .rl-note{color:var(--muted);font-size:13px;margin:6px 0}
 #rlOverlay .modal{max-height:88vh;overflow:auto}
 .help-body h5{font-size:13px;color:var(--accent);margin:12px 0 2px;font-weight:600}
+/* help window: two tabs — "How to use" | "What's new" (green dot = new) */
+.help-tabs{display:flex;gap:18px;align-items:flex-end;border-bottom:1px solid var(--line2);margin:0 0 4px;padding-right:4px}
+.help-tab{position:relative;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:2px 0 7px;font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:600;color:var(--muted);cursor:pointer;text-align:left}
+.help-tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.help-tab:hover{color:var(--ink)}
+.help-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.help-tab .new-dot{position:absolute;top:1px;right:-10px}
+#helpNews h5:first-child{margin-top:8px}
+#helpNews h5:not(:first-child){border-top:1px solid var(--line2);padding-top:12px;margin-top:16px}
