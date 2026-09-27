@@ -1542,19 +1542,37 @@ const S = (title) => console.log("\n## " + title);
     const ids = {}; K.CATS.forEach(c => { ids[c.id] = c.items.map(([, id]) => id); });
     const mk = (cat, vals) => { const o = {}; vals.forEach((v, i) => { o[ids[cat][i]] = { interest: v }; }); return o; };
     const sec = (st, cat, set) => P.compute(st, set).sections.find(s => s.id === cat);
-    // formula
-    eq(sec({ items: mk("intimacy", ["love", "love", "love"]) }, "intimacy").pct, 100, "all Love = 100%");
-    eq(sec({ items: mk("intimacy", ["yes", "yes", "yes"]) }, "intimacy").pct, 83, "all Yes = 83% (Love weighs a bit more)");
-    eq(sec({ items: mk("intimacy", ["maybe", "maybe", "maybe"]) }, "intimacy").pct, 33, "all Maybe = 33%");
-    eq(sec({ items: mk("intimacy", ["love", "yes", "limit", "maybe"]) }, "intimacy").pct, Math.round(100 * (1.2 + 1 - 1 + 0.4) / (4 * 1.2)), "No pulls the section down");
-    eq(sec({ items: mk("intimacy", ["limit", "limit", "yes"]) }, "intimacy").pct, 0, "never below 0%");
-    eq(sec({ items: mk("intimacy", ["love", "love"]) }, "intimacy").pct, null, "fewer than 3 answers: no percentage");
+    // formula (v579): ½ "how much" (average, pulled toward the list's overall level) + ½ "how many" (against the list's own scale)
+    const one = (cat, vals) => sec({ items: mk(cat, vals) }, cat).pct;
+    eq(one("intimacy", ["love", "love", "love"]), 73, "3× Love alone: 73% (average 100%, amount 45%)");
+    ok(one("intimacy", ["love", "love", "love"]) > one("intimacy", ["yes", "yes", "yes"]) && one("intimacy", ["yes", "yes", "yes"]) > one("intimacy", ["maybe", "maybe", "maybe"]), "Love > Yes > Maybe");
+    ok(one("intimacy", ["love", "yes", "limit", "maybe"]) < one("intimacy", ["love", "yes", "maybe"]), "No pulls the group down");
+    eq(one("intimacy", ["limit", "limit", "yes"]), 0, "never below 0%");
+    eq(one("intimacy", ["love", "love"]), null, "fewer than 3 answers: no percentage");
+    eq(P.compute({ items: {} }).sections.map(s => s.id).sort(), ["bodily-fluids", "bondage", "ds", "fetishes", "intimacy", "role-play", "sex-penetration", "sm", "voyeurism-exhibitionism"], "9 groups: D/s and S/M merged, role play on its own");
+    const outSt = { items: Object.assign(mk("session-length", ["love", "love", "love"]), mk("non-monogamy", ["love", "love", "love"])) };
+    const outR = P.compute(outSt);
+    eq([outR.answered, outR.love.length, outR.sections.filter(s => s.pct !== null).length], [0, 0, 0], "session length and non-monogamy are not in the portrait (not counted, no chips)");
+    eq(K.CATS.filter(c => c.id === "session-length" || c.id === "non-monogamy").length, 2, "…the sections themselves stay in the form");
+    const dsR = P.compute({ items: Object.assign(mk("service-control", ["love", "love"]), mk("humiliation", ["love"])) }).sections.find(s => s.id === "ds");
+    eq([dsR.answered, dsR.total, dsR.pct !== null], [3, ids["service-control"].length + ids.humiliation.length, true], "D/s = service & control + humiliation");
+    const smR = P.compute({ items: {} }).sections.find(s => s.id === "sm");
+    eq(smR.total, ids["impact-rough-play"].length + ids["sensation-play"].length + ids.marking.length, "S/M = impact + sensation + marking");
+    const eqAll = {}; ["intimacy", "bondage", "fetishes", "role-play", "service-control", "impact-rough-play", "sex-penetration", "voyeurism-exhibitionism", "bodily-fluids"].forEach(c => Object.assign(eqAll, mk(c, ["yes", "yes", "yes", "yes"])));
+    eq([...new Set(P.compute({ items: eqAll }).sections.map(s => s.pct))].length, 1, "the same answers in every group: the same percentage (small sections get no bonus)");
+    const small = Object.assign(mk("bodily-fluids", ["love", "love", "love"]), mk("service-control", ids["service-control"].map((x, i) => i % 3 ? "yes" : "maybe")), mk("humiliation", ids.humiliation.map((x, i) => i % 3 ? "yes" : "maybe")));
+    const smallR = P.compute({ items: small }).sections;
+    ok(smallR.find(s => s.id === "ds").pct > smallR.find(s => s.id === "bodily-fluids").pct + 20, "3× Love in a small group does not beat a whole group of Yes/Maybe");
+    const base = mk("bondage", ["yes", "yes", "yes", "yes", "yes"]);
+    const more = Object.assign({}, base, mk("sex-penetration", ids["sex-penetration"].map(() => "love")));
+    ok(sec({ items: more }, "bondage").pct < sec({ items: base }, "bondage").pct, "someone who marks a lot needs more for the same percentage");
     const stMix = { items: Object.assign(mk("intimacy", ["yes", "yes", "yes"]), mk("bondage", ["love", "love", "love"]), mk("fetishes", ["limit", "maybe", "maybe"])) };
-    eq(P.compute(stMix).sections.slice(0, 3).map(s => s.id), ["bondage", "intimacy", "fetishes"], "sections sorted from most to least liked");
+    eq(P.compute(stMix).sections.slice(0, 3).map(s => s.id), ["bondage", "intimacy", "fetishes"], "groups sorted from most to least liked");
     const lv = P.compute({ items: mk("bondage", ["love", "love", "love"]) }).love;
     eq(lv.slice(), lv.slice().sort((a, b) => K.i18n.item(a).name.localeCompare(K.i18n.item(b).name, K.i18n.locale())), "Love list in alphabetical order");
     const set = {}; ids.intimacy.slice(0, 3).forEach(id => { set[id] = 1; });
-    eq([sec({ items: mk("intimacy", ["love", "love", "love", "limit", "limit"]) }, "intimacy", set).pct, P.compute({ items: {} }, set).sections.length], [100, 1], "with a template: only its items count, other sections disappear");
+    eq([sec({ items: mk("intimacy", ["love", "love", "love", "limit", "limit"]) }, "intimacy", set).pct, P.compute({ items: {} }, set).sections.length], [73, 1], "with a template: only its items count, other groups disappear");
+    eq([P.label("ds"), P.label("sm"), P.label("bondage")], ["D/s: служение и унижение", "S/M: удары, ощущения, метки", "Бондаж и фиксация"], "group names");
 
     // portrait block
     const own = { name: "Me", uid: "MEME01", items: Object.assign(mk("intimacy", ["love", "yes", "yes", "maybe"]), mk("bondage", ["love", "limit", "yes"])), meta: { role: "dom", exp: "large" } };
@@ -1563,7 +1581,7 @@ const S = (title) => console.log("\n## " + title);
     const ps = p.d.getElementById("portraitSection");
     eq([p.d.getElementById("portraitTitle").textContent, ps.open, p.d.getElementById("portraitBody").innerHTML], ["Мой портрет", false, ""], "folded by default, nothing drawn yet");
     ps.open = true; ps.dispatchEvent(new p.w.Event("toggle"));
-    eq(p.d.querySelectorAll("#portraitBody .pt-row").length, 14, "a bar for every section");
+    eq(p.d.querySelectorAll("#portraitBody .pt-row").length, 9, "a bar for every group");
     ok(/Доминант \/ Верх · Большой/.test(p.d.getElementById("portraitBody").textContent), "role and experience");
     eq(p.d.querySelectorAll("#portraitBody .pt-chips span").length, 2, "all Love items as chips");
     click(p.w, p.d.querySelector('.item[data-id="' + ids.bondage[5] + '"] .scale button[data-v="love"]'));
@@ -1650,6 +1668,64 @@ const S = (title) => console.log("\n## " + title);
       ok(s3 && s3.querySelectorAll("h5").length === 1 && /2026/.test(s3.querySelector("h5").textContent) && s3.querySelectorAll("li").length === 3, l + ": “What's new” tab with the dated entry (3 features)");
     });
     eq(hp.KC.help.SECTIONS[hp.KC.help.SECTIONS.length - 1], "news", "“What's new” is the last tab");
+    _sc.end();
+  }
+
+  S("v579: role picker on the compare page");
+  {
+    const _sc = scope();
+    const K = open("form").KC;
+    const I = o => { const r = {}; Object.keys(o).forEach(k => { r[k] = { interest: o[k] }; }); return r; };
+    const its = I({ "genital-sex": "love", "spanking-hand": "yes", "blindfolds": "yes" });
+    const mkP = (n, role) => ({ name: n, uid: (n + "XXXXXX").slice(0, 6), items: its, meta: role ? { role } : {} });
+    const G = [mkP("Ann", "dom"), mkP("Bob", "sub"), mkP("Cid", ""), mkP("Dan", "")];
+    const loc = { "checklist-lang": "ru", "checklist-saved-profiles-v1": JSON.stringify(G.map((x, i) => ({ id: "g" + i, name: x.name, code: K.codec.encode(x), ts: 9 - i }))) };
+    const g = open("compare", { storage: { local: loc, session: {} } });
+    const cols = () => [...g.d.querySelectorAll("#parts .cmp-col")];
+    const rs = col => col.querySelector(".cmp-role");
+    eq([...rs(cols()[0]).options].map(o => [o.value, o.textContent]), [["", "Роль: из анкеты"], ["dom", "Роль: Верх"], ["sub", "Роль: Низ"]], "each participant: from the list / Top / Bottom — no Switch");
+    eq(cols().map(c => rs(c).value), ["", ""], "default: the role inside the list");
+    for (let i = 0; i < 2; i++) click(g.w, g.d.getElementById("addPart"));
+    cols().forEach((col, i) => { const s2 = col.querySelector(".cmp-pick"); s2.value = "r:g" + i; s2.dispatchEvent(new g.w.Event("change", { bubbles: true })); });
+    rs(cols()[2]).value = "dom"; rs(cols()[3]).value = "sub"; rs(cols()[0]).value = "sub";
+    click(g.w, g.d.getElementById("cmpBtn"));
+    const GP = g.KC.cmpState().group;
+    eq(GP.map(p => p.st.meta.role || ""), ["sub", "sub", "dom", "sub"], "a chosen role replaces the list's one (also over a role in the list)");
+    click(g.w, g.d.querySelector('#results button[data-f="pairs"]'));
+    click(g.w, g.d.querySelector('#results button[data-pm="role"]'));
+    const tags = [...g.d.querySelectorAll("#results .pair-table")[0].querySelectorAll("tr:first-child th .role-tag")].map(x => x.textContent);
+    eq(tags, ["Низ", "Низ", "Верх", "Низ"], "role tags in the pair table follow the choice");
+    ok(!/Роль не указана/.test(g.d.getElementById("results").textContent), "no “no role given” note once everyone has one");
+    const nums = g.d.querySelectorAll("#results .pair-table")[0].querySelectorAll("button.pair-n").length;
+    eq(nums, 6, "Top + Bottom pairs only: Cid (Top) with each of the 3 Bottoms, both ways");
+    const pr = g.KC.roulette.pairUp(GP, true, false);
+    ok(pr.pairs.length === 1 && pr.pairs[0].some(x => x.name === "Cid"), "roulette in Top + Bottom mode uses the chosen roles");
+    // saved with the roles, reopened with them
+    const pr0 = g.w.prompt; g.w.prompt = () => "Roles";
+    click(g.w, g.d.querySelector('#results button[data-act="save"]'));
+    g.w.prompt = pr0;
+    const saved = JSON.parse(g.w.localStorage.getItem("checklist-compares-v1"));
+    eq(saved[0].parts.map(p => p.role || ""), ["sub", "", "dom", "sub"], "saved comparison keeps a chosen role (none when “from the list”)");
+    const g2 = open("compare", { storage: { local: Object.assign({}, loc, { "checklist-compares-v1": JSON.stringify(saved) }), session: {} } });
+    const sel = g2.d.getElementById("cmpSaved"); sel.value = saved[0].id; sel.dispatchEvent(new g2.w.Event("change", { bubbles: true }));
+    eq([...g2.d.querySelectorAll("#parts .cmp-role")].map(x => x.value), ["sub", "", "dom", "sub"], "reopening a saved comparison restores the pickers");
+    eq(g2.KC.cmpState().group.map(p => p.st.meta.role || ""), ["sub", "sub", "dom", "sub"], "…and the roles in the results");
+    // backup / move keeps the role, junk roles are dropped
+    const b = g2.KC.store.exportAll(); b.compares[0].parts[1].role = "switch"; b.compares[0].id = "cX"; b.compares[0].name = "Other";
+    const g3 = open("compare", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    g3.KC.store.importAll(b);
+    eq(g3.KC.store.cmp.list().find(x => x.id === "cX").parts.map(p => p.role || ""), ["sub", "", "dom", "sub"], "backup import keeps Top/Bottom, drops anything else");
+    // pair view
+    const g4 = open("compare", { storage: { local: loc, session: {} } });
+    const c4 = [...g4.d.querySelectorAll("#parts .cmp-col")];
+    c4.forEach((col, i) => { const s2 = col.querySelector(".cmp-pick"); s2.value = "r:g" + (i + 2); s2.dispatchEvent(new g4.w.Event("change", { bubbles: true })); });
+    c4[0].querySelector(".cmp-role").value = "dom";
+    click(g4.w, g4.d.getElementById("cmpBtn"));
+    ok(/Cid · Роль: Доминант \/ Верх/.test(g4.d.getElementById("results").textContent.replace(/\s+/g, " ")) || /Доминант/.test(g4.d.querySelector("#results .cmp-profile").textContent), "two people: the chosen role shows in the profile line");
+    click(g4.w, g4.d.querySelector('#langSw button[data-lang="en"]'));
+    eq([...c4[0].querySelector(".cmp-role").options].map(o => o.textContent), ["Role: from the list", "Role: Top", "Role: Bottom"], "follows the language, keeps the choice");
+    eq(c4[0].querySelector(".cmp-role").value, "dom", "…choice kept after switching language");
+    ok(!g.errors.length && !g2.errors.length && !g3.errors.length && !g4.errors.length, "no script errors");
     _sc.end();
   }
 

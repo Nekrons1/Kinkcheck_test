@@ -20,7 +20,7 @@ function manifest() {
 function release() {}
 /* scope(): pages opened until .end() are closed by it (self-contained test blocks free their memory) */
 let SCOPE = null;
-const RECENT = [], MAX_OPEN = 60;
+const RECENT = [], MAX_OPEN = 30;
 function scope() { SCOPE = []; return { end() { const s = SCOPE || []; SCOPE = null; s.forEach(w => { try { w.close(); } catch (e) {} }); } }; }
 function open(page, { hash = "", search = "", storage = { local: {}, session: {} }, navLang = "ru", answers = {}, patch = {}, base = BASE, keep = false } = {}) {
   const file = page === "compare" ? "compare.html" : "index.html";

@@ -23,7 +23,7 @@
     if (!d.answered) { body.innerHTML = '<p class="pt-empty">' + esc(t("pt.empty")) + "</p>"; return; }
     const meta = metaBits(st);
     let h = (meta.length ? '<div class="pt-meta">' + esc(meta.join(" · ")) + "</div>" : "")
-      + '<div class="pt-bars">' + d.sections.map(s => '<div class="pt-row"><span class="pt-name">' + esc(KC.i18n.cat(s.id)) + "</span>"
+      + '<div class="pt-bars">' + d.sections.map(s => '<div class="pt-row"><span class="pt-name">' + esc(KC.portrait.label(s.id)) + "</span>"
         + '<span class="pt-bar"><i style="width:' + (s.pct || 0) + '%"></i></span><span class="pt-pct">' + pctText(s.pct) + "</span></div>").join("") + "</div>"
       + '<p class="pt-how">' + esc(t("pt.how")) + "</p>";
     if (d.love.length) h += '<h4 class="pt-h">' + esc(t("pt.love", { n: d.love.length })) + '</h4><div class="pt-chips">'
@@ -80,7 +80,7 @@
       const rows = d.sections, rh = 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
       rows.forEach((s, i) => {
         const ry = y + i * rh;
-        ctx.fillStyle = C.ink; ctx.font = "500 31px " + SANS; ctx.fillText(fit(ctx, KC.i18n.cat(s.id), nameW), M, ry + 34);
+        ctx.fillStyle = C.ink; ctx.font = "500 31px " + SANS; ctx.fillText(fit(ctx, KC.portrait.label(s.id), nameW), M, ry + 34);
         ctx.fillStyle = C.bar; rr(ctx, barX, ry + 12, barW, 26, 13); ctx.fill();
         if (s.pct) { ctx.fillStyle = C.accent; rr(ctx, barX, ry + 12, Math.max(26, barW * s.pct / 100), 26, 13); ctx.fill(); }
         ctx.fillStyle = s.pct === null ? C.muted : C.ink; ctx.font = "600 31px " + SANS; ctx.textAlign = "right"; ctx.fillText(pctText(s.pct), W - M, ry + 34); ctx.textAlign = "left";
@@ -164,7 +164,7 @@
     const serif = "font-family:Fraunces,Georgia,serif;font-weight:600;";
     let h = '<div style="' + card + '"><div style="' + serif + 'font-size:27px;color:#8a2d47;">' + esc(F.viewingShared ? (st.name ? t("pt.of", { name: st.name }) : t("pt.of0")) : t("pt.mine")) + "</div>"
       + (meta.length ? '<div style="margin-top:6px;color:#8a7d84;">' + esc(meta.join(" · ")) + "</div>" : "") + "</div>";
-    h += '<div style="' + card + '">' + d.sections.map(s => '<div style="display:flex;align-items:center;gap:12px;margin:5px 0;"><span style="width:300px;">' + esc(KC.i18n.cat(s.id)) + "</span>"
+    h += '<div style="' + card + '">' + d.sections.map(s => '<div style="display:flex;align-items:center;gap:12px;margin:5px 0;"><span style="width:300px;">' + esc(KC.portrait.label(s.id)) + "</span>"
       + '<span style="flex:1;height:12px;background:#e9dfe3;border-radius:6px;overflow:hidden;"><span style="display:block;height:12px;width:' + (s.pct || 0) + '%;background:#8a2d47;"></span></span>'
       + '<span style="width:44px;text-align:right;font-weight:600;">' + pctText(s.pct) + "</span></div>").join("")
       + '<div style="margin-top:8px;font-size:11.5px;color:#8a7d84;">' + esc(t("pt.how")) + "</div></div>";

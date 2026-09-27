@@ -291,8 +291,9 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
 .cmp-inputs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .cmp-col-head{display:flex;gap:6px;align-items:center}
 .cmp-col-head .cmp-name{flex:1;min-width:0}
-.cmp-pick{width:100%;font:inherit;font-size:13px;padding:7px 8px;margin:6px 0;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.cmp-pick,.cmp-role{width:100%;font:inherit;font-size:13px;padding:7px 8px;margin:6px 0;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
 .cmp-pick:disabled{opacity:.5}
+.cmp-role{margin-top:0}
 /* compare: pair table */
 .pair-wrap{overflow-x:auto}
 .pair-table{border-collapse:collapse;font-size:13px;margin-top:6px}
