@@ -27,7 +27,9 @@ window.KC = window.KC || {};
     tpl:   "checklist-templates-v1",        // templates: own ("My lists") and received
     fav:   "checklist-favs-v1",             // favourites (♥) of lists opened from links: {listKey: [ids]}
     cmp:   "checklist-compares-v1",         // saved comparisons (3+ people): [{id, name, parts, ts}]
-    dnd:   "checklist-dnd",                 // "1" = the portrait shows the DnD class instead of the sign (raw string)
+    folds: "checklist-folds",               // compare page: which picture folds are open {pair, group}
+    dnd:   "checklist-dnd",                 // the portrait's mode (raw string): "1" = DnD class, "wod" = World of Darkness, none = the sign
+    wod:   "checklist-wod",                 // World of Darkness line (raw string): vamp | wolf | fey | demon
   };
 
   KC.ls = {

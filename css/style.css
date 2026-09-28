@@ -686,3 +686,40 @@ header.top{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .pt-mode .btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
 .sg-al{font-size:13px;color:var(--muted);padding:2px 10px 0;line-height:1.4}
 .sg-al b{color:var(--accent);font-weight:600}
+/* v591: DnD classes in the pair's constellations */
+.sp-signs .pt-mode{justify-content:center;margin:2px 0 6px}
+.sg-mini .al{font-size:11.5px;color:var(--accent);font-weight:600}
+/* v592: the compare pictures fold away (closed at first) */
+details.sp-fold>summary{font-size:17px}
+.sp-fold-body{padding:0 10px 10px}
+.sp-fold .sp-box{border:none;margin:0;padding:10px 4px 6px;border-radius:0}
+.sp-fold .sp-box+.sp-box{border-top:1px solid var(--line)}
+/* v596: DnD race · level line */
+.sg-rl{font-size:15px;font-weight:600;color:var(--ink);padding:0 8px 2px}
+.sg-mini .rl{font-size:12px;font-weight:600;color:var(--ink)}
+.dnd-foes{margin:10px 2px 2px}
+.dnd-foes .fh{font-size:13px;font-weight:600;margin:0 0 4px}
+.dnd-foe{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13.5px}
+.dnd-foe:first-of-type{border-top:none}
+.dnd-foe .lv{flex:0 0 8.6em;color:var(--muted)}
+.dnd-foe b{font-weight:600}
+.dnd-foe .cr{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.dnd-party{list-style:none;margin:4px 0 8px;padding:0}
+.dnd-party li{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;padding:6px 2px;border-top:1px solid var(--line);font-size:13.5px}
+.dnd-party li:first-child{border-top:none}
+.dnd-party .who{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.dnd-party .what{color:var(--ink)}
+.dnd-party .al{color:var(--accent);font-size:12.5px;font-weight:600}
+.dnd-party .sub{flex-basis:100%;font-size:12px;color:var(--muted)}
+.dnd-sum{font-size:13px;color:var(--muted);margin:2px 2px 0}
+.dnd-note{font-size:11.5px;color:var(--muted);margin:6px 2px 0}
+.sp-fold-body>.pt-mode{justify-content:center;margin:10px 0 0}
+/* v597: World of Darkness — the line switch under the mode switch, the Dark Pack notice */
+.pt-mode{flex-wrap:wrap}
+.pt-wod-sub{margin-top:-2px}
+.pt-wod-sub .btn{padding-left:8px;padding-right:8px}
+/* narrow screens: the four lines as a tidy 2 × 2 block instead of 3 + 1 */
+@media (max-width:520px){.pt-wod-sub{display:grid;grid-template-columns:repeat(2,auto);justify-content:end}.sp-signs .pt-wod-sub,.sp-fold-body>.pt-wod-sub{justify-content:center}}
+.sp-signs .pt-wod-sub{justify-content:center;margin:-2px 0 6px}
+.sp-fold-body>.pt-wod-sub{justify-content:center;margin:6px 0 0}
+.wod-note{font-size:10.5px;line-height:1.35;color:var(--muted);margin:8px 4px 0;text-align:center}

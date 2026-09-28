@@ -5,7 +5,9 @@
    On top of both: the constellation sign (KC.signs) — 9 stars, one per group, each labelled "group / %".
    The card follows the site theme: light theme = paper card, dark theme = night card.
    DnD mode (v591, KC.dnd): a switch above the picture shows a D&D class, subclass and joke alignment instead of
-   the sign; the picture card follows the mode shown. Grey stars of a class figure only shape the drawing. */
+   the sign; the picture card follows the mode shown. Grey stars of a class figure only shape the drawing.
+   World of Darkness mode (v597, KC.wod): the third button; a second row picks the line (vampire, werewolf, fey,
+   demon); the figure is the clan / tribe / kith / house, the lines under it come from KC.wod.details. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   const SITE = (KC.migrate ? KC.migrate.NEW_URL : "").replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -22,14 +24,20 @@
   const spark = (x, y, r) => "M" + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + "Z";
   const seeded = n => { let x = n; return () => (x = (x * 16807) % 2147483647) / 2147483647; };
   const signSub = sg => sg.kind === "even" ? t("sign.even") : sg.main.map(m => short(m.id)).join(" + ");
-  /* the figure shown: the DnD class when that mode is on, else the sign */
-  const dndOn = () => !!(KC.dnd && KC.dnd.on());
-  const figOf = d => dndOn() ? KC.dnd.pick(d) : KC.signs.pick(d);
+  /* the figure shown: the DnD class or the World of Darkness subtype when that mode is on, else the sign */
+  const mode = () => KC.dnd ? KC.dnd.mode() : "sign";
+  const dndOn = () => mode() === "dnd";
+  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.signs.pick(d);
   /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
   function headOf(sg) {
+    if (sg.wod) {
+      const dt = KC.wod.details(F.shown(), data(), F.tplSet(), sg.line, sg.id), ln = KC.wod.lines(dt, t);
+      return { over: t((F.viewingShared ? "wod.of." : "wod.mine.") + sg.line), name: t("wod." + sg.line + "." + sg.id), sub: ln.sub + " · " + signSub(sg), rl: ln.rl, al: null, dt };
+    }
     if (!sg.dnd) return { over: t(F.viewingShared ? "sign.of" : "sign.mine"), name: t("sign." + sg.id), sub: signSub(sg), al: null };
-    const al = KC.dnd.alignment(F.shown(), data(), F.tplSet());
+    const st = F.shown(), set = F.tplSet(), al = KC.dnd.alignment(st, data(), set), race = KC.dnd.race(st, set), lv = KC.dnd.level(st, set);
     return { over: t(F.viewingShared ? "dnd.of" : "dnd.mine"), name: t("dnd.c." + sg.cls), sub: t("dnd.s." + sg.cls + "." + sg.sub) + " · " + signSub(sg),
+      rl: t("dnd.r." + race) + " · " + t("dnd.lvl", { n: lv }), race, lv,
       al: { name: t("dnd.al." + al), quip: t("dnd.aq." + al) }, alKey: al };
   }
   /* star radius: bright stars are big, the others grow with their group's percentage */
@@ -70,16 +78,18 @@
       g += '<text x="' + cx + '" y="' + (b.y + 12).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-family="Inter,sans-serif" fill="currentColor" paint-order="stroke" stroke="var(--bg)" stroke-width="3" stroke-linejoin="round"' + (st.bright ? ' font-weight="600"' : "") + ">" + esc(short(st.s.id))
         + '<tspan x="' + cx + '" dy="15" font-weight="700" fill="' + (st.bright ? "var(--star)" : v === null ? "var(--muted)" : "var(--accent)") + '">' + pctText(v) + "</tspan></text>";
     });
-    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : "") + '"' + (sg.dnd ? ' data-cls="' + sg.cls + '" data-al="' + hd.alKey + '"' : "") + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + '</div><div class="sg-sub">' + esc(hd.sub) + "</div>"
-      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg></div>";
+    const attrs = sg.dnd ? ' data-cls="' + sg.cls + '" data-al="' + hd.alKey + '" data-race="' + hd.race + '" data-lv="' + hd.lv + '"'
+      : sg.wod ? ' data-line="' + sg.line + '" data-id="' + sg.id + '" data-lv="' + hd.dt.lv + '"' : "";
+    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
+      + (hd.rl ? '<div class="sg-rl">' + esc(hd.rl) + "</div>" : "") + '<div class="sg-sub">' + esc(hd.sub) + "</div>"
+      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg>" + (sg.wod ? KC.wod.noticeHTML() : "") + "</div>";
   }
   F.signOf = () => KC.signs.pick(data());
 
-  /* the "✦ Constellation | 🎲 DnD" switch above the picture (only when there is a picture) */
+  /* the "✦ Constellation | 🎲 DnD | 🦇 World of Darkness" switch above the picture (only when there is a picture) */
   function modeSwitch(d) {
-    if (!KC.dnd || !KC.signs.pick(d)) return "";
-    const on = dndOn(), b = (m, key, pressed) => '<button type="button" class="btn ghost mini" data-mode="' + m + '" aria-pressed="' + pressed + '">' + esc(t(key)) + "</button>";
-    return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">' + b("sign", "dnd.toSign", !on) + b("dnd", "dnd.toDnd", on) + "</div>";
+    if (!KC.dnd || !KC.wod || !KC.signs.pick(d)) return "";
+    return KC.wod.switchHTML();
   }
 
   /* ---------- the block on the page ---------- */
@@ -108,7 +118,9 @@
   body.addEventListener("click", e => {
     if (e.target.closest("#ptCard")) { openCard(); return; }
     const m = e.target.closest(".pt-mode [data-mode]");
-    if (m) { const want = m.dataset.mode === "dnd"; if (want !== dndOn()) { KC.dnd.set(want); if (want) KC.stats.event("dnd"); F.renderPortrait(); } }
+    if (m) { const want = m.dataset.mode; if (want !== mode()) { KC.dnd.setMode(want); if (want !== "sign") KC.stats.event(want); F.renderPortrait(); } return; }
+    const w = e.target.closest(".pt-mode [data-wod]");
+    if (w && w.dataset.wod !== KC.wod.sub()) { KC.wod.setSub(w.dataset.wod); F.renderPortrait(); }
   });
   /* answers change -> the open portrait follows (the progress line is updated after every answer) */
   const upd = F.updateProgress;
@@ -144,11 +156,14 @@
   function cardSign(ctx, sg, C, y, W, M, SANS, SERIF, big) {
     const hd = headOf(sg);
     ctx.textAlign = "center"; ctx.fillStyle = C.star; ctx.font = "600 92px " + SERIF; ctx.fillText(fit(ctx, hd.name, W - 2 * M), W / 2, y + 70);
-    ctx.fillStyle = C.ink; ctx.font = "500 34px " + SANS; ctx.fillText(fit(ctx, hd.sub, W - 2 * M), W / 2, y + 122);
-    if (hd.al) {   /* DnD: the alignment and its joke */
-      ctx.font = "700 34px " + SANS; ctx.fillStyle = C.accent; ctx.fillText(fit(ctx, hd.al.name, W - 2 * M), W / 2, y + 176);
-      ctx.font = "italic 500 31px " + SANS; ctx.fillStyle = C.muted; ctx.fillText(fit(ctx, hd.al.quip, W - 2 * M), W / 2, y + 220); y += 110;
-    }
+    if (hd.rl) {   /* DnD: race · level, the subclass, the alignment and its joke */
+      ctx.fillStyle = C.ink; ctx.font = "600 40px " + SANS; ctx.fillText(fit(ctx, hd.rl, W - 2 * M), W / 2, y + 124);
+      ctx.font = "500 32px " + SANS; ctx.fillText(fit(ctx, hd.sub, W - 2 * M), W / 2, y + 172);
+      if (hd.al) {
+        ctx.font = "700 34px " + SANS; ctx.fillStyle = C.accent; ctx.fillText(fit(ctx, hd.al.name, W - 2 * M), W / 2, y + 226);
+        ctx.font = "italic 500 31px " + SANS; ctx.fillStyle = C.muted; ctx.fillText(fit(ctx, hd.al.quip, W - 2 * M), W / 2, y + 270); y += 160;
+      } else y += 60;   /* World of Darkness: no alignment line */
+    } else { ctx.fillStyle = C.ink; ctx.font = "500 34px " + SANS; ctx.fillText(fit(ctx, hd.sub, W - 2 * M), W / 2, y + 122); }
     ctx.textAlign = "left";
     /* lay the figure out in a tall box, then use only the band it needs */
     const SH = big ? 820 : 560, box = big ? 640 : 420, ox = (W - box) / 2, oyL = (SH - box) / 2, k = box / 100;   /* alone on the card: bigger */
@@ -206,9 +221,10 @@
     const meta = []; if (o.role && st.meta.role) meta.push(KC.i18n.optLabel("role", st.meta.role)); if (o.exp && st.meta.exp) meta.push(KC.i18n.fieldLabel("exp") + ": " + KC.i18n.optLabel("exp", st.meta.exp));
     if (meta.length) { ctx.fillStyle = C.ink; ctx.font = "500 38px " + SANS; ctx.fillText(fit(ctx, meta.join(" · "), IW), M, y); y += 64; }
     y += 10;
-    const bottom = H - 150;
+    let bottom = H - 150;
     /* the sign and the percentages can be switched on and off separately (v587, owner) */
-    const sg = o.sign ? figOf(d) : null;   /* the mode shown on the page: sign or DnD class */
+    const sg = o.sign ? figOf(d) : null;   /* the mode shown on the page: sign, DnD class or World of Darkness */
+    if (sg && sg.wod) bottom -= 40;   /* room for the "not official" line */
     if (sg) y = cardSign(ctx, sg, C, y, W, M, SANS, SERIF, !o.bars);
     if (o.bars) {
       const rows = d.sections, rh = sg ? 44 : 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
@@ -254,6 +270,10 @@
       });
       y += 24;
     });
+    if (sg && sg.wod) {   /* "not official World of Darkness material", small, above the footer */
+      ctx.fillStyle = C.muted; ctx.font = "500 22px " + SANS; ctx.textAlign = "center";
+      ctx.fillText(fit(ctx, t("wod.notOfficial"), IW), W / 2, H - 130); ctx.textAlign = "left";
+    }
     ctx.fillStyle = C.muted; ctx.font = "500 32px " + SANS; ctx.textAlign = "center"; ctx.fillText("✦ " + KC.BRAND + (SITE ? " · " + SITE : ""), W / 2, H - 70); ctx.textAlign = "left";
     return c;
   };
@@ -268,7 +288,7 @@
   function readOpts() { const o = {}; OPTS.forEach(([k]) => { o[k] = opt(k); }); return o; }
   function openCard() {
     /* in DnD mode the "sign" switch is the class */
-    const lab = k => t(k === "sign" && dndOn() ? "card.o.dnd" : "card.o." + k);
+    const lab = k => t(k === "sign" && mode() !== "sign" ? "card.o." + mode() : "card.o." + k);
     KC.$("cardOpts").innerHTML = OPTS.map(([k, on]) => '<label class="only-toggle"><input type="checkbox" id="cardO_' + k + '"' + (on ? " checked" : "") + "> " + esc(lab(k)) + "</label>").join("");
     KC.$("cardShare").hidden = !(navigator.canShare && window.File);
     cardModal.open(); preview();

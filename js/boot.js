@@ -12,8 +12,8 @@
       "lang/ru.practices.js", "lang/en.practices.js", "lang/pt.practices.js", "lang/es.practices.js", "lang/ja.practices.js", "lang/th.practices.js", "lang/zh.practices.js",
       "core/codec.js", "core/store.js", "core/match.js", "core/help.js", "core/stats.js", "core/migrate.js", "core/portrait.js",
     ],
-    form:    ["form/render.js", "form/events.js", "form/pdf.js", "form/share.js", "form/library.js", "form/signs.js", "form/dnd.js", "form/portrait.js", "form/nebula.js", "form/migrate.js", "form/main.js"],
-    compare: ["form/signs.js", "compare/space.js", "compare/main.js", "compare/roulette.js"],
+    form:    ["form/render.js", "form/events.js", "form/pdf.js", "form/share.js", "form/library.js", "form/signs.js", "form/dnd.js", "form/wod.js", "form/portrait.js", "form/nebula.js", "form/migrate.js", "form/main.js"],
+    compare: ["form/signs.js", "form/dnd.js", "form/wod.js", "compare/space.js", "compare/main.js", "compare/roulette.js"],
   };
   window.KC_MANIFEST = MANIFEST;
   var me = document.currentScript;

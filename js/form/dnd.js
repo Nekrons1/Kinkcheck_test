@@ -5,8 +5,11 @@
    Only official 5e subclasses (PHB 2014/2024, DMG, XGtE, TCoE); 13 classes, 3–4 variants each (owner).
    A figure: 9 stars, one per portrait group (the main groups are the bright ones, the rest take the other
    groups strongest first, as in the signs) + grey stars that only shape the drawing (indexes 9+ in the lines).
-   Alignment (owner): Top = Lawful, Bottom = Good; the other half comes from the answers.
-   Unanswered items count as HALF a "No" (owner). Names are texts: "dnd.c.<class>", "dnd.s.<class>.<sub>",
+   Alignment (owner, v595): every portrait group counts. d = a group's % minus the person's average %;
+   Good = Σ wGood·d / Σ|wGood|, Law = Σ wLaw·d / Σ|wLaw| (weights: AXES below, chosen by the owner);
+   Law += 40·(share of "No" − .30) − 40·(share of "Maybe" − .15): "No" among ALL items (an unanswered item =
+   HALF a "No", owner), "Maybe" among the ANSWERED ones; Top +10 Law, Bottom +10 Good.
+   ≥ 15 → Lawful / Good, ≤ −15 → Chaotic / Evil, else Neutral. Names are texts: "dnd.c.<class>", "dnd.s.<class>.<sub>",
    "dnd.al.<key>" + "dnd.aq.<key>" (the one-line joke). */
 (function (KC) {
   /* class: [9 points in a 100×100 box, grey points, lines (index paths; "d" first = dashed), bright slots] */
@@ -60,8 +63,21 @@
   }
 
   /* the joke alignment: st = the list, d = its portrait, set = the applied template (or null) */
-  const LIM = { NO: .6, LAW: .35, CHAOS: .3, GOOD: 60, EVIL: 60, FEW: 20 };
-  function alignment(st, d, set) {
+  const LIM = { NO: .6, EDGE: 15, ROLE: 10, K: 40, NO0: .3, MAYBE0: .15, FEW: 20 };
+  /* group -> [Good (+) / Evil (−), Law (+) / Chaos (−)] (owner, v595) */
+  const AXES = { intimacy: [1, 0], "sex-penetration": [.3, 0], "role-play": [0, -.5], fetishes: [.2, .4], bondage: [0, .6],
+    ds: [-.5, 1], sm: [-1, -.2], "voyeurism-exhibitionism": [0, -.8], "bodily-fluids": [-.3, -.9] };
+  /* the groups' part of both axes: every group with a percentage, measured from the person's own average */
+  function scores(d) {
+    const g = d.sections.filter(s => s.pct !== null && AXES[s.id]);
+    if (!g.length) return { good: 0, law: 0 };
+    const mean = g.reduce((a, s) => a + s.pct, 0) / g.length;
+    const axis = k => { let num = 0, den = 0; g.forEach(s => { const wt = AXES[s.id][k]; num += wt * (s.pct - mean); den += Math.abs(wt); }); return den ? num / den : 0; };
+    return { good: axis(0), law: axis(1) };
+  }
+  /* the numbers behind the alignment: {key: "roll" | "boring" | null, good, law} (v597: the World of Darkness
+     mode needs the numbers, e.g. the fey court) */
+  function alignNum(st, d, set) {
     let n = 0, no = 0, maybe = 0, answered = 0;
     KC.CATS.forEach(c => { if (KC.portrait.OUT[c.id]) return; c.items.forEach(([, id]) => {
       if (set && !set.has(id)) return;
@@ -69,20 +85,125 @@
       if (v) answered++;
       if (v === "limit") no++; else if (v === "maybe") maybe++; else if (!v) no += .5;   /* unanswered = half a "No" */
     }); });
-    if (answered < LIM.FEW || !n) return "roll";
-    const pNo = no / n, pMaybe = maybe / n, role = st.meta && st.meta.role;
-    if (pNo >= LIM.NO) return "boring";
-    const pct = id => { const s = d.sections.find(x => x.id === id); return s && s.pct !== null ? s.pct : 0; };
-    const law = role === "dom" ? "L" : pMaybe >= LIM.CHAOS ? "C" : pNo >= LIM.LAW ? "L" : "N";
-    const sm = pct("sm"), ten = pct("intimacy");
-    const good = role === "sub" ? "G" : sm >= LIM.EVIL && sm >= ten ? "E" : ten >= LIM.GOOD ? "G" : "N";
-    return law + good;
+    if (answered < LIM.FEW || !n) return { key: "roll", good: 0, law: 0 };
+    const pNo = no / n, pMaybe = maybe / answered, role = st.meta && st.meta.role;
+    const sc = scores(d);
+    const good = sc.good + (role === "sub" ? LIM.ROLE : 0);
+    const law = sc.law + LIM.K * (pNo - LIM.NO0) - LIM.K * (pMaybe - LIM.MAYBE0) + (role === "dom" ? LIM.ROLE : 0);
+    return { key: pNo >= LIM.NO ? "boring" : null, good, law };
+  }
+  function alignment(st, d, set) {
+    const a = alignNum(st, d, set); if (a.key) return a.key;
+    const w = (v, p, q) => v >= LIM.EDGE ? p : v <= -LIM.EDGE ? q : "N";
+    return w(a.law, "L", "C") + w(a.good, "G", "E");
   }
   const ALIGN = ["LG", "NG", "CG", "LN", "NN", "CN", "LE", "NE", "CE", "boring", "roll"];
 
-  /* the mode is remembered on this device only */
-  const on = () => KC.ls.raw(KC.KEYS.dnd) === "1";
-  const setOn = v => { if (v) KC.ls.setRaw(KC.KEYS.dnd, "1"); else KC.ls.del(KC.KEYS.dnd); };
+  /* ---------- race (v596, owner): not WHAT a person likes (that is the class) but HOW ----------
+     27 clusters of items that cut across the sections; each cluster marks its items on some of 7 axes
+     ("1+" = the first pole of axis 1, "1-" = the second). A pole's value = liked share of its answered items
+     (Love 1, Yes .8, Maybe .3, No 0), a pole needs 5 answers; an axis = first pole − second pole.
+     A race = two poles, its points = how strongly the person leans to each; the most points wins.
+     Every axis within ±12 → Human. "About me": large/extensive experience +10 Dragonborn,
+     latex / leather / goth +10 Tiefling. Session length counts for "slow" / "rush". */
+  const POLES = [["power", "play"], ["mind", "body"], ["ritual", "spont"], ["gear", "hands"], ["slow", "rush"], ["crowd", "private"], ["hard", "soft"]];
+  const CL = {
+    protocol: ["1+ 2+ 3+ 5+", "following-orders discipline rituals honorifics contract-slave total-power-exchange 24-7-d-s-lifestyle prompt-obedience eye-contact-rules speech-restrictions no-sounds gor-training kneeling daily-diary mantra-meditation personality-modification name-change symbolic-jewelry collar-in-private metal-collar punishment-scene chosen-food bathroom-control exercise-required photo-proof initiation-rites standing-in-corner kneeling-on-buckwheat corner-kneeler"],
+    pet: ["1- 3+", "age-play dd-lg-md-lb animal-roleplay puppy-play kitten-play pony-play furry leash muzzles hand-feeding kigurumi bratting brat-taming switching-roles wrestling praise begging schoolroom-scenes"],
+    service: ["1+ 3+", "chores serving-as-a-maid massage pedicures-foot-massage manicures chauffeuring forced-servitude uniform-wearing erotic-dancing serving-other-doms other-sub-serves-you"],
+    object: ["1+ 2+", "objectification sex-doll-use depersonalisation dronification mindbreak freeuse glory-hole stuck-in-wall fuck-box serving-as-furniture serving-as-art used-as-toy-for-other-sub sleep-play unseen-actor blind-stranger auctioned"],
+    words: ["2+ 1+", "verbal-humiliation forced-thanking forced-self-degradation humiliating-body-writing body-writing lecturing dirty-talk forced-begging-acts humiliation-in-private mouth-soaping phone-sex"],
+    look: ["2+ 3+", "forced-dressing forced-feminization cross-dressing chosen-clothing shaving-head-hair shaving-body-hair forced-nudity forced-nudity-private slutty-clothing"],
+    wardrobe: ["3+ 4+", "leather-wearing rubber-latex-wearing latex-sweat spandex-clothing corsets lingerie-wearing stockings-wearing high-heel-wearing formal-clothing gas-masks masks cosplay clothed-sex clothes-tearing tights-tearing clothes-cutting piercing-fetish harness-leather cuffs-leather leather-restraints nerd-hikikomori clowncore"],
+    worship: ["3+ 2-", "boot-worship cock-worship foot-worship toe-licking-giving toe-licking-receiving ass-worship pussy-worship high-heel-worship stocking-worship armpit-fetish homage-with-tongue oral-fixation"],
+    rope: ["3+ 4+ 5+", "rope-bondage-simple rope-bondage-shibari semenawa harness-rope suspension-upright suspension-horizontal suspension-inverted partial-suspension breast-bondage hair-bondage predicament-bondage mutually-restrictive-bondage bondage-light arm-leg-sleeves spreader-bars wall-cross-mounting loveswing"],
+    iron: ["4+ 5+ 1+", "cages-cells chains manacles-irons cuffs-metal cuffs-handcuff thumb-cuffs toe-cuffs zip-tie-bondage tape-bondage stocks chastity-device locking-anal-plug locking-vaginal-insert bondage-all-day bondage-heavy left-tied-unattended straight-jacket mummification sleep-sacks bondage-bag vacbed immobilisation mitts prison-scenes nose-hook"],
+    dark: ["2+ 4+ 5+", "blindfolds ear-plugs hood-full-head sensory-deprivation gag-ball gag-bit gag-cloth gag-inflatable gag-phallic gag-ring gag-tape panty-gag sex-in-total-darkness sleep-deprivation"],
+    touch: ["7- 1- 5+ 2-", "teasing tickling scratching wartenberg-pinwheel ice-cubes wax-play hot-wax-dripping scent-play caning-sensation vampire-gloves finger-claws nipple-play biting hickies ear-licking oil-play nuru-massage suction-cups ice-dildo"],
+    spank: ["2- 7+ 4-", "spanking-hand spanking-over-the-knee spanking-hairbrush spanking-leather-slappers spanking-wooden-paddles body-slapping whipping-belt whipping-flogger whipping-cat-o-nine whipping-single-tail riding-crop rubber-band-snapping caning-english rattan birching bastinado palm-strikes strapping pussy-spanking breast-whipping impact-bruising sap-gloves pain-mild pain-massage pressure-points beating-soft bruising-temporary hair-pulling rough-grabbing"],
+    extreme: ["7+ 2- 4+", "pain-severe beating-hard punching kicking face-slapping ballbusting pussy-punching pussy-kicking pussy-whipping breast-torture cbt cbt-crushing cbt-stretching ball-stretching zippers-clothespins zippers-clamps zippers-needles nipple-weights tongue-clothespins clamps-labia-clit piercing-temporary labia-sewing-needle labia-stapling medical-stapler branding scarification tattooing piercing-permanent nipple-piercing wax-burns standing-on-nails spike-mat reducing-to-tears brutal-treatment trampling-barefoot trampling-shoes trampling-punk-boots face-stepping biting-hard wasabi-on-genitals menthol-balm-labia menthol-eye-drops figging fire-play fire-cupping hot-wax-high-temp hot-wax-hair-removal wax-inside-vagina riding-the-horse abrasion clothespins nipple-clamps"],
+    lab: ["4+ 2+", "electricity-tens electricity-violet-wand shock-collar electricity-internal electricity-genitals-external electricity-anal electricity-genital-internal vaginal-electrostimulation cbt-electrical medical-scenes examinations speculums catheterization urethral-play dilation enema-cleansing enema-retention injections-saline sex-machines sybian remote-controlled-toy vibro-egg-public magic-wand suction-vibrator cbt-anti-erection cbt-leash-harness practical-sex-ed psych-ward-play"],
+    edge: ["2+ 7+ 3-", "asphyxiation breath-control-choking breath-control-mild breath-control-facesitting water-torture fear-play kidnapping interrogations fantasy-rape-play cnc-single dubcon fantasy-gang-rape abandonment burial-up-to-the-neck rough-penetration-before-arousal forced-homosexuality knife-play"],
+    orgasm: ["5+ 1+", "edging orgasm-control orgasm-denial forced-orgasm overstimulation sexual-deprivation tantric-yoni forced-masturbation masturbation mutual-masturbation"],
+    public: ["6+ 2+", "collar-in-public leash-walk-outside humiliation-in-public anal-plug-public exhibitionism-friends exhibitionism-strangers forced-nudity-others outdoor-scenes stripping erotic-photos photo-exchange video-of-you fake-public-use"],
+    watch: ["6+ 2+", "voyeurism-others voyeurism-your-dom video-others forced-watching-others forced-porn-watching mirror-play sex-in-front-of-a-mirror cuckolding-hotwife"],
+    wild: ["3- 4- 7+", "sex-in-snow sex-in-rain hair-drag-snow hair-drag-rain nude-in-snow mud-play outdoor-sex outdoor-bondage chained-outdoors cold-shower sauna-whisk nettle-play-urtication leeches"],
+    feast: ["1- 3- 4-", "food-play nyotaimori sake-from-thighs food-smearing-sploshing drinking-from-feet forced-drinking-from-feet forced-unpleasant-food forced-drinking-beer-cider drinking-bathwater forced-drinking-bathwater funnel-play smoking-fetish"],
+    taboo: ["3- 7+", "golden-showers swallowing-urine urination-in-front omorashi period-play blood-play spitting spitting-in-mouth human-ashtray trash-play forced-staying-in-sweat-cum underwear-sniffing wearing-partners-underwear milking pussy-juice-play squirting licking-fingers-clean rimming"],
+    home: ["7- 6- 4-", "romance-affection hugging gentle-touch kissing-body kissing-mouth spooning using-real-names sleepover aftercare shared-bathing lap-pillow-ear-cleaning petting-over-clothes thigh-sex"],
+    size: ["2- 7+", "fisting-vaginal fisting-anal double-penetration triple-penetration anal-plug-large object-insertion bottle-neck-vaginal bottle-neck-anal size-difference size-giantess deep-throating irrumatio irrumatio-to-vomiting xenophilia-tentacles egg-laying breeding-fantasy"],
+    company: ["6+ 5-", "group-multiple-men group-mixed orgy swinging swapping shared-temporarily supplying-fantasy multiple-subs-one-dom group-multiple-women harems cheating-fantasy prostitution-fantasy"],
+    classic: ["2- 5- 6-", "genital-sex barebacking up-against-walls 69 dutch-rudder hand-jobs fingering fellatio cunnilingus-giving cunnilingus-receiving face-sitting breast-fucking anal-sex anal-play prostate-massage anal-teasing anal-beads anal-plug-small anal-plug-medium dildo-vaginal dildo-anal dildo-oral vibrator-external vibrator-internal vibrator-anal strap-on-wearing strap-on-penetrated strap-on-sucking rough-sex rough-fingering fingers-in-mouth"],
+    cum: ["2- 5- 3-", "cum-on-body cum-on-face bukkake cum-in-eyes pearl-necklace cum-in-mouth swallowing-semen snowballing condom-cum-in-mouth cum-in-vagina cum-in-ass creampie"],
+  };
+  const SESS = { slow: ["session-long", "session-day", "session-multi-day"], rush: ["session-short"] };
+  const RACES = { human: ["body", "rush"], elf: ["ritual", "slow"], drow: ["power", "mind"], dwarf: ["gear", "power"], dragonborn: ["power", "ritual"],
+    halforc: ["hard", "rush"], goliath: ["hard", "body"], tiefling: ["mind", "hard"], yuanti: ["mind", "slow"], halfling: ["soft", "private"],
+    tabaxi: ["play", "spont"], changeling: ["mind", "play"], kenku: ["mind", "hands"] };
+  const RLIM = { MIN: 5, FLAT: 12, BONUS: 10 };
+  const RW = { love: 1, yes: .8, maybe: .3, limit: 0 };
+  let poleIds = null;
+  function poles() {
+    if (poleIds) return poleIds;
+    const P = {}; POLES.forEach(p => p.forEach(x => { P[x] = []; }));
+    Object.keys(CL).forEach(k => { const ids = CL[k][1].split(" ");
+      CL[k][0].split(" ").forEach(tg => { const pole = POLES[+tg[0] - 1][tg[1] === "+" ? 0 : 1]; P[pole] = P[pole].concat(ids); }); });
+    Object.keys(SESS).forEach(p => { P[p] = P[p].concat(SESS[p]); });
+    return (poleIds = P);
+  }
+  /* the 7 axes, −100…100 (0 when a pole has too few answers) */
+  function axes(st, set) {
+    const P = poles(), val = {};
+    Object.keys(P).forEach(p => { let n = 0, sum = 0;
+      P[p].forEach(id => { if (set && !set.has(id)) return; const v = (st.items[id] || {}).interest; if (v) { n++; sum += RW[v]; } });
+      val[p] = n >= RLIM.MIN ? 100 * sum / n : null; });
+    return POLES.map(([a, b]) => val[a] === null || val[b] === null ? 0 : val[a] - val[b]);
+  }
+  function race(st, set) {
+    const ax = axes(st, set), str = {};
+    if (ax.every(v => Math.abs(v) < RLIM.FLAT)) return "human";
+    POLES.forEach(([a, b], i) => { str[a] = Math.max(0, ax[i]); str[b] = Math.max(0, -ax[i]); });
+    const m = st.meta || {}, sc = {};
+    Object.keys(RACES).forEach(r => { sc[r] = str[RACES[r][0]] + str[RACES[r][1]]; });
+    if (m.exp === "large" || m.exp === "extensive") sc.dragonborn += RLIM.BONUS;
+    if ((m.attire || []).some(a => a === "latex" || a === "leather" || a === "goth")) sc.tiefling += RLIM.BONUS;
+    return Object.keys(sc).reduce((a, b) => sc[b] > sc[a] ? b : a);   /* a tie: the earlier race in RACES */
+  }
 
-  KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, keyOf, pick, alignment, on, set: setOn };
+  /* ---------- level (v596, owner): XP = Yes + 2 × Love + ½ × Maybe; the Player's Handbook XP table ÷ 400 ---------- */
+  const XP = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000];
+  function level(st, set) {
+    let xp = 0;
+    KC.CATS.forEach(c => c.items.forEach(([, id]) => { if (set && !set.has(id)) return;
+      const v = (st.items[id] || {}).interest; xp += v === "love" ? 2 : v === "yes" ? 1 : v === "maybe" ? .5 : 0; }));
+    let lv = 1; XP.forEach((x, i) => { if (xp * 400 >= x) lv = i + 1; });
+    return lv;
+  }
+
+  /* ---------- who a party can beat (v596, owner): Dungeon Master's Guide 2014 encounter thresholds,
+     one monster; the sum of every member's threshold for Medium / Hard / Deadly = the budget; the strongest
+     monster whose XP fits each budget (Monster Manual 2014) ---------- */
+  const DMG = [[50, 75, 100], [100, 150, 200], [150, 225, 400], [250, 375, 500], [500, 750, 1100], [600, 900, 1400], [750, 1100, 1700], [900, 1400, 2100],
+    [1100, 1600, 2400], [1200, 1900, 2800], [1600, 2400, 3600], [2000, 3000, 4500], [2200, 3400, 5100], [2500, 3800, 5700], [2800, 4300, 6400],
+    [3200, 4800, 7200], [3900, 5900, 8800], [4200, 6300, 9500], [4900, 7300, 10900], [5700, 8500, 12700]];
+  const MON = [["kobold", "1/8", 25], ["goblin", "1/4", 50], ["satyr", "1/2", 100], ["harpy", "1", 200], ["mimic", "2", 450], ["minotaur", "3", 700],
+    ["succubus", "4", 1100], ["troll", "5", 1800], ["medusa", "6", 2300], ["youngblack", "7", 2900], ["hydra", "8", 3900], ["bonedevil", "9", 5000],
+    ["aboleth", "10", 5900], ["djinni", "11", 7200], ["erinyes", "12", 8400], ["vampire", "13", 10000], ["adultblack", "14", 11500],
+    ["purpleworm", "15", 13000], ["marilith", "16", 15000], ["deathknight", "17", 18000], ["demilich", "18", 20000], ["balor", "19", 22000],
+    ["pitfiend", "20", 25000], ["lich", "21", 33000], ["kraken", "23", 50000], ["ancientred", "24", 62000], ["tarrasque", "30", 155000]];
+  /* levels [n] -> [{id, cr, xp, budget}] for Medium, Hard, Deadly */
+  function foes(levels) {
+    return [0, 1, 2].map(k => { const budget = levels.reduce((a, l) => a + DMG[Math.min(20, Math.max(1, l)) - 1][k], 0);
+      let m = MON[0]; MON.forEach(x => { if (x[2] <= budget) m = x; });
+      return { id: m[0], cr: m[1], xp: m[2], budget }; });
+  }
+
+  /* the mode is remembered on this device only: "1" = DnD, "wod" = the World of Darkness (v597), nothing = the sign */
+  const mode = () => { const r = KC.ls.raw(KC.KEYS.dnd); return r === "1" ? "dnd" : r === "wod" && KC.wod ? "wod" : "sign"; };
+  const setMode = m => { if (m === "dnd") KC.ls.setRaw(KC.KEYS.dnd, "1"); else if (m === "wod") KC.ls.setRaw(KC.KEYS.dnd, "wod"); else KC.ls.del(KC.KEYS.dnd); };
+  const on = () => mode() === "dnd";
+  const setOn = v => setMode(v ? "dnd" : "sign");
+
+  KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, AXES, scores, keyOf, pick, alignNum, alignment, on, set: setOn, mode, setMode,
+    POLES, CL, RACES, RLIM, axes, race, XP, level, DMG, MON, foes };
 })(window.KC);
