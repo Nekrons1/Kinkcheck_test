@@ -20,11 +20,11 @@ const S = (title) => console.log("\n## " + title);
   ok(!p.errors.length, "no script errors on load: " + p.errors.join(" | "));
   const ids = [], codes = [];
   KC.CATS.forEach(c => c.items.forEach(([code, id]) => { ids.push(id); codes.push(code); }));
-  eq(ids.length, 488, "item count");
+  eq(ids.length, 493, "item count");
   eq(new Set(ids).size, ids.length, "unique ids"); eq(new Set(codes).size, codes.length, "unique codes");
   const byCode = {}; KC.CATS.forEach(c => c.items.forEach(([code, id]) => byCode[code] = id));
   eq(OLD.ORDER.map((id, i) => byCode[i]), OLD.ORDER, "codes 0..370 still mean the same items as in old versions");
-  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(488).keys()], "codes are 0..487 with no gaps or reuse");
+  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(493).keys()], "codes are 0..492 with no gaps or reuse");
   eq(["furry","xenophilia-tentacles","trampling-barefoot","trampling-shoes","rubber-band-snapping","forced-drinking-beer-cider","irrumatio-to-vomiting","bukkake","cum-in-eyes","nerd-hikikomori","humiliating-body-writing","wax-burns","spitting-in-mouth","snowballing","used-as-toy-for-other-sub","bondage-bag"].map(id => ids.indexOf(id) >= 0), Array(16).fill(true), "16 added items present");
   eq(["sleep-sacks", "bondage-bag", "scarification", "electricity-violet-wand"].map(id => KC.i18n.item(id, "ru").name), ["Спальный мешок", "Бондажный мешок", "Шрамирование", "Электро — вайолет-ванд"], "RU names as requested");
   eq(KC.CATS.find(c => c.id === "marking").items.some(([, id]) => id === "wax-burns"), true, "wax burns under marking");
@@ -65,7 +65,7 @@ const S = (title) => console.log("\n## " + title);
     eq(miss.length, 0, l + ": every item has name+hint (" + miss.slice(0, 3) + ")");
     const mc = KC.CATS.filter(c => !KC.i18n._pick("cats", c.id, l)); eq(mc.length, 0, l + ": every category named");
   });
-  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 488, "EN names unique");
+  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 493, "EN names unique");
   const enCyr = ids.filter(id => /[а-яё]/i.test(KC.i18n.item(id, "en").desc)); eq(enCyr, [], "EN hints contain no Cyrillic");
   // ui key parity
   const src = l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8").match(/"([a-zA-Z0-9_.]+)":/g).map(s => s.slice(1, -2));
@@ -121,7 +121,7 @@ const S = (title) => console.log("\n## " + title);
   p = open("form", { navLang: "ru" });
   let { w, d } = p;
   eq(p.KC.i18n.lang, "ru", "RU browser -> RU page");
-  eq(d.querySelectorAll(".item").length, 488, "488 rows rendered");
+  eq(d.querySelectorAll(".item").length, 493, "493 rows rendered");
   ok(d.querySelector(".brand-row #langSw"), "language switcher sits in the title row");
   const dotted = [...d.querySelectorAll(".item .new-dot")].map(x => x.closest(".item").dataset.id).sort();
   const newer = []; p.KC.CATS.forEach(c => c.items.forEach(([code, id]) => { if (code >= 418) newer.push(id); }));
@@ -150,7 +150,7 @@ const S = (title) => console.log("\n## " + title);
   let saved = JSON.parse(w.localStorage.getItem("practices-checklist-v1"));
   eq(saved.items, { hugging: { interest: "love" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "limit" }, "impact-bruising": { interest: "yes" } }, "answers saved (toggle-off removed)");
   eq(saved.meta, { role: "sub", exp: "medium", rel: "poly", attire: ["lace", "leather"] }, "profile saved as keys");
-  eq(d.getElementById("progress").textContent, "Отмечено 4 из 488 практик", "progress text");
+  eq(d.getElementById("progress").textContent, "Отмечено 4 из 493 практик", "progress text");
   const link = p.KC.form.shareLink();
   ok(/[#&]lg=ru(&|$)/.test(link), "share link carries lg=ru");
   ok(/[#&]m=/.test(link), "share link carries profile (m=)");
@@ -172,7 +172,7 @@ const S = (title) => console.log("\n## " + title);
   ok(d.querySelector('#roleTop .opt[data-val="sub"]').getAttribute("aria-pressed") === "true", "role survived switch");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submissive / Bottom", "role label translated");
   eq(d.getElementById("metaName").value, "Андрей", "name survived switch");
-  eq(d.getElementById("progress").textContent, "4 of 488 practices marked", "EN progress");
+  eq(d.getElementById("progress").textContent, "4 of 493 practices marked", "EN progress");
   eq(d.getElementById("shareBtn").textContent, "Share", "header translated");
   eq(d.documentElement.lang, "en", "<html lang> updated");
   ok(/lg=en/.test(p.KC.form.shareLink()), "link now carries lg=en");
@@ -185,7 +185,7 @@ const S = (title) => console.log("\n## " + title);
   ok(row("hugging").querySelector('.scale button[data-v="love"]').classList.contains("sel"), "answer survived switch to PT");
   eq(row("hugging").querySelector('.scale button[data-v="love"]').textContent, "Adoro", "PT scale");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submisso(a) / Bottom", "PT role label");
-  eq(d.getElementById("progress").textContent, "4 de 488 práticas marcadas", "PT progress");
+  eq(d.getElementById("progress").textContent, "4 de 493 práticas marcadas", "PT progress");
   const ptHash = p.KC.form.shareLink().split("#")[1];
   ok(/lg=pt/.test(ptHash), "PT link carries lg=pt");
   eq(open("form", { hash: ptHash, storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "pt", "PT link opens in PT");
@@ -351,7 +351,7 @@ const S = (title) => console.log("\n## " + title);
   eq(Object.entries(gp.KC.form.state.items).filter(([id]) => ids.indexOf(id) >= 0).sort(), [["cbt", { interest: "limit" }], ["hugging", { interest: "love" }], ["knife-play", { interest: "maybe" }], ["orgy", { interest: "yes" }], ["puppy-play", { interest: "yes" }]], "old ids moved to current items; current answer wins");
   ok(gp.d.querySelector('.item[data-id="puppy-play"] .scale button[data-v="yes"]').classList.contains("sel"), "moved answer is visible on the page");
   const gShown = gp.d.querySelectorAll(".scale button.sel").length, gLink = Object.keys(KCn.codec.decode(gp.KC.form.shareLink()).items).length;
-  eq(gp.d.getElementById("progress").textContent, "Отмечено " + gShown + " из 488 практик", "counter = what is shown");
+  eq(gp.d.getElementById("progress").textContent, "Отмечено " + gShown + " из 493 практик", "counter = what is shown");
   eq(gLink, gShown, "link contains exactly what the counter says");
   Object.keys(KC.ID_ALIASES).forEach(k => { if (ids.indexOf(KC.ID_ALIASES[k]) < 0) ok(false, "alias target missing: " + k); });
 
@@ -381,7 +381,7 @@ const S = (title) => console.log("\n## " + title);
   const srt = o => Object.entries(o).sort();
   eq(srt(KCn.codec.decode(KCn.codec.encode(withNew)).items), srt(withNew.items), "link with new items round-trips");
   const allNew = {}; KCn.CATS.forEach(c => c.items.forEach(([, id], i) => allNew[id] = { interest: vals[i % 4] }));
-  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 488, "fully filled 488-item link round-trips");
+  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 493, "fully filled 493-item link round-trips");
 
   /* form: "Show" filter */
   S("Show filter");
@@ -390,7 +390,7 @@ const S = (title) => console.log("\n## " + title);
   const vsel = p.d.getElementById("view");
   eq([...vsel.options].map(o => o.textContent), ["Все пункты", "Только без ответа", "Только новые", "Отвеченные, по ответам", "Обожаю / Да / Может"], "Show menu labels");
   vsel.value = "unanswered"; vsel.dispatchEvent(new p.w.Event("change"));
-  eq([vis().length, vis().indexOf("hugging"), vis().indexOf("furry")], [486, -1, -1], "unanswered: answered items hidden");
+  eq([vis().length, vis().indexOf("hugging"), vis().indexOf("furry")], [491, -1, -1], "unanswered: answered items hidden");
   click(p.w, p.d.querySelector('.item[data-id="chains"] .scale button[data-v="yes"]'));
   ok(vis().indexOf("chains") >= 0, "a row just answered stays visible until the filter is re-applied");
   vsel.dispatchEvent(new p.w.Event("change")); ok(vis().indexOf("chains") < 0, "re-applying hides it");
@@ -399,7 +399,7 @@ const S = (title) => console.log("\n## " + title);
   eq(vis().sort(), newIds.sort(), "new: exactly the green-dot items (" + newIds.length + ")");
   const sb = p.d.getElementById("search"); sb.value = "секс"; sb.dispatchEvent(new p.w.Event("input"));
   ok(vis().length > 0 && vis().every(id => newIds.indexOf(id) >= 0), "search combines with the filter");
-  sb.value = ""; vsel.value = "all"; vsel.dispatchEvent(new p.w.Event("change")); eq(vis().length, 488, "all items again");
+  sb.value = ""; vsel.value = "all"; vsel.dispatchEvent(new p.w.Event("change")); eq(vis().length, 493, "all items again");
 
   /* backup */
   S("Backup");
@@ -682,7 +682,7 @@ const S = (title) => console.log("\n## " + title);
   eq(tp.d.querySelector('.item[data-id="blindfolds"] .main').textContent, "ผ้าปิดตา", "TH name");
   eq(tp.d.querySelector('.item[data-id="blindfolds"] .sub').textContent, "Blindfolds", "TH page shows English subtitle");
   eq(tp.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "ชอบมาก", "TH scale + answer");
-  eq(tp.d.getElementById("progress").textContent, "เลือกแล้ว 4 จาก 488 รายการ", "TH progress");
+  eq(tp.d.getElementById("progress").textContent, "เลือกแล้ว 4 จาก 493 รายการ", "TH progress");
   ok(/lg=th/.test(tp.KC.form.shareLink()), "TH link carries lg=th");
   eq(open("form", { hash: tp.KC.form.shareLink().split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "th", "TH link opens in Thai");
   ok(/ลิมิตเด็ดขาด/.test(tp.KC.form.buildSheet().textContent), "TH PDF sheet");
@@ -694,7 +694,7 @@ const S = (title) => console.log("\n## " + title);
   eq(zp.d.querySelector('.item[data-id="blindfolds"] .main').textContent, "眼罩", "ZH name");
   eq(zp.d.querySelector('.item[data-id="blindfolds"] .sub').textContent, "Blindfolds", "ZH page shows English subtitle");
   eq(zp.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "超愛", "ZH scale + answer");
-  eq(zp.d.getElementById("progress").textContent, "已勾選 4／488 項", "ZH progress");
+  eq(zp.d.getElementById("progress").textContent, "已勾選 4／493 項", "ZH progress");
   ok(/lg=zh/.test(zp.KC.form.shareLink()), "ZH link carries lg=zh");
   eq(open("form", { hash: zp.KC.form.shareLink().split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "zh", "ZH link opens in Chinese");
   ok(/硬限制/.test(zp.KC.form.buildSheet().textContent), "ZH PDF sheet");
@@ -706,7 +706,7 @@ const S = (title) => console.log("\n## " + title);
   eq(p.d.querySelector('.item[data-id="face-sitting"] .main').textContent, "顔面騎乗", "JA name");
   eq(p.d.querySelector('.item[data-id="face-sitting"] .sub').textContent, "Face-sitting", "JA page shows English subtitle");
   eq(p.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "大好き", "JA scale + answer");
-  eq(p.d.getElementById("progress").textContent, "488項目中 4項目にチェック済み", "JA progress");
+  eq(p.d.getElementById("progress").textContent, "493項目中 4項目にチェック済み", "JA progress");
   ok(/lg=ja/.test(p.KC.form.shareLink()), "JA link carries lg=ja");
   ok(/ハードリミット/.test(p.KC.form.buildSheet().textContent), "JA PDF sheet");
   const js = p.d.getElementById("search"); js.value = "鞭"; js.dispatchEvent(new p.w.Event("input"));
@@ -812,7 +812,7 @@ const S = (title) => console.log("\n## " + title);
   eq([LS(p, TK).length, LS(p, MK).length], [1, 2], "saving again: template updated, no second copy");
   // My lists: templates section
   click(p.w, p.d.getElementById("mineBtn"));
-  eq([...p.d.querySelectorAll('#mineTplList .tpl-row button[data-act]')].map(b => b.dataset.act), ["share", "use", "rename", "del"], "template row: Share, Fill in, Rename, ✕");
+  eq([...p.d.querySelectorAll('#mineTplList .tpl-row button[data-act]')].map(b => b.dataset.act), ["nebula", "share", "use", "rename", "del"], "template row: nebula, Share, Fill in, Rename, ✕");
   ok(/по шаблону «Evening»/.test(p.d.getElementById("mineList").textContent), "the copy is marked in My lists");
   ok(!p.d.getElementById("mineTplSave").hidden, "“Save the current list as a template” button");
   let asked = ["Мини", "Mini"]; p.w.prompt = () => asked.length ? asked.shift() : null; let alerts = 0; p.w.alert = () => { alerts++; };
@@ -856,13 +856,13 @@ const S = (title) => console.log("\n## " + title);
   const tact = b3.d.getElementById("tplAct");
   eq(tact.textContent, "Показать все пункты", "note button: show all");
   click(b3.w, tact);
-  eq([visP(b3).length, tact.textContent, b3.d.getElementById("tplSel").value], [488, "Только пункты шаблона", ""], "show all: every item, button to go back");
+  eq([visP(b3).length, tact.textContent, b3.d.getElementById("tplSel").value], [493, "Только пункты шаблона", ""], "show all: every item, button to go back");
   ok(/создана по шаблону «Evening»\. Показаны все пункты\./.test(b3.d.getElementById("tplNoteText").textContent), "note still says what the list was created by");
   await sleep(300);
   eq(LS(b3, OK_).template.name, "Evening", "showing all does not unbind the list");
   click(b3.w, tact); eq(visP(b3).length, 5, "back to the template's items");
   const bsel = b3.d.getElementById("tplSel"); bsel.value = ""; bsel.dispatchEvent(new b3.w.Event("change"));
-  eq([visP(b3).length, b3.KC.form.state.template.name], [488, "Evening"], "“No template” in Filters: a view choice only");
+  eq([visP(b3).length, b3.KC.form.state.template.name], [493, "Evening"], "“No template” in Filters: a view choice only");
   bsel.value = td.tpl.id; bsel.dispatchEvent(new b3.w.Event("change"));
   const bl = b3.KC.form.shareLink(), bld = b3.KC.codec.decode(bl);
   eq([Object.keys(bld.items), bld.by && bld.by.id, bld.tpl], [["hugging"], td.tpl.id, undefined], "plain link of a list by a template: its answers + fi= mark");
@@ -884,14 +884,14 @@ const S = (title) => console.log("\n## " + title);
   const borisRow = [...b3.d.querySelectorAll("#mineList .saved-row")].find(r => !/по шаблону/.test(r.textContent));
   click(b3.w, borisRow.querySelector('[data-act="load"]'));
   b3 = open("form", { storage: b3.storage() });
-  eq([b3.KC.form.state.name, b3.KC.form.state.template, visP(b3).length], ["Boris", undefined, 488], "switched to my plain list");
+  eq([b3.KC.form.state.name, b3.KC.form.state.template, visP(b3).length], ["Boris", undefined, 493], "switched to my plain list");
   r3 = open("form", { hash: tplLink.split("#")[1], storage: b3.storage() });
   b3 = open("form", { storage: r3.storage() });
   eq([b3.KC.form.state.template.name, Object.keys(b3.KC.form.state.items).sort(), LS(b3, MK).length], ["Evening", ["chains", "hugging"], 2], "template link from another list: my list by it is reopened (not a new one)");
   ok(/Открыта ваша анкета по шаблону «Evening»/.test(b3.d.getElementById("noticeText").textContent), "notice says it was reopened");
   // "Fill in" from Received → Templates does the same
   click(b3.w, b3.d.getElementById("savedBtn"));
-  eq([...b3.d.querySelectorAll('#savedTplList .tpl-row button[data-act]')].map(b => b.dataset.act), ["share", "use", "rename", "del"], "received template row: Share, Fill in, Rename, ✕");
+  eq([...b3.d.querySelectorAll('#savedTplList .tpl-row button[data-act]')].map(b => b.dataset.act), ["nebula", "share", "use", "rename", "del"], "received template row: nebula, Share, Fill in, Rename, ✕");
   ok(/по шаблону «Evening»/.test(b3.d.getElementById("savedList").textContent), "Received: the sender's list is marked");
   const recStorage = b3.storage();
 
@@ -910,7 +910,7 @@ const S = (title) => console.log("\n## " + title);
   S("Templates: someone's list shown by my template");
   const bobPlain = KCn.codec.encode({ uid: "BOB002", name: "Bob", items: { hugging: { interest: "yes" }, "spanking-hand": { interest: "love" }, chains: { interest: "maybe" } }, meta: {} }, "ru");
   rv = open("form", { hash: bobPlain, storage: recStorage });
-  eq([rv.KC.form.sharedBy, rv.d.getElementById("tplNote").hidden, visP(rv).length], [null, true, 488], "plain list: no template, no note");
+  eq([rv.KC.form.sharedBy, rv.d.getElementById("tplNote").hidden, visP(rv).length], [null, true, 493], "plain list: no template, no note");
   click(rv.w, rv.d.getElementById("bannerTpl"));
   ok(!rv.d.getElementById("tplSel").hidden, "“Show by a template…” points at the template list in the header");
   const rsel = rv.d.getElementById("tplSel"); rsel.value = td.tpl.id; rsel.dispatchEvent(new rv.w.Event("change"));
@@ -926,7 +926,7 @@ const S = (title) => console.log("\n## " + title);
   click(dz.w, dz.d.querySelector('#savedTplList button[data-act="del"]'));
   eq([conf, LS(dz, TK).length], [1, 0], "deleting a template asks first");
   dz = open("form", { storage: dz.storage() });
-  eq([visP(dz).length, dz.d.getElementById("tplAct").hidden], [488, true], "list by a deleted template: opens with all items");
+  eq([visP(dz).length, dz.d.getElementById("tplAct").hidden], [493, true], "list by a deleted template: opens with all items");
   ok(/создана по шаблону «Evening», но этого шаблона больше нет среди сохранённых\. Показаны все пункты\./.test(dz.d.getElementById("tplNoteText").textContent), "…and still says what it was created by");
   click(dz.w, dz.d.getElementById("mineBtn"));
   ok(/по удалённому шаблону «Evening»/.test(dz.d.getElementById("mineList").textContent), "My lists: “by the deleted template”");
@@ -960,7 +960,7 @@ const S = (title) => console.log("\n## " + title);
   eq(KCn.codec.decode(emptyLink.replace(/&k=\w+/, "")).damaged, false, "…a link without checksum still opens");
   const bigSet = []; KCn.CATS.forEach(c => c.items.forEach(([, id]) => bigSet.push(id)));
   const bigL = KCn.codec.encode(Object.assign(KCn.store.blank(), { tpl: { id: "ABCDEF", name: "All", ids: bigSet } }), "ru"), bigD = KCn.codec.decode(bigL);
-  eq([bigD.tpl.ids.length, bigD.damaged], [488, false], "a template of every item round-trips (bitmap form)");
+  eq([bigD.tpl.ids.length, bigD.damaged], [493, false], "a template of every item round-trips (bitmap form)");
   ok(new URLSearchParams(bigL).get("t").length <= 90, "…in about 80 characters (grows 1 bit per item)");
 
   S("Templates: updates and own template");
@@ -1088,7 +1088,7 @@ const S = (title) => console.log("\n## " + title);
   eq([ts.hidden, ts.value, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [false, td.tpl.id, "Evening", true], "list by a template: the header list shows its name, highlighted");
   eq(ts.options[0].textContent, "✕ Без шаблона", "first option removes it");
   ts.value = ""; ts.dispatchEvent(new hq.w.Event("change"));
-  eq([visP(hq).length, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [488, "Шаблон…", false], "one pick: no template, the list says “Template…”");
+  eq([visP(hq).length, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [493, "Шаблон…", false], "one pick: no template, the list says “Template…”");
 
   S("v557: share the current template");
   hq = open("form", { storage: recStorage });
@@ -1138,6 +1138,10 @@ const S = (title) => console.log("\n## " + title);
 
   S("v560: interface fully translated");
   const SAME_OK = { pt: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h"], es: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "scale.limit"], ja: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], th: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], zh: ["rl.pair", "card.file", "help.pdf.h", "pdf.file"] };
+  /* v586: words that are the same as in English on purpose (D/s, S/M, Bondage, names of creatures) */
+  const SAME586 = { pt: ["pt.s.bondage", "sign.flamingo", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa", "sign.wyvern"],
+    es: ["pt.s.bondage", "sign.collar", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa"], ja: [], th: [], zh: [] };
+  Object.keys(SAME586).forEach(l => { SAME_OK[l] = SAME_OK[l].concat(SAME586[l], ["pt.s.ds", "pt.s.sm"]); });
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0), [], l + ": no interface string left in English"));
   ok(!/TEMPORARY/.test(["pt", "es", "ja", "th", "zh"].map(l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8")).join("")), "no TEMPORARY markers left");
@@ -1305,7 +1309,7 @@ const S = (title) => console.log("\n## " + title);
     const K = open("form").KC, codeOf = {}, next = {};
     K.CATS.forEach(c => c.items.forEach(([code, id], i) => { codeOf[id] = code; next[id] = (c.items[i + 1] || [])[1]; }));
     eq([codeOf["other-sub-serves-you"], codeOf["urination-in-front"]], [475, 476], "codes 475, 476");
-    eq([next["used-as-toy-for-other-sub"], next["urination-in-front"]], ["other-sub-serves-you", "golden-showers"], "placed next to related items");
+    eq([next["used-as-toy-for-other-sub"], next["urination-in-front"], next["omorashi"]], ["other-sub-serves-you", "omorashi", "golden-showers"], "placed next to related items");
     eq([K.i18n.item("other-sub-serves-you", "ru").name, K.i18n.item("urination-in-front", "ru").name], ["Вас удовлетворяет другой сабмиссив по принуждению", "Мочеиспускание при партнёре / во время сессии"], "RU names");
     ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => eq(["other-sub-serves-you", "urination-in-front"].filter(id => { const it = K.i18n.item(id, l); return !it.name || !it.desc || (l !== "en" && it.desc === K.i18n.item(id, "en").desc); }), [], l + ": translated"));
     const dn = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }).d;
@@ -1328,6 +1332,29 @@ const S = (title) => console.log("\n## " + title);
     ok(/Спасибо, что вставили в меня фаллоимитатор/.test(K.i18n.item("forced-thanking", "ru").desc) && /Пожалуйста, трахните меня/.test(K.i18n.item("forced-begging-acts", "ru").desc), "owner's examples in the hints");
     const dn = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }).d;
     eq(ids.filter(id => !dn.querySelector('.item[data-id="' + id + '"] .new-dot')), [], "green dots");
+    _sc.end();
+  }
+
+  S("v584: 5 new practices (bastinado, palm strikes, nuru, omorashi, breeding)");
+  {
+    const _sc = scope();
+    const K = open("form").KC, codeOf = {}, next = {}, catOf = {};
+    K.CATS.forEach(c => c.items.forEach(([code, id], i) => { codeOf[id] = code; next[id] = (c.items[i + 1] || [])[1]; catOf[id] = c.id; }));
+    const want = [["rattan", "bastinado", 488], ["bastinado", "palm-strikes", 489], ["oil-play", "nuru-massage", 490], ["urination-in-front", "omorashi", 491], ["cheating-fantasy", "breeding-fantasy", 492]];
+    eq(want.filter(([a, id, c]) => codeOf[id] !== c || next[a] !== id).map(w => w[1]), [], "codes 488–492, each placed after its related item");
+    eq(want.map(w => catOf[w[1]]), ["impact-rough-play", "impact-rough-play", "fetishes", "bodily-fluids", "role-play"], "sections");
+    const ids = want.map(w => w[1]);
+    ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => eq(ids.filter(id => { const it = K.i18n.item(id, l); return !it.name || !it.desc || (l !== "en" && (it.desc === K.i18n.item(id, "en").desc || it.name === K.i18n.item(id, "en").name)); }), [], l + ": translated"));
+    eq(ids.map(id => K.i18n.item(id, "ru").name), ["Бастинадо (удары по ступням)", "Удары по ладоням", "Нуру-массаж", "Омораси (терпеть до последнего)", "Фантазия об оплодотворении (breeding)"], "RU names");
+    const dn = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }).d;
+    eq(ids.filter(id => !dn.querySelector('.item[data-id="' + id + '"] .new-dot')), [], "green dots");
+    const st = { name: "N", items: {}, meta: {} }; ids.forEach((id, i) => { st.items[id] = { interest: ["love", "yes", "maybe", "limit", "love"][i] }; });
+    const back = K.codec.decode(K.codec.encode(st));
+    eq(ids.map(id => (back.items[id] || {}).interest), ["love", "yes", "maybe", "limit", "love"], "answers on the new items survive a link");
+    const pt = K.portrait.compute({ items: I5(ids) });
+    function I5(a) { const o = {}; a.forEach(id => { o[id] = { interest: "love" }; }); return o; }
+    eq(["sm", "fetishes", "bodily-fluids", "role-play"].map(g => pt.sections.find(s => s.id === g).answered), [2, 1, 1, 1], "portrait: bastinado + palms in S/M, nuru in fetishes, omorashi in fluids, breeding in role play");
+    { const RS = open("compare").KC.roulette.SKIP; eq([!!RS, ids.filter(id => RS[id])], [true, []], "not on the roulette's skip list"); }
     _sc.end();
   }
 
@@ -1656,7 +1683,7 @@ const S = (title) => console.log("\n## " + title);
     click(g.w, g.d.querySelector('button[data-act="roulette"]'));
     await new Promise(r => setTimeout(r, 1300));   /* the short name flicker */
     const outs = [...g.d.querySelectorAll("#rlOut .rl-pair")];
-    eq([outs.length, outs.every(x => x.querySelectorAll(".rl-item").length === 3)], [2, true], "each pair gets 3 options");
+    eq([outs.length, outs.every(x => x.querySelectorAll(".rl-idea").length === 3)], [2, true], "each pair gets 3 options");
     ok(/без пары/.test(g.d.getElementById("rlOut").textContent), "the odd one out is named");
     ok(!c.errors.length && !g.errors.length, "no script errors");
 
@@ -1734,6 +1761,97 @@ const S = (title) => console.log("\n## " + title);
     eq([...c4[0].querySelector(".cmp-role").options].map(o => o.textContent), ["Role: from the list", "Role: Top", "Role: Bottom"], "follows the language, keeps the choice");
     eq(c4[0].querySelector(".cmp-role").value, "dom", "…choice kept after switching language");
     ok(!g.errors.length && !g2.errors.length && !g3.errors.length && !g4.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v586: star atlas — signs, company system, paired planets, roulette sky, nebulas, search tags");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, SG = K.signs, SIGNS = SG.SIGNS;
+    // the 46 signs
+    eq(SIGNS.length, 46, "46 signs: 9 single + 36 pairs + the Chimera");
+    const keys = SIGNS.map(s => s[0]), letters = "nbfrdsxvw".split("");
+    const pairs = []; letters.forEach((a, i) => letters.slice(i + 1).forEach(b => pairs.push(a + b)));
+    ok(letters.every(l => keys.indexOf(l) >= 0) && pairs.every(p2 => keys.some(k => k.length === 2 && k.indexOf(p2[0]) >= 0 && k.indexOf(p2[1]) >= 0)) && keys.indexOf("*") >= 0, "every group and every pair of groups has its sign");
+    eq(new Set(SIGNS.map(s => s[1])).size, 46, "sign ids are unique");
+    ok(SIGNS.every(s => s[2].length === 9 && s[2].every(p2 => p2[0] >= 0 && p2[0] <= 100 && p2[1] >= 0 && p2[1] <= 100)), "every sign has exactly 9 stars inside its box (one per portrait group)");
+    ok(SIGNS.every(s => { const used = new Set(); s[3].forEach(l => l.forEach(i => { if (i !== "d") used.add(i); })); return used.size === 9; }), "every star is joined to the figure (no loose stars)");
+    ok(SIGNS.every(s => s[4].length === (s[0] === "*" ? 3 : s[0].length)), "bright stars: 1 for a single sign, 2 for a pair, 3 for the Chimera");
+    const tr = {}; ["ru", "en", "es", "pt", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); tr[l] = box; });
+    const need = SIGNS.map(s => "sign." + s[1]).concat(SG.GROUPS.map(g => "pt.s." + g), ["sign.mine", "sign.of", "sign.even", "sp.sys.h", "sp.sys.legend_html", "sp.sys.tap_html", "sp.sys.tune", "sp.pair.h", "sp.pair.common", "sp.pair.sim", "sp.pair.cap", "sp.pair.stars", "sp.pair.both", "rl.leadPair_html", "rl.leadGroup_html", "rl.sky", "rl.skyBold", "tpl.nebula", "seo.desc"]);
+    eq(Object.keys(tr).map(l => need.filter(k => !tr[l][k])), [[], [], [], [], [], [], []], "all new texts exist in all 7 languages");
+    // which sign
+    const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct)) });
+    const all = (o) => Object.assign({ intimacy: 10, bondage: 10, fetishes: 10, "role-play": 10, ds: 10, sm: 10, "sex-penetration": 10, "voyeurism-exhibitionism": 10, "bodily-fluids": 10 }, o);
+    let r = SG.pick(D(all({ bondage: 80, ds: 60, sm: 40 })));
+    eq([r.kind, r.id, r.stars.filter(x => x.bright).map(x => x.s.id).sort()], ["pair", "chain", ["bondage", "ds"]], "two strongest groups → the pair sign (Bondage + D/s = Chain), their stars are bright");
+    eq(SG.pick(D(all({ bondage: 90, ds: 60 }))).kind, "single", "first group 30 points ahead → single sign");
+    eq(SG.pick(D(all({ bondage: 89, ds: 60 }))).kind, "pair", "29 points ahead → still a pair");
+    r = SG.pick(D(all({ bondage: 73, sm: 73, "sex-penetration": 68 })));
+    eq([r.kind, r.id, r.stars.filter(x => x.bright).length], ["even", "chimera", 3], "three strongest within 5 points → the Chimera, 3 bright stars");
+    eq(SG.pick(D(all({ bondage: 73, sm: 73, "sex-penetration": 67 }))).kind, "pair", "6 points apart → not the Chimera");
+    eq(new Set(r.stars.map(x => x.s.id)).size, 9, "every star stands for a different group");
+    eq(SG.pick(D({ intimacy: null, bondage: null })), null, "no percentages → no sign");
+    // labels stay inside and apart
+    const lb = SG.placeLabels(r.stars.map(x => ({ x: 65 + x.x * 2.3, y: 60 + x.y * 2.3, r: x.bright ? 11 : 5, bright: x.bright })), [], r.stars.map(() => ({ w: 56, h: 26 })), 360, 350);
+    ok(lb.every(b => b.x >= 0 && b.y >= 0 && b.x + b.w <= 360 && b.y + b.h <= 350), "every label inside the picture");
+    // the portrait block
+    const ids = {}; K.CATS.forEach(c => { ids[c.id] = c.items.map(([, id]) => id); });
+    const mk = (cat, vals) => { const o = {}; vals.forEach((v, i) => { o[ids[cat][i]] = { interest: v }; }); return o; };
+    const own = { name: "Me", uid: "MEME02", items: Object.assign(mk("bondage", ["love", "love", "love", "love", "yes"]), mk("service-control", ["love", "love", "yes", "yes"]), mk("intimacy", ["yes", "maybe", "limit"])), meta: {} };
+    const p = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(own) }, session: {} } });
+    const ps = p.d.getElementById("portraitSection"); ps.open = true; ps.dispatchEvent(new p.w.Event("toggle"));
+    const box = p.d.querySelector("#portraitBody .pt-sign");
+    ok(!!box && /Ваше созвездие/.test(box.textContent), "portrait: “Your constellation” on top");
+    const sgn = p.KC.signs.pick(p.KC.portrait.compute(p.KC.form.shown()));
+    eq(box.querySelector(".sg-name").textContent, p.KC.i18n.t("sign." + sgn.id), "…with the sign's name");
+    eq(box.querySelectorAll("svg text").length, 9, "…and a “group / %” label at each of the 9 stars");
+    click(p.w, p.d.querySelector('#langSw button[data-lang="en"]'));
+    ok(/Your constellation/.test(p.d.querySelector("#portraitBody .pt-sign").textContent), "follows the language");
+    // company: solar system
+    const mkSt = (name, uid, role, cats) => { const it = {}; cats.forEach(c => ids[c].forEach(id => { it[id] = { interest: "yes" }; })); return K.codec.encode({ name, uid, items: it, meta: role ? { role } : {} }, "ru"); };
+    const people = [mkSt("Ann", "ANN001", "dom", ["bondage", "fetishes"]), mkSt("Bob", "BOB001", "sub", ["bondage", "intimacy"]), mkSt("Cat", "CAT001", "", ["intimacy", "role-play"]), mkSt("Dan", "DAN001", "sub", ["fetishes", "bondage"])];
+    const c = open("compare");
+    while (c.d.querySelectorAll("#parts textarea").length < people.length) click(c.w, c.d.getElementById("addPart"));
+    [...c.d.querySelectorAll("#parts textarea")].forEach((ta, i) => { ta.value = people[i]; ta.dispatchEvent(new c.w.Event("input", { bubbles: true })); });
+    click(c.w, c.d.getElementById("cmpBtn"));
+    const sys = () => c.d.querySelector("#results .sp-box");
+    eq([!!sys(), sys().querySelectorAll("[data-planet]").length], [true, 4], "group: the solar system with a planet for everyone");
+    ok(/Совпадение с компанией/.test(sys().textContent) && /Верх/.test(sys().textContent), "legend and “match with the group”");
+    const before = sys().querySelector("svg").innerHTML;
+    click(c.w, sys().querySelector('[data-planet="0"] circle'));
+    ok(/stroke-dasharray="2 3"/.test(sys().querySelector("svg").innerHTML) && sys().querySelectorAll("svg path[stroke-linecap]").length >= 1, "tap on a planet: it is marked and its links appear");
+    click(c.w, sys().querySelector('[data-planet="0"] circle'));
+    eq(sys().querySelector("svg").innerHTML, before, "second tap: back to the plain picture, same layout");
+    // roulette for a group: the sky and 3 numbered ideas per pair
+    // two people: paired planets + the two constellations
+    const c2 = open("compare");
+    const two = [mkSt("Eve", "EVE001", "dom", ["bondage", "fetishes", "intimacy", "sex-penetration"]), mkSt("Fox", "FOX001", "sub", ["bondage", "fetishes", "intimacy", "sex-penetration"])];
+    const tas = c2.d.querySelectorAll("#parts textarea"); tas[0].value = two[0]; tas[1].value = two[1];
+    click(c2.w, c2.d.getElementById("cmpBtn"));
+    const pb = c2.d.querySelector("#results .sp-box");
+    ok(!!pb && /Парные планеты/.test(pb.textContent) && /Ваши созвездия/.test(pb.textContent) && /схожести/.test(pb.textContent), "two people: paired planets and both constellations");
+    c2.w.matchMedia = () => ({ matches: true });
+    click(c2.w, c2.d.querySelector('#results button[data-act="roulette"]'));
+    const out = c2.d.getElementById("rlOut");
+    ok(out.querySelectorAll(".rl-idea").length === 3 && out.querySelectorAll(".sp-disc svg").length === 1 && /Другие идеи/.test(c2.d.getElementById("rlAgain").textContent), "roulette for two: the sky, 3 numbered ideas, “Other ideas”");
+    // nebula of a template
+    const tpl = [{ id: "t1", tid: "AAAAAA", name: "Evening", ids: ids.bondage.slice(0, 6).concat(ids.intimacy.slice(0, 2)), own: true, ts: 1 }];
+    const n = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-templates-v1": JSON.stringify(tpl) }, session: {} } });
+    click(n.w, n.d.getElementById("mineBtn"));
+    const th = n.d.querySelector("#mineTplList .nb-thumb");
+    ok(!!th && !!th.querySelector("svg"), "template rows: a nebula thumbnail");
+    click(n.w, th);
+    const card = n.d.querySelector("#mineTplList .nb-open .nb-card");
+    ok(!!card && /75%/.test(card.textContent) && /25%/.test(card.textContent), "tap: the big card with shares (6 of 8 bondage = 75%)");
+    click(n.w, th); ok(!n.d.querySelector("#mineTplList .nb-open"), "second tap closes it");
+    // search tags
+    const html = fs.readFileSync(require("./harness").ROOT + "/index.html", "utf8");
+    ok(/<meta name="description"/.test(html) && /og:image" content="https:\/\/klevatess\.github\.io\/kinkmatch\/img\/og\.png"/.test(html) && (html.match(/hreflang=/g) || []).length === 8 && /<meta name="rating" content="adult">/.test(html), "index.html: description, preview image, 7 languages + default, adult rating");
+    ok(fs.existsSync(require("./harness").ROOT + "/img/og.png") && fs.existsSync(require("./harness").ROOT + "/img/favicon.svg") && fs.existsSync(require("./harness").ROOT + "/sitemap.xml"), "preview image, icon and sitemap are in the site");
+    ok(/^Kinkosmos · /.test(p.d.title) && p.d.querySelector('meta[name="description"]').getAttribute("content") === tr.en["seo.desc"], "page title starts with Kinkosmos; the description follows the language");
+    ok(/index\.html\?lang=en$/.test(p.d.querySelector('link[rel="canonical"]').href), "canonical address with the page language");
+    ok(!f.errors.length && !p.errors.length && !c.errors.length && !c2.errors.length && !n.errors.length, "no script errors");
     _sc.end();
   }
 

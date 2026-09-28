@@ -13,6 +13,7 @@
   const MAX = 10;
   let LAST = null, FILTER = "all";   /* detailed pair view */
   let GROUP = null, GFILTER = "allYes"; /* group view: [{name, st}] */
+  let SEL = null, SELG = null;          /* the planet tapped in the group's solar system (index in GROUP) */
   let PMODE = "any";                    /* pair table: "any" | "role" (only Top + Bottom pairs) */
   let SAVED = null;                     /* the saved comparison on screen: {id, name} */
   let NOTE = null;                      /* after opening a saved one: {updated: [names], gone: [names]} */
@@ -151,7 +152,7 @@
       + fbtn(FILTER, "all", t("cmp.all"))
       + fbtn(FILTER, "yesA", t("cmp.yesOf", { who: LAST.nA })) + fbtn(FILTER, "yesB", t("cmp.yesOf", { who: LAST.nB }))
       + fbtn(FILTER, "ymA", t("cmp.yesMaybeOf", { who: LAST.nA })) + fbtn(FILTER, "ymB", t("cmp.yesMaybeOf", { who: LAST.nB })) + "</div>"
-      + profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B) + rlBtn();
+      + profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B) + rlBtn() + (FILTER === "all" ? KC.space.pairSVG(LAST.A, LAST.B, LAST.nA, LAST.nB) : "");
     if (FILTER !== "all") {
       const side = FILTER === "yesA" || FILTER === "ymA", who = side ? LAST.nA : LAST.nB, wm = FILTER.indexOf("ym") === 0;
       const rows = only(KC.match.yesOf(side ? LAST.A : LAST.B, wm)).map(r => ({ id: r.id, a: (LAST.A.items[r.id] || {}).interest || null, b: (LAST.B.items[r.id] || {}).interest || null }));
@@ -216,6 +217,8 @@
     const P = GROUP, searching = !!KC.$("cmpSearch").value.trim();
     let html = savedBar() + rlBtn() + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
       + P.map(p => profileLine(p.name, p.st)).join("");
+    if (SELG !== GROUP) { SEL = null; SELG = GROUP; }   /* a new company: no planet selected */
+    html += KC.space.groupSVG(P, SEL);
     if (GFILTER === "pairs") {
       const role = p => p.st.meta.role || "";
       html += '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
@@ -276,6 +279,8 @@
     if (h) { const d = h.parentNode.querySelector(".item-desc"); if (d) { d.hidden = !d.hidden; h.classList.toggle("on", !d.hidden); } return; }
     const pm = e.target.closest("button[data-pm]");
     if (pm) { PMODE = pm.dataset.pm; render(false); return; }
+    const pl = e.target.closest("[data-planet]");
+    if (pl && GROUP) { const v = +pl.dataset.planet; SEL = SEL === v ? null : v; render(false); return; }
     const pr = e.target.closest("button[data-pair]");
     if (pr) { const [i, j] = pr.dataset.pair.split(",").map(Number); LAST = { A: GROUP[i].st, B: GROUP[j].st, nA: GROUP[i].name, nB: GROUP[j].name, fromGroup: true }; FILTER = "all"; render(true); return; }
     const b = e.target.closest("button[data-f]"); if (!b) return;

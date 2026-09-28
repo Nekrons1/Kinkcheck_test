@@ -78,7 +78,14 @@
       root.querySelectorAll("[data-i18n-html]").forEach(e => { e.innerHTML = I.t(e.dataset.i18nHtml); });
       root.querySelectorAll("[data-i18n-ph]").forEach(e => { e.placeholder = I.t(e.dataset.i18nPh); });
       root.querySelectorAll("[data-i18n-title]").forEach(e => { e.title = I.t(e.dataset.i18nTitle); e.setAttribute("aria-label", e.title); });
-      const tt = document.querySelector("title[data-i18n]"); if (tt) document.title = I.t(tt.dataset.i18n);
+      const tt = document.querySelector("title[data-i18n]"); if (tt) document.title = (KC.BRAND ? KC.BRAND + " · " : "") + I.t(tt.dataset.i18n);
+      /* search engines: the description and the canonical address follow the page language (v586) */
+      const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute("content", I.t("seo.desc"));
+      if (KC.migrate && KC.migrate.NEW_URL && document.head) {
+        let cl = document.querySelector('link[rel="canonical"]');
+        if (!cl) { cl = document.createElement("link"); cl.rel = "canonical"; document.head.appendChild(cl); }
+        cl.href = KC.migrate.NEW_URL + (location.pathname.split("/").pop() || "index.html") + "?lang=" + cur;
+      }
     },
 
     /* segmented RU | EN switcher into #langSw; onChange(lang) re-renders the page */

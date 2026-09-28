@@ -3,6 +3,8 @@
 window.KC = window.KC || {};
 (function (KC) {
   KC.$ = id => document.getElementById(id);
+  /* the site's name: not translated (header, page title, QR frame, picture card) */
+  KC.BRAND = "Kinkosmos";
 
   KC.el = function (tag, cls, text) {
     const e = document.createElement(tag);

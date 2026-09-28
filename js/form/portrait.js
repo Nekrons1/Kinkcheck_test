@@ -1,7 +1,9 @@
 /* form/portrait.js — "My portrait" (a folding block under "About me"), the vertical picture card and the
    portrait page for the PDF. Numbers come from core/portrait.js. Works for my list and for someone's list
    opened from a link (then it is "Portrait: <name>"). Follows the applied template like the rest of the page.
-   The card is drawn on a <canvas> (1080×1920): no names or answers leave the device unless the user saves it. */
+   The card is drawn on a <canvas> (1080×1920): no names or answers leave the device unless the user saves it.
+   On top of both: the constellation sign (KC.signs) — 9 stars, one per group, each labelled "group / %".
+   The card follows the site theme: light theme = paper card, dark theme = night card. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   const SITE = (KC.migrate ? KC.migrate.NEW_URL : "").replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -10,6 +12,46 @@
   const data = () => KC.portrait.compute(F.shown(), F.tplSet());
   const pctText = p => (p === null ? "—" : p + "%");
   const metaBits = st => ["role", "exp"].map(f => st.meta[f] ? KC.i18n.optLabel(f, st.meta[f]) : "").filter(Boolean);
+
+
+  /* ---------- the constellation sign ---------- */
+  const short = id => t("pt.s." + id);
+  const spark = (x, y, r) => "M" + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + "Z";
+  const seeded = n => { let x = n; return () => (x = (x * 16807) % 2147483647) / 2147483647; };
+  const signSub = sg => sg.kind === "even" ? t("sign.even") : sg.main.map(m => short(m.id)).join(" + ");
+  /* star radius: bright stars are big, the others grow with their group's percentage */
+  const starR = (st, big) => st.bright ? big : st.s && st.s.pct !== null ? big * (.27 + st.s.pct / 100 * .45) : big * .27;
+  function segsOf(sg, X, Y) {
+    const segs = [];
+    sg.lines.forEach(l => { const q = l[0] === "d" ? l.slice(1) : l; for (let i = 1; i < q.length; i++) segs.push([X(sg.stars[q[i - 1]]), Y(sg.stars[q[i - 1]]), X(sg.stars[q[i]]), Y(sg.stars[q[i]])]); });
+    return segs;
+  }
+  function signSVG(d) {
+    const sg = KC.signs.pick(d); if (!sg) return "";
+    const W = 320, H = 320, box = 196, ox = (W - box) / 2, oy = (H - box) / 2, k = box / 100, rnd = seeded(9);
+    const X = st => ox + st.x * k, Y = st => oy + st.y * k;
+    let g = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(t("sign." + sg.id)) + '">';
+    let dust = ""; for (let i = 0; i < 70; i++) dust += '<circle cx="' + (rnd() * W).toFixed(1) + '" cy="' + (rnd() * H).toFixed(1) + '" r="' + (rnd() * .9 + .3).toFixed(2) + '"/>';
+    g += '<g fill="var(--dust)">' + dust + "</g>";
+    g += '<g fill="none" stroke="var(--ink-line)" stroke-width="1.1" stroke-linejoin="round">' + sg.lines.map(l => { const dash = l[0] === "d", q = dash ? l.slice(1) : l;
+      return '<polyline points="' + q.map(i => X(sg.stars[i]).toFixed(1) + "," + Y(sg.stars[i]).toFixed(1)).join(" ") + '"' + (dash ? ' stroke-dasharray="3 4"' : "") + "/>"; }).join("") + "</g>";
+    const pts = sg.stars.map(st => ({ x: X(st), y: Y(st), r: starR(st, 10), bright: st.bright }));
+    /* label width: CJK characters are about twice as wide as Latin, Cyrillic or Thai ones */
+    const textW = s2 => Array.from(s2).reduce((a, ch) => a + (/[\u2e80-\u9fff\uac00-\ud7af\uff00-\uffef]/.test(ch) ? 13 : /[\u0e31\u0e34-\u0e3a\u0e47-\u0e4e]/.test(ch) ? 0 : 7.3), 0);
+    const sizes = sg.stars.map(st => ({ w: Math.max(textW(short(st.s.id)), 30) + 2, h: 30 }));
+    const L = KC.signs.placeLabels(pts, segsOf(sg, X, Y), sizes, W, H);
+    sg.stars.forEach((st, i) => {
+      const x = pts[i].x, y = pts[i].y, v = st.s ? st.s.pct : null;
+      if (st.bright) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="15" fill="var(--star)" opacity=".16"/><path d="' + spark(x, y, 10) + '" fill="var(--star)"/>';
+      else if (v === null) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="none" stroke="var(--muted)" stroke-width="1"/>';
+      else g += '<path d="' + spark(x, y, pts[i].r) + '" fill="var(--muted)" opacity="' + (.45 + v / 180).toFixed(2) + '"/>';
+      const b = L[i], cx = (b.x + b.w / 2).toFixed(1);
+      g += '<text x="' + cx + '" y="' + (b.y + 12).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-family="Inter,sans-serif" fill="currentColor"' + (st.bright ? ' font-weight="600"' : "") + ">" + esc(short(st.s.id))
+        + '<tspan x="' + cx + '" dy="15" font-weight="700" fill="' + (st.bright ? "var(--star)" : v === null ? "var(--muted)" : "var(--accent)") + '">' + pctText(v) + "</tspan></text>";
+    });
+    return '<div class="pt-sign"><div class="sg-over">' + esc(t(F.viewingShared ? "sign.of" : "sign.mine")) + '</div><div class="sg-name">' + esc(t("sign." + sg.id)) + '</div><div class="sg-sub">' + esc(signSub(sg)) + "</div>" + g + "</svg></div>";
+  }
+  F.signOf = () => KC.signs.pick(data());
 
   /* ---------- the block on the page ---------- */
   function title() {
@@ -23,6 +65,7 @@
     if (!d.answered) { body.innerHTML = '<p class="pt-empty">' + esc(t("pt.empty")) + "</p>"; return; }
     const meta = metaBits(st);
     let h = (meta.length ? '<div class="pt-meta">' + esc(meta.join(" · ")) + "</div>" : "")
+      + signSVG(d)
       + '<div class="pt-bars">' + d.sections.map(s => '<div class="pt-row"><span class="pt-name">' + esc(KC.portrait.label(s.id)) + "</span>"
         + '<span class="pt-bar"><i style="width:' + (s.pct || 0) + '%"></i></span><span class="pt-pct">' + pctText(s.pct) + "</span></div>").join("") + "</div>"
       + '<p class="pt-how">' + esc(t("pt.how")) + "</p>";
@@ -55,6 +98,33 @@
   const fit = (ctx, s, w) => { if (ctx.measureText(s).width <= w) return s; while (s.length > 1 && ctx.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
   function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 
+
+  /* the sign on the card: name, groups, the drawing with a label at every star; returns the new y */
+  function cardSign(ctx, sg, C, y, W, M, SANS, SERIF) {
+    ctx.textAlign = "center"; ctx.fillStyle = C.star; ctx.font = "600 92px " + SERIF; ctx.fillText(fit(ctx, t("sign." + sg.id), W - 2 * M), W / 2, y + 70);
+    ctx.fillStyle = C.ink; ctx.font = "500 34px " + SANS; ctx.fillText(fit(ctx, signSub(sg), W - 2 * M), W / 2, y + 122); ctx.textAlign = "left";
+    const y0 = y + 140, SH = 560, box = 420, ox = (W - box) / 2, oy = y0 + (SH - box) / 2, k = box / 100;
+    const X = st => ox + st.x * k, Y = st => oy + st.y * k;
+    ctx.save(); ctx.strokeStyle = C.grid; ctx.lineWidth = 3; ctx.lineJoin = "round";
+    sg.lines.forEach(l => { const dash = l[0] === "d", q = dash ? l.slice(1) : l; ctx.setLineDash(dash ? [8, 10] : []); ctx.beginPath(); q.forEach((i, j) => { const st = sg.stars[i]; if (j) ctx.lineTo(X(st), Y(st)); else ctx.moveTo(X(st), Y(st)); }); ctx.stroke(); });
+    ctx.restore();
+    const spk = (x, yy, r) => { ctx.beginPath(); ctx.moveTo(x, yy - r); ctx.quadraticCurveTo(x, yy, x + r, yy); ctx.quadraticCurveTo(x, yy, x, yy + r); ctx.quadraticCurveTo(x, yy, x - r, yy); ctx.quadraticCurveTo(x, yy, x, yy - r); ctx.fill(); };
+    const pts = sg.stars.map(st => ({ x: X(st) - M, y: Y(st) - y0, r: starR(st, 30), bright: st.bright }));
+    ctx.font = "600 29px " + SANS;
+    const sizes = sg.stars.map(st => ({ w: Math.max(ctx.measureText(short(st.s.id)).width, 70) + 6, h: 68 }));
+    const LB = KC.signs.placeLabels(pts, segsOf(sg, X, Y).map(q => [q[0] - M, q[1] - y0, q[2] - M, q[3] - y0]), sizes, W - 2 * M, SH);
+    sg.stars.forEach((st, i) => {
+      const x = X(st), yy = Y(st), v = st.s ? st.s.pct : null;
+      if (st.bright) { ctx.globalAlpha = .18; ctx.fillStyle = C.star; ctx.beginPath(); ctx.arc(x, yy, 44, 0, 7); ctx.fill(); ctx.globalAlpha = 1; spk(x, yy, 30); }
+      else if (v === null) { ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, yy, 8, 0, 7); ctx.stroke(); }
+      else { ctx.globalAlpha = .45 + v / 180; ctx.fillStyle = C.muted; spk(x, yy, pts[i].r); ctx.globalAlpha = 1; }
+      const b = LB[i], cx = b.x + M + b.w / 2, ty = b.y + y0;
+      ctx.textAlign = "center"; ctx.fillStyle = C.ink; ctx.font = (st.bright ? "600 " : "500 ") + "29px " + SANS; ctx.fillText(short(st.s.id), cx, ty + 28);
+      ctx.fillStyle = st.bright ? C.star : v === null ? C.muted : C.accent; ctx.font = "700 30px " + SANS; ctx.fillText(pctText(v), cx, ty + 62); ctx.textAlign = "left";
+    });
+    return y0 + SH + 30;
+  }
+
   F.drawCard = function (o) {
     const W = 1080, H = 1920, M = 70, IW = W - M * 2;
     const c = document.createElement("canvas"); c.width = W; c.height = H;
@@ -62,8 +132,13 @@
     const d = data(), st = F.shown();
     const SANS = 'Inter, "PingFang TC", "Hiragino Sans", "Noto Sans CJK JP", "Noto Sans Thai", system-ui, sans-serif';
     const SERIF = 'Fraunces, Georgia, "Noto Serif CJK JP", serif';
-    const C = { bg: "#f5f1ec", panel: "#fffdfb", ink: "#241c22", muted: "#8a7d84", line: "#e6ddd6", accent: "#8a2d47", love: "#f4e0ec", loveInk: "#9d2f68", lim: "#f6e2e0", limInk: "#b23b3b", bar: "#e9dfe3" };
+    const root = document.documentElement.dataset.theme;
+    const night = root ? root === "dark" : !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+    const C = night ? { bg: "#14101a", panel: "#221a27", ink: "#f3e9ee", muted: "#a898a8", line: "#3a2f3c", accent: "#f0a3bd", love: "#3b2233", loveInk: "#ff9fcf", lim: "#3a2224", limInk: "#f08c8c", bar: "#33283a", star: "#ff8cc6", grid: "rgba(240,163,189,.30)", dust: "rgba(255,240,248,.7)" }
+      : { bg: "#f5f1ec", panel: "#fffdfb", ink: "#241c22", muted: "#8a7d84", line: "#e6ddd6", accent: "#8a2d47", love: "#f4e0ec", loveInk: "#9d2f68", lim: "#f6e2e0", limInk: "#b23b3b", bar: "#e9dfe3", star: "#e0559a", grid: "rgba(138,45,71,.24)", dust: "rgba(138,45,71,.28)" };
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    /* star dust over the whole card */
+    { const r = seeded(11); ctx.fillStyle = C.dust; for (let i = 0; i < 260; i++) { ctx.beginPath(); ctx.arc(r() * W, r() * H, r() * 1.8 + .5, 0, 7); ctx.fill(); } }
     ctx.fillStyle = C.accent; ctx.fillRect(0, 0, W, 16);
     let y = 150;
     ctx.textBaseline = "alphabetic";
@@ -77,7 +152,9 @@
     y += 10;
     const bottom = H - 150;
     if (o.bars) {
-      const rows = d.sections, rh = 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
+      const sg = KC.signs.pick(d);
+      if (sg) y = cardSign(ctx, sg, C, y, W, M, SANS, SERIF);
+      const rows = d.sections, rh = sg ? 44 : 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
       rows.forEach((s, i) => {
         const ry = y + i * rh;
         ctx.fillStyle = C.ink; ctx.font = "500 31px " + SANS; ctx.fillText(fit(ctx, KC.portrait.label(s.id), nameW), M, ry + 34);
@@ -120,7 +197,7 @@
       });
       y += 24;
     });
-    ctx.fillStyle = C.muted; ctx.font = "500 32px " + SANS; ctx.textAlign = "center"; ctx.fillText(SITE, W / 2, H - 70); ctx.textAlign = "left";
+    ctx.fillStyle = C.muted; ctx.font = "500 32px " + SANS; ctx.textAlign = "center"; ctx.fillText("✦ " + KC.BRAND + (SITE ? " · " + SITE : ""), W / 2, H - 70); ctx.textAlign = "left";
     return c;
   };
 

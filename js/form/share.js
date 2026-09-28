@@ -26,11 +26,27 @@
   const NAME_OK = /^[A-Za-z0-9 .,!?'()+-]+$/;
   F.tplNameOk = v => NAME_OK.test(String(v || "").trim());
 
+
+  /* the "atlas" frame around the QR code (v586, owner): a double border with degree ticks, a star in each
+     corner and the site name. It lies outside the white quiet zone, so the code itself is untouched. */
+  function qrFrame(qr) {
+    const W = 312, spark = (x, y, r) => "M" + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + "Z";
+    let g = '<rect x="6" y="6" width="' + (W - 12) + '" height="' + (W - 12) + '" rx="16" fill="none" stroke="var(--accent)" stroke-width="1.4"/>'
+      + '<rect x="12" y="12" width="' + (W - 24) + '" height="' + (W - 24) + '" rx="11" fill="none" stroke="var(--ink-line)" stroke-width="1"/>';
+    for (let p = 34; p <= W - 34; p += 8) { const L = (p - 34) % 40 === 0 ? 5 : 2.5;
+      g += '<path d="M' + p + " 12v" + L + "M" + p + " " + (W - 12) + "v-" + L + "M12 " + p + "h" + L + "M" + (W - 12) + " " + p + "h-" + L + '" stroke="var(--ink-line)" stroke-width="1"/>'; }
+    [[18, 18], [W - 18, 18], [18, W - 18], [W - 18, W - 18]].forEach(([a, b], i) => { g += '<path d="' + spark(a, b, i === 1 ? 7 : 5) + '" fill="var(--star)"/>'; });
+    g += '<rect x="' + (W / 2 - 56) + '" y="' + (W - 20) + '" width="112" height="16" rx="8" fill="var(--panel)"/>'
+      + '<text x="' + (W / 2) + '" y="' + (W - 8) + '" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="var(--accent)">✦ ' + KC.esc(KC.BRAND) + " ✦</text>";
+    qr.classList.add("qr-atlas");
+    qr.insertAdjacentHTML("afterbegin", '<svg class="qr-frame" viewBox="0 0 ' + W + " " + W + '" width="' + W + '" height="' + W + '" aria-hidden="true">' + g + "</svg>");
+  }
+
   function show(link, kind) {
     KC.$("shareLink").value = link;
     KC.$("shareKind").textContent = kind;
-    const qr = KC.$("qr"); qr.innerHTML = "";
-    try { new QRCode(qr, { text: link, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M }); }
+    const qr = KC.$("qr"); qr.innerHTML = ""; qr.classList.remove("qr-atlas");
+    try { new QRCode(qr, { text: link, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M }); qrFrame(qr); }
     catch (e) { qr.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center">' + KC.esc(t("share.qrTooLong")) + "</div>"; }
   }
   function showList() {
