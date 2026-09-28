@@ -142,7 +142,7 @@
       e.target.value = "";
       if (!res) { KC.toast(t("toast.backupBad")); return; }
       KC.toast(KC.i18n.t(res.templates ? "toast.backupLoadedTpl" : "toast.backupLoaded", res));
-      setTimeout(() => { location.href = location.pathname; }, 900);
+      setTimeout(() => { location.href = F.homeUrl(); }, 900);
     };
     r.readAsText(f);
   });
@@ -154,7 +154,7 @@
       case "load": {
         F.saveNow(); // current list is safe in its own entry
         const st = KC.store.normalize(item.data); st.onlyMarked = F.state.onlyMarked;
-        KC.store.writeOwn(st); M.setActive(item.id); location.href = location.pathname; break;
+        KC.store.writeOwn(st); M.setActive(item.id); location.href = F.homeUrl(); break;
       }
       case "rename": rename(item, () => { M.write(a); drawMine(); }, M.label(item)); break;
       case "del": M.write(a.filter(x => x.id !== id)); if (id === M.active()) M.setActive(""); drawMine(); break;

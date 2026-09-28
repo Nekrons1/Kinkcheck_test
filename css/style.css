@@ -723,3 +723,9 @@ details.sp-fold>summary{font-size:17px}
 .sp-signs .pt-wod-sub{justify-content:center;margin:-2px 0 6px}
 .sp-fold-body>.pt-wod-sub{justify-content:center;margin:6px 0 0}
 .wod-note{font-size:10.5px;line-height:1.35;color:var(--muted);margin:8px 4px 0;text-align:center}
+/* v600: another language is being fetched */
+.lang-sw.loading{opacity:.55;cursor:progress}
+/* v600: the number of answers in the share link, and "Send…" */
+.share-count{font-size:13px;color:var(--muted);margin:6px 2px 0}
+.share-count.zero{color:var(--limit);font-weight:600}
+.share-send{display:block;width:100%;margin:10px 0 0}

@@ -182,11 +182,11 @@
       + (wl ? '<div class="rl">' + esc(wl.rl) + '</div><div class="grp">' + esc(wl.sub) + '</div><div class="grp">' + esc(sub) + "</div>" : sg.dnd ? '<div class="rl">' + esc(t("dnd.r." + KC.dnd.race(st0, null)) + " · " + t("dnd.lvlShort", { n: KC.dnd.level(st0, null) })) + '</div><div class="grp">' + esc(t("dnd.s." + sg.cls + "." + sg.sub)) + '</div><div class="grp">' + esc(sub) + '</div><div class="al">' + esc(t("dnd.al." + al)) + "</div>" : '<div class="grp">' + esc(sub) + "</div>")
       + h + labels + "</svg></div>";
   }
-  /* v591: the same switch as in the portrait; the choice is shared (KC.dnd.mode); v597: + World of Darkness */
-  const modeSwitch = () => KC.wod.switchHTML();
+  /* v591: the same switch as in the portrait (v597: + World of Darkness); v599: its choice is remembered per view */
+  const modeSwitch = scope => KC.wod.switchHTML(scope);   /* scope "pair" | "group": remembered separately (v599) */
   /* v597: the group in World of Darkness mode — the coterie / pack / … : everyone's clan (tribe, kith, house) and lines */
   function wodGroupHTML(P) {
-    const line = KC.wod.sub();
+    const line = KC.wod.sub("group");
     const rows = P.map(p => { const d = KC.portrait.compute(p.st), sg = KC.wod.pick(d, line);
       if (!sg) return '<li><span class="who">' + esc(p.name) + '</span><span class="what">' + esc(t("dnd.al.roll")) + "</span></li>";
       const ln = KC.wod.lines(KC.wod.details(p.st, d, null, line, sg.id), t);
@@ -218,7 +218,7 @@
   }
   function pairSigns(A, B, nA, nB) {
     if (!KC.signs) return "";
-    const md = KC.dnd && KC.wod ? KC.dnd.mode() : "sign", dn = md === "dnd", wd = md === "wod", line = wd ? KC.wod.sub() : "";
+    const md = KC.dnd && KC.wod ? KC.dnd.mode("pair") : "sign", dn = md === "dnd", wd = md === "wod", line = wd ? KC.wod.sub("pair") : "";
     const pick = dn ? KC.dnd.pick : wd ? d => KC.wod.pick(d, line) : KC.signs.pick;
     const a = pick(KC.portrait.compute(A)), b = pick(KC.portrait.compute(B));
     if (!a || !b) return "";
@@ -227,7 +227,7 @@
     /* World of Darkness: the level names per line ("One clan", "One coterie", …), the reasons as in DnD */
     const lvl = wd ? t("sp.wod." + c.level + "." + line) : t(P + c.level);
     const why = c.level === "near" ? t((wd ? "sp.dnd." : P) + "nearWhy", { g: c.shared.map(short).join(", ") }) : wd ? t(c.level === "same" ? "sp.wod.sameWhy" : "sp.dnd.farWhy") : t(P + c.level + "Why");
-    return '<div class="sp-box sp-signs' + (dn ? " sp-dnd" : wd ? " sp-wod" : "") + '">' + head(dn ? "sp.dnd.h" : wd ? "sp.wod.h." + line : "sp.sg.h") + (KC.dnd && KC.wod ? modeSwitch() : "")
+    return '<div class="sp-box sp-signs' + (dn ? " sp-dnd" : wd ? " sp-wod" : "") + '">' + head(dn ? "sp.dnd.h" : wd ? "sp.wod.h." + line : "sp.sg.h") + (KC.dnd && KC.wod ? modeSwitch("pair") : "")
       + '<div class="sg-match"><span class="st">' + "✦".repeat(n) + "<i>" + "✦".repeat(3 - n) + "</i></span>" + esc(lvl) + "</div>"
       + '<div class="sg-why">' + esc(why) + '</div><div class="sg-pair">' + signMini(a, nA, c.shared, A) + signMini(b, nB, c.shared, B) + "</div>"
       + (dn ? foesHTML([KC.dnd.level(A, null), KC.dnd.level(B, null)]) : wd ? KC.wod.noticeHTML() : "") + "</div>";

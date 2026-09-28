@@ -3,7 +3,7 @@
    😈 Demon (Demon: The Fallen houses). Russian names follow wod.su.
    Which subtype: a PROFILE, not only the strongest group — every subtype has weights over the 9 portrait groups
    (letters N B F R D S X V W = intimacy, bondage, fetishes, role-play, D/s, S/M, sex, voyeurism, fluids);
-   score = Σ w·(group % − the person's average %) / Σ|w| + a small calibrated bias; the highest score wins.
+   score = Σ w·(group % − the person's average % − the usual skew TYP) / Σ|w| + a calibrated bias; the highest wins.
    So a combination counts (fluids + sex → the Defilers), not only one group. A flat portrait (the groups' spread
    < FLAT points) = the "no clan" subtype: Caitiff / Stargazers / Ghille Dhu (demons have none).
    The figure: 9 stars (one per group, the sign's main groups are the bright ones, as in DnD) + grey stars.
@@ -11,14 +11,20 @@
    - vampire: sect (Lasombra/Tzimisce = Sabbat unless Lawful Good; others Sabbat when Chaotic or Evil),
      generation (by level), path of enlightenment (the two strongest poles; all flat = Humanity);
    - werewolf: breed (Metis: taboo items liked 20+ points above the person's share; Lupus: body + hands + spont),
-     auspice (two poles), rank (by level);
+     auspice (two poles), rank (by level); Rage = the auspice's W20 starting Rage + a rank bonus, Gnosis = the
+     breed's W20 starting Gnosis + the same bonus (owner, v599);
    - fey: court (law + good > 0 = Seelie), house of that court (the strongest pole), seeming (by level);
+     Glamour = 4 (C20 start) + seeming bonus + growth with level; Banality = 3 + the share of "No" (owner, v599);
    - demon: faction (by alignment), lore of the house (the strongest pole), Faith 3–6 by level (owner, v597: a
      starting demon has Faith 3, a long campaign reaches 5–6; more is near-impossible in play).
    Names are texts: "wod.<line>.<id>" and the "wod.*" keys below. */
 (function (KC) {
   const LINES = ["vamp", "wolf", "fey", "demon"];
-  const FLAT = 43, NONE = { vamp: "caitiff", wolf: "stargazers", fey: "ghille" };
+  /* v600 (owner): the usual skew of real lists (from the owner's group): almost everyone likes bondage and sex more
+     than their own average and fluids / voyeurism less. Without this, bondage lovers all fell into the same few
+     subtypes (Malefactors, Sluagh…). It is taken off before the profiles are compared; the biases are calibrated with it. */
+  const TYP = { bondage: 20, "sex-penetration": 10, "voyeurism-exhibitionism": -8, "bodily-fluids": -25 };
+  const FLAT = 40, NONE = { vamp: "caitiff", wolf: "stargazers", fey: "ghille" };
   const LET = { N: "intimacy", B: "bondage", F: "fetishes", R: "role-play", D: "ds", S: "sm", X: "sex-penetration", V: "voyeurism-exhibitionism", W: "bodily-fluids" };
   /* [9 points in a 100×100 box, grey points, lines (index paths; "d" first = dashed), 3 bright slots] */
   const FIG = {
@@ -76,10 +82,10 @@
   };
   /* profile: group letter -> weight; bias: calibrated so that every subtype comes out about equally often */
   const PROF = {
-    vamp: { toreador: ["V1 F.5 X.3 N.4", 6], tremere: ["B1 D.6 R.3", -0.6], tzimisce: ["F1 S.6 W.2", -3], ravnos: ["R1 V.5", 1.2], ventrue: ["D1 F.4", -3], brujah: ["S1 X.5", -6], setite: ["X1 W.4 D.3", -4.8], nosferatu: ["W1 V.3", 0], lasombra: ["B.8 D.8", -1.8], giovanni: ["D.8 S.6 W.3", 6], assamite: ["S.7 W.8", 3], malkavian: ["R.7 V.7", 5.4], gangrel: ["R.6 S.6 N-.2", 0.6] },
-    wolf: { gaia: ["N1 X.3", 6], uktena: ["B1 R.4", -3], glass: ["F1 V.3", -6], fangs: ["R1 D.5", 1.8], shadow: ["D1 B.4", 0], fenris: ["S1 D.3", -2.4], fianna: ["X1 N.3 R.2", -1.8], striders: ["V1 R.3", 5.4], gnawers: ["W1 N.2", 0], talons: ["R.6 S.7", 1.8], wendigo: ["B.7 S.6", 0] },
-    fey: { boggan: ["N1 D.3", 6], sluagh: ["B1 V.3", -6], nocker: ["F1 B.3", -6], pooka: ["R1 X.2", -5.4], sidhe: ["D1 V.3 F.2", 2.4], redcap: ["S1 W.6", -2.4], satyr: ["X1 W.3", -6], eshu: ["V1 R.4", 6], troll: ["N.7 D.7", 6] },
-    demon: { devils: ["D1 V.6 R.3", 0.6], malefactors: ["B1 F.8", -6], scourges: ["N1 S.4", 3.6], defilers: ["W1 X.8", 0], fiends: ["R1 V.4", 0], devourers: ["S1 X.4 R.3", -1.2], slayers: ["S.6 W.6 R.4", 6] },
+    vamp: { toreador: ["V1 F.5 X.3 N.4", 6], tremere: ["B1 D.6 R.3", 0.5], tzimisce: ["F1 S.6 W.2", -4], ravnos: ["R1 V.5", 1.5], ventrue: ["D1 F.4", -2.5], brujah: ["S1 X.5", -4.5], setite: ["X1 W.4 D.3", -6], nosferatu: ["W1 V.3", -1.5], lasombra: ["B.8 D.8", -1], giovanni: ["D.8 S.6 W.3", 5], assamite: ["S.7 W.8", 0.5], malkavian: ["R.7 V.7", 6], gangrel: ["R.6 S.6 N-.2", 1] },
+    wolf: { gaia: ["N1 X.3", 6], uktena: ["B1 R.4", -3.5], glass: ["F1 V.3", -6], fangs: ["R1 D.5", 3], shadow: ["D1 B.4", 0], fenris: ["S1 D.3", -2.5], fianna: ["X1 N.3 R.2", -2], striders: ["V1 R.3", 6], gnawers: ["W1 N.2", 0], talons: ["R.6 S.7", 3], wendigo: ["B.7 S.6", 0] },
+    fey: { boggan: ["N1 S-.3", 9], sluagh: ["B1 V.3", -9], nocker: ["F1 B.3", -9], pooka: ["R1 X.2", -6.5], sidhe: ["D1 V.3 F.2", 2], redcap: ["S1 W.6", -8.5], satyr: ["X1 N.3", -8], eshu: ["V1 R.4", 6.5], troll: ["N.7 D.7", 9] },
+    demon: { devils: ["D1 R.3 V.3", 0], malefactors: ["B1 F.8", -6], scourges: ["N1 S.4", 6], defilers: ["W1 X.8", -4.5], fiends: ["R.6 V1", 5], devourers: ["S1 X.4 R.3", 0], slayers: ["R1 S.6", 0.5] },
   };
   const prof = {};   /* parsed once: line -> id -> {group: weight} */
   function weights(line) {
@@ -93,7 +99,7 @@
     const g = d.sections.filter(s => s.pct !== null && KC.signs.GROUPS.indexOf(s.id) >= 0);
     if (!g.length) return null;
     const mean = g.reduce((a, s) => a + s.pct, 0) / g.length, dev = {};
-    g.forEach(s => { dev[s.id] = s.pct - mean; });
+    g.forEach(s => { dev[s.id] = s.pct - mean - (TYP[s.id] || 0); });
     const devs = Object.keys(dev).map(k => dev[k]);
     if (NONE[line] && Math.max.apply(null, devs) - Math.min.apply(null, devs) < FLAT) return NONE[line];
     const W = weights(line); let best = null, bs = -1e9;
@@ -131,6 +137,12 @@
   const RANK = lv => lv <= 4 ? "cliath" : lv <= 8 ? "fostern" : lv <= 12 ? "adren" : lv <= 16 ? "athro" : "elder";
   const SEEM = lv => lv <= 6 ? "childling" : lv <= 14 ? "wilder" : "grump";
   const FAITH = lv => lv <= 5 ? 3 : lv <= 11 ? 4 : lv <= 17 ? 5 : 6;
+  /* v599 (owner): W20 starting Rage by auspice, starting Gnosis by breed, + a bonus that grows with the rank */
+  const RAGE0 = { ragabash: 1, theurge: 2, philodox: 3, galliard: 4, ahroun: 5 }, GNOSIS0 = { homid: 1, metis: 3, lupus: 5 };
+  const RANKB = { cliath: 0, fostern: 1, adren: 1, athro: 2, elder: 3 };
+  /* C20: Glamour 4 at the start, Childling +1, Wilder +1 when play or spontaneity is a strong pole; bought with
+     experience, so +1 every 6 levels (max 8). Banality 3, +1 for every 15 points of "No" share above 30 %, Grump +1, max 7 */
+  const GLAM = { BASE: 4, GROW: 6, POLE: 12 }, BANAL = { BASE: 3, FROM: .3, STEP: .15, MAX: 7 };
   const LIM = { FLAT: 12, METIS: 20, LUPUS: 45, MIN: 5 };
   /* the strongest of named options by pole strength (a tie: the first one) */
   const best = (opts, val) => Object.keys(opts).reduce((a, b) => val(opts[b]) > val(opts[a]) ? b : a);
@@ -160,10 +172,13 @@
       o.breed = id === "talons" ? "lupus" : metis(st, set) ? "metis" : str.body + str.hands + str.spont >= LIM.LUPUS ? "lupus" : "homid";
       if (o.breed === "metis" && (id === "fianna" || id === "fangs")) o.breed = "homid";
       o.aus = best(AUSP, pair); o.rank = RANK(lv);
+      o.rage = RAGE0[o.aus] + RANKB[o.rank]; o.gnosis = GNOSIS0[o.breed] + RANKB[o.rank];
     } else if (line === "fey") {
       o.court = roll ? null : an.key === "boring" || an.law + an.good > 0 ? "seelie" : "unseelie";
       o.house = o.court ? best(HOUSES[o.court], p => str[p]) : null;
       o.seem = SEEM(lv);
+      o.glamour = GLAM.BASE + (o.seem === "childling" || (o.seem === "wilder" && Math.max(str.play, str.spont) >= GLAM.POLE) ? 1 : 0) + Math.floor((lv - 1) / GLAM.GROW);
+      o.banality = Math.min(BANAL.MAX, BANAL.BASE + Math.floor(Math.max(0, an.pNo - BANAL.FROM) / BANAL.STEP + 1e-9) + (o.seem === "grump" ? 1 : 0));
     } else if (line === "demon") {
       o.fac = roll ? null : al === "CE" ? "ravener" : al[1] === "G" ? "reconciler" : al[1] === "E" ? "faustian" : al[0] === "C" ? "luciferan" : "cryptic";
       o.lore = best(LORE[id], p => str[p]); o.faith = FAITH(lv);
@@ -174,8 +189,8 @@
   function lines(dt, t) {
     const roll = t("dnd.al.roll");
     if (dt.line === "vamp") return { rl: (dt.sect ? t("wod.sect." + dt.sect) : roll) + " · " + t("wod.gen", { n: dt.gen }), sub: t("wod.path." + dt.path) };
-    if (dt.line === "wolf") return { rl: t("wod.breed." + dt.breed) + " · " + t("wod.aus." + dt.aus), sub: t("wod.rank." + dt.rank) };
-    if (dt.line === "fey") return { rl: dt.court ? t("wod.court." + dt.court) + " · " + t("wod.house." + dt.house) : roll, sub: t("wod.seem." + dt.seem) };
+    if (dt.line === "wolf") return { rl: t("wod.breed." + dt.breed) + " · " + t("wod.aus." + dt.aus), sub: t("wod.rank." + dt.rank) + " · " + t("wod.rage", { n: dt.rage }) + " · " + t("wod.gnosis", { n: dt.gnosis }) };
+    if (dt.line === "fey") return { rl: dt.court ? t("wod.court." + dt.court) + " · " + t("wod.house." + dt.house) : roll, sub: t("wod.seem." + dt.seem) + " · " + t("wod.glamour", { n: dt.glamour }) + " · " + t("wod.banality", { n: dt.banality }) };
     return { rl: (dt.fac ? t("wod.fac." + dt.fac) : roll) + " · " + t("wod.faith", { n: dt.faith }), sub: t("wod.demon.a." + dt.id) + " · " + t("wod.lore." + dt.lore) };
   }
   /* how close two figures are: the same subtype; a main group in common; nothing */
@@ -184,14 +199,16 @@
     return { level: a.id === b.id ? "same" : shared.length ? "near" : "far", shared };
   }
 
-  /* the line is remembered on this device only (vamp by default) */
-  const sub = () => { const r = KC.ls.raw(KC.KEYS.wod); return LINES.indexOf(r) >= 0 ? r : "vamp"; };
-  const setSub = v => { if (LINES.indexOf(v) >= 0) KC.ls.setRaw(KC.KEYS.wod, v); };
+  /* the line is remembered on this device only (vamp by default), separately for the portrait, the pair and the
+     company (scope, as in KC.dnd.mode, v599) */
+  const KEY = scope => scope === "pair" ? KC.KEYS.wodPair : scope === "group" ? KC.KEYS.wodGroup : KC.KEYS.wod;
+  const sub = scope => { const r = KC.ls.raw(KEY(scope)); return LINES.indexOf(r) >= 0 ? r : "vamp"; };
+  const setSub = (v, scope) => { if (LINES.indexOf(v) >= 0) KC.ls.setRaw(KEY(scope), v); };
 
-  /* the mode switch shared by the portrait and the compare page: "✦ Constellation | 🎲 DnD | 🦇 World of Darkness",
+  /* the mode switch built the same way for the portrait and the compare page (each view keeps its own choice): "✦ Constellation | 🎲 DnD | 🦇 World of Darkness",
      and in the World of Darkness a second row "🧛 Vampire | 🐺 Werewolf | 🧚 Fey | 😈 Demon" */
-  function switchHTML() {
-    const t = k => KC.i18n.t(k), esc = KC.esc, m = KC.dnd.mode(), cur = sub();
+  function switchHTML(scope) {
+    const t = k => KC.i18n.t(k), esc = KC.esc, m = KC.dnd.mode(scope), cur = sub(scope);
     const b = (attr, v, key, pressed) => '<button type="button" class="btn ghost mini" ' + attr + '="' + v + '" aria-pressed="' + pressed + '">' + esc(t(key)) + "</button>";
     return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">' + b("data-mode", "sign", "dnd.toSign", m === "sign") + b("data-mode", "dnd", "dnd.toDnd", m === "dnd") + b("data-mode", "wod", "wod.toWod", m === "wod") + "</div>"
       + (m === "wod" ? '<div class="pt-mode pt-wod-sub" role="group" aria-label="' + esc(t("wod.switch")) + '">' + LINES.map(l => b("data-wod", l, "wod.l." + l, l === cur)).join("") + "</div>" : "");
@@ -200,5 +217,5 @@
      (Paradox Interactive AB) is in the help texts help.wod_html / help.compareWod_html */
   const noticeHTML = () => '<div class="wod-note">' + KC.esc(KC.i18n.t("wod.notOfficial")) + "</div>";
 
-  KC.wod = { switchHTML, noticeHTML, FAITH, LINES, FIG, PROF, FLAT, NONE, LIM, PATHS, AUSP, HOUSES, LORE, GEN, choose, pick, details, lines, closeness, sub, setSub };
+  KC.wod = { switchHTML, noticeHTML, TYP, FAITH, RAGE0, GNOSIS0, RANKB, GLAM, BANAL, LINES, FIG, PROF, FLAT, NONE, LIM, PATHS, AUSP, HOUSES, LORE, GEN, choose, pick, details, lines, closeness, sub, setSub };
 })(window.KC);

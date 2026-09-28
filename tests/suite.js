@@ -1149,7 +1149,7 @@ const S = (title) => console.log("\n## " + title);
   /* v591: the "🎲 DnD" button reads the same everywhere */
   Object.keys(SAME_OK).forEach(l => { SAME_OK[l].push("dnd.toDnd"); });
   /* v597: World of Darkness proper names (clans, auspices, ranks, the Babylonian house names…) stay as in English */
-  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$)/;
+  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$)/;
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0 && !WOD_SAME.test(k)), [], l + ": no interface string left in English"));
   ok(!/TEMPORARY/.test(["pt", "es", "ja", "th", "zh"].map(l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8")).join("")), "no TEMPORARY markers left");
@@ -2006,7 +2006,7 @@ const S = (title) => console.log("\n## " + title);
     _sc.end();
   }
 
-  S("v592: DnD in the pair's constellations; the choice is shared with the portrait");
+  S("v592: DnD in the pair's constellations (v599: the pair remembers its own choice)");
   {
     const _sc = scope();
     const f = open("form"), ids = {}; f.KC.CATS.forEach(c => { ids[c.id] = c.items.map(([, id]) => id); });
@@ -2022,17 +2022,19 @@ const S = (title) => console.log("\n## " + title);
     ok(box.classList.contains("sp-dnd") && /Классы пары/.test(box.textContent) && box.querySelectorAll(".sg-dnd").length === 2 && box.querySelectorAll(".sg-grey").length > 0, "🎲 DnD: both classes with grey stars");
     ok(/Ann/.test(box.textContent) && /Bob/.test(box.textContent) && box.querySelectorAll(".sg-dnd .al").length === 2 && [...box.querySelectorAll(".sg-dnd .al")].every(x => x.textContent.trim().length > 3), "…names, subclasses and alignments");
     ok(/Одна партия|Один класс|Одинаковые персонажи|Разные партии/.test(box.textContent), "…and how close the two classes are");
-    eq(c1.w.localStorage.getItem("checklist-dnd"), "1", "the choice is stored (shared with the portrait)");
+    eq([c1.w.localStorage.getItem("checklist-dnd-pair"), c1.w.localStorage.getItem("checklist-dnd")], ["1", null], "the choice is stored for the pair only — the portrait keeps its own (v599)");
     ok(!!c1.d.querySelector("#results .sp-box") && c1.d.querySelectorAll("#results .sp-signs").length === 1, "only this block is redrawn, the rest of the results stay");
-    const c2 = run({ "checklist-dnd": "1" });
-    ok(c2.d.querySelector("#results .sp-signs").classList.contains("sp-dnd") && !!c2.d.querySelector('#results .sp-signs .pt-mode [data-mode="sign"]'), "DnD chosen in the portrait → the comparison opens in DnD, switch still there");
+    const c0 = run({ "checklist-dnd": "wod", "checklist-dnd-group": "1" });
+    ok(!c0.d.querySelector("#results .sp-signs").classList.contains("sp-dnd") && !c0.d.querySelector("#results .sp-signs").classList.contains("sp-wod"), "a mode chosen in the portrait or the company does NOT change the pair (v599)");
+    const c2 = run({ "checklist-dnd-pair": "1" });
+    ok(c2.d.querySelector("#results .sp-signs").classList.contains("sp-dnd") && !!c2.d.querySelector('#results .sp-signs .pt-mode [data-mode="sign"]'), "DnD chosen for the pair before → the pair opens in DnD, switch still there");
     click(c2.w, c2.d.querySelector('#results .sp-signs .pt-mode [data-mode="sign"]'));
-    ok(!c2.d.querySelector("#results .sp-signs").classList.contains("sp-dnd") && c2.w.localStorage.getItem("checklist-dnd") === null, "back to the constellations");
+    ok(!c2.d.querySelector("#results .sp-signs").classList.contains("sp-dnd") && c2.w.localStorage.getItem("checklist-dnd-pair") === null, "back to the constellations");
     const same = f.KC.dnd.pick(f.KC.portrait.compute(f.KC.codec.decode(A)));
     ok(!!same && same.dnd && f.KC.dnd.VAR[same.key][0] === same.cls, "the pair uses the same DnD figures as the portrait");
     c2.KC.help.open("compare");
-    ok(/🎲 DnD/.test(c2.d.getElementById("help-compare").textContent) && /Выбор общий/.test(c2.d.getElementById("help-compare").textContent), "help: DnD in the pair's constellations is explained");
-    ok(!c1.errors.length && !c2.errors.length && !f.errors.length, "no script errors");
+    ok(/🎲 DnD/.test(c2.d.getElementById("help-compare").textContent) && /запоминают свой выбор отдельно/.test(c2.d.getElementById("help-compare").textContent), "help: DnD in the pair's constellations is explained");
+    ok(!c1.errors.length && !c2.errors.length && !c0.errors.length && !f.errors.length, "no script errors");
     _sc.end();
   }
 
@@ -2117,17 +2119,17 @@ const S = (title) => console.log("\n## " + title);
     const run = (n, local) => { const cp = open("compare", { storage: { local: Object.assign({ "checklist-lang": "ru" }, local), session: {} } });
       for (let i = 2; i < n; i++) click(cp.w, cp.d.getElementById("addPart"));
       cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i]; }); click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
-    const c2 = run(2, { "checklist-dnd": "1", "checklist-folds": '{"pair":true,"group":true}' });
+    const c2 = run(2, { "checklist-dnd-pair": "1", "checklist-folds": '{"pair":true,"group":true}' });
     const box = c2.d.querySelector(".sp-signs.sp-dnd");
     ok(!!box && box.querySelectorAll(".sg-mini .rl").length === 2 && box.querySelectorAll(".dnd-foe").length === 3 && /Кого одолеете вместе/.test(box.textContent), "pair (DnD): race · level for both and three foes");
-    const c3 = run(3, { "checklist-dnd": "1", "checklist-folds": '{"pair":true,"group":true}' });
+    const c3 = run(3, { "checklist-dnd-group": "1", "checklist-folds": '{"pair":true,"group":true}' });
     const gf = c3.d.querySelector('details.sp-fold[data-fold="group"]');
     ok(!!gf.querySelector(".pt-mode") && !!gf.querySelector(".sp-party") && !gf.querySelector("[data-planet]"), "group (DnD): the fold shows the party, not the system, with the switch");
     ok(gf.querySelectorAll(".dnd-party li").length === 3 && /Уровни вместе/.test(gf.textContent) && gf.querySelectorAll(".dnd-foe").length === 3, "…everyone, the levels together, three foes");
     click(c3.w, gf.querySelector('.pt-mode [data-mode="sign"]'));
-    ok(!!gf.querySelector("[data-planet]") && !gf.querySelector(".sp-party") && c3.w.localStorage.getItem("checklist-dnd") === null, "switch → the solar system again (the choice is shared)");
+    ok(!!gf.querySelector("[data-planet]") && !gf.querySelector(".sp-party") && c3.w.localStorage.getItem("checklist-dnd-group") === null, "switch → the solar system again (remembered for the company)");
     click(c3.w, gf.querySelector('.pt-mode [data-mode="dnd"]'));
-    ok(!!gf.querySelector(".sp-party") && c3.w.localStorage.getItem("checklist-dnd") === "1", "…and back to the party");
+    ok(!!gf.querySelector(".sp-party") && c3.w.localStorage.getItem("checklist-dnd-group") === "1" && c3.w.localStorage.getItem("checklist-dnd") === null && c3.w.localStorage.getItem("checklist-dnd-pair") === null, "…and back to the party; the portrait and the pair are not touched");
     const c4 = run(3, { "checklist-folds": '{"group":true}' });
     ok(!!c4.d.querySelector('.sp-fold[data-fold="group"] [data-planet]') && !c4.d.querySelector(".sp-party"), "without DnD: the group fold is the solar system");
     // help and the patch note
@@ -2157,7 +2159,7 @@ const S = (title) => console.log("\n## " + title);
     eq(bad, [], "every figure: 9 group stars, 3 bright slots, lines only to existing stars");
     eq(Object.keys(W.LORE).map(h => Object.keys(W.LORE[h]).length), [3, 3, 3, 3, 3, 3, 3], "every demon house has 3 Lores");
     eq([Object.keys(W.HOUSES.seelie).length, Object.keys(W.HOUSES.unseelie).length], [7, 6], "7 Seelie and 6 Unseelie houses");
-    const miss = [], need = ["wod.toWod", "wod.switch", "wod.gen", "wod.faith", "wod.notOfficial", "card.o.wod", "sp.wod.sameWhy", "help.wod_html", "help.compareWod_html"];
+    const miss = [], need = ["wod.toWod", "wod.switch", "wod.gen", "wod.faith", "wod.rage", "wod.gnosis", "wod.glamour", "wod.banality", "wod.notOfficial", "card.o.wod", "sp.wod.sameWhy", "help.wod_html", "help.compareWod_html"];
     W.LINES.forEach(L => { ["wod.l.", "wod.mine.", "wod.of.", "sp.wod.grp.", "sp.wod.h.", "sp.wod.same.", "sp.wod.near.", "sp.wod.far."].forEach(p => need.push(p + L));
       Object.keys(W.FIG[L]).forEach(id => need.push("wod." + L + "." + id)); });
     Object.keys(W.FIG.demon).forEach(id => need.push("wod.demon.a." + id));
@@ -2172,10 +2174,13 @@ const S = (title) => console.log("\n## " + title);
     const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => b.pct - a.pct) });
     const all = o => Object.assign({ intimacy: 30, bondage: 30, fetishes: 30, "role-play": 30, ds: 30, sm: 30, "sex-penetration": 30, "voyeurism-exhibitionism": 30, "bodily-fluids": 30 }, o);
     eq(W.choose(D(all({ "bodily-fluids": 80, "sex-penetration": 75 })), "demon"), "defilers", "fluids + sex → the Defilers (Nereids)");
-    eq(W.choose(D(all({ intimacy: 40 })), "vamp"), "caitiff", "a flat portrait → Caitiff");
-    eq([W.choose(D(all({ intimacy: 40 })), "wolf"), W.choose(D(all({ intimacy: 40 })), "fey")], ["stargazers", "ghille"], "…Stargazers, Ghille Dhu");
-    ok(W.choose(D(all({ intimacy: 40 })), "demon") !== null, "demons have no flat subtype: always a house");
-    eq(W.choose(D({ intimacy: 36, bondage: 78, fetishes: 61, "role-play": 51, ds: 74, sm: 69, "sex-penetration": 42, "voyeurism-exhibitionism": 34, "bodily-fluids": 26 }), "vamp"), "lasombra", "the owner's portrait → Lasombra");
+    /* v600: "flat" = flat after the usual skew is taken off (bondage and sex higher, fluids and voyeurism lower) */
+    const usual = all({ intimacy: 40, bondage: 50, "sex-penetration": 40, "voyeurism-exhibitionism": 22, "bodily-fluids": 5 });
+    eq(W.choose(D(usual), "vamp"), "caitiff", "a portrait with only the usual skew → Caitiff");
+    eq([W.choose(D(usual), "wolf"), W.choose(D(usual), "fey")], ["stargazers", "ghille"], "…Stargazers, Ghille Dhu");
+    ok(W.choose(D(usual), "demon") !== null, "demons have no flat subtype: always a house");
+    ok(W.choose(D(all({ intimacy: 40 })), "vamp") !== "caitiff", "an evenly liked list is NOT flat any more: bondage at 30 is low for a real list (v600)");
+    eq(W.choose(D({ intimacy: 36, bondage: 77, fetishes: 62, "role-play": 52, ds: 74, sm: 69, "sex-penetration": 41, "voyeurism-exhibitionism": 34, "bodily-fluids": 26 }), "vamp"), "giovanni", "the owner's portrait → Giovanni (v600: with the usual skew taken off)");
     const fig = W.pick(D(all({ "bodily-fluids": 80, "sex-penetration": 75 })), "demon");
     eq([fig.wod, fig.line, fig.id, fig.stars.filter(x => x.bright).map(x => x.s.id).sort().join()], [true, "demon", "defilers", "bodily-fluids,sex-penetration"], "the figure: the sign's main groups are the bright stars");
     // details
@@ -2187,6 +2192,14 @@ const S = (title) => console.log("\n## " + title);
     const lv20 = mk(() => "love");
     eq([det(lv20, "vamp", "brujah").gen, det(lv20, "wolf", "gaia").rank, det(lv20, "fey", "boggan").seem, det(lv20, "demon", "devils").faith], [7, "elder", "grump", 6], "level 20: 7th generation, Elder, Grump, Faith 6");
     eq([1, 5, 6, 11, 12, 17, 18, 20].map(W.FAITH), [3, 3, 4, 4, 5, 5, 6, 6], "Faith: 3 at the start, at most 6 (owner)");
+    // v599 (owner): Rage / Gnosis = W20 start (auspice / breed) + rank bonus; Glamour / Banality
+    const t20 = det(lv20, "wolf", "talons");
+    eq([t20.breed, t20.rank, t20.gnosis, t20.rage], ["lupus", "elder", 8, W.RAGE0[t20.aus] + 3], "Elder Red Talon: Gnosis 5 + 3 = 8, Rage = auspice start + 3");
+    const f20 = det(lv20, "fey", "boggan");
+    eq([f20.seem, f20.glamour, f20.banality], ["grump", 7, 4], "level 20 Grump who likes everything: Glamour 4 + 3 = 7, Banality 3 + Grump 1 = 4");
+    const allNo = mk(() => "limit"), fNo = det(allNo, "fey", "boggan");
+    eq([fNo.seem, fNo.glamour, fNo.banality], ["childling", 5, 7], "all “No”: a Childling with Glamour 5, Banality at its cap 7");
+    ok(!/wod\./.test(W.lines(t20, K.i18n.t).sub + W.lines(f20, K.i18n.t).sub) && /Ярость/.test(W.lines(t20, K.i18n.t).sub) && /Банальность/.test(W.lines(f20, K.i18n.t).sub), "the lines show Rage · Gnosis and Glamour · Banality");
     eq(det(lv20, "vamp", "brujah").path, "humanity", "everything even → Humanity");
     eq(det(mk(() => "yes"), "wolf", "talons").breed, "lupus", "Red Talons are always Lupus");
     const taboo = new Set(DD.CL.taboo[1].split(" "));
@@ -2217,22 +2230,81 @@ const S = (title) => console.log("\n## " + title);
     const run = (n, local) => { const cp = open("compare", { storage: { local: Object.assign({ "checklist-lang": "ru" }, local), session: {} } });
       for (let i = 2; i < n; i++) click(cp.w, cp.d.getElementById("addPart"));
       cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i]; }); click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
-    const c2 = run(2, { "checklist-dnd": "wod", "checklist-wod": "wolf", "checklist-folds": '{"pair":true}' });
+    const c2 = run(2, { "checklist-dnd-pair": "wod", "checklist-wod-pair": "wolf", "checklist-folds": '{"pair":true}' });
     const box = c2.d.querySelector(".sp-signs.sp-wod");
     ok(!!box && /Племена пары/.test(box.textContent) && box.querySelectorAll(".sg-wod").length === 2 && /(Одно племя|Одна стая|Разные стаи)/.test(box.querySelector(".sg-match").textContent) && /Не официальный материал/.test(box.textContent) && !/Paradox/.test(box.textContent), "pair: the tribes, a pack-level closeness, “not official”");
     click(c2.w, box.querySelector('.pt-wod-sub [data-wod="demon"]'));
     const box2 = c2.d.querySelector(".sp-signs.sp-wod");
     ok(!!box2 && /Дома пары/.test(box2.textContent) && /(Один дом|Один двор|Разные дворы)/.test(box2.textContent), "→ demons: “The pair's houses”, court-level closeness");
-    const c3 = run(3, { "checklist-dnd": "wod", "checklist-wod": "vamp", "checklist-folds": '{"group":true}' });
+    const c3 = run(3, { "checklist-dnd-group": "wod", "checklist-wod-group": "vamp", "checklist-folds": '{"group":true}' });
     const gf = c3.d.querySelector('details.sp-fold[data-fold="group"]');
     ok(!!gf.querySelector(".sp-wodgrp") && /Котерия/.test(gf.textContent) && gf.querySelectorAll(".sp-wodgrp li").length === 3 && !gf.querySelector("[data-planet]"), "group: the coterie, everyone listed, no system");
     click(c3.w, gf.querySelector('.pt-wod-sub [data-wod="fey"]'));
-    ok(/Табор/.test(gf.textContent) && c3.w.localStorage.getItem("checklist-wod") === "fey", "→ fey: the “табор”");
+    ok(/Табор/.test(gf.textContent) && c3.w.localStorage.getItem("checklist-wod-group") === "fey" && c3.w.localStorage.getItem("checklist-wod") === null, "→ fey: the “табор” (remembered for the company only)");
     click(c3.w, gf.querySelector('.pt-mode [data-mode="sign"]'));
     ok(!!gf.querySelector("[data-planet]") && !gf.querySelector(".sp-wodgrp"), "→ the solar system again");
     c3.KC.help.open("compare"); ok(/Мир Тьмы/.test(c3.d.getElementById("help-compare").textContent), "help (compare) explains the mode");
     g.KC.help.open("portrait"); ok(/Мир Тьмы/.test(g.d.getElementById("help-portrait").textContent) && /Paradox Interactive AB/.test(g.d.getElementById("help-portrait").textContent), "help (portrait) explains the mode and carries the notice");
     ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v600: one language per page; World of Darkness recalibrated; share window: Send…, answers in the link; empty-link events");
+  {
+    const _sc = scope();
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    // boot.js: one language
+    const w0 = { document: {} }; new Function("window", "document", fs.readFileSync(require("./harness").ROOT + "/js/boot.js", "utf8"))(w0, {});
+    const M = w0.KC_MANIFEST;
+    ok(M.common.indexOf("@lang") > 0 && !M.common.some(f => /^lang\//.test(f)), "boot.js loads no language by name: one '@lang' slot");
+    eq([M.langFiles("ru"), M.langFiles("en")], [["lang/ru.ui.js", "lang/ru.practices.js", "lang/en.practices.js"], ["lang/en.ui.js", "lang/en.practices.js"]], "a language = its ui + practices, plus the English practice names");
+    eq(M.LANGS.slice().sort(), LANGS.slice().sort(), "boot.js knows the same 7 languages as i18n");
+    const f = open("form"), K = f.KC;
+    ok(LANGS.every(l => K.i18n.loaded(l)), "tests load every language (loaded() sees them)");
+    // World of Darkness: the owner's group (v600)
+    const W = K.wod, D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => b.pct - a.pct) });
+    const G = ["intimacy", "bondage", "fetishes", "role-play", "ds", "sm", "sex-penetration", "voyeurism-exhibitionism", "bodily-fluids"];
+    const P = a => D(Object.fromEntries(G.map((g, i) => [g, a[i]])));
+    const group = { Ns: [36,77,62,52,74,69,41,34,26], Eliza: [29,73,47,58,63,73,68,45,0], Xavko: [39,42,0,0,0,24,74,44,15], Oblako: [52,77,48,55,17,9,60,12,9], Lieschen: [50,71,55,54,50,61,52,38,24] };
+    const got = Object.keys(group).map(n => W.LINES.map(L => W.choose(P(group[n]), L)).join(" "));
+    eq(got, ["giovanni shadow sidhe devils", "gangrel talons eshu devourers", "toreador gaia satyr defilers", "ravnos gaia boggan malefactors", "caitiff stargazers ghille scourges"], "the owner's group: the agreed table (nobody is a Slayer, five different houses)");
+    ok(!/W/.test(W.PROF.demon.slayers[0]) && W.PROF.demon.slayers[0] === "R1 S.6", "Slayers: no fluids (owner)");
+    eq([W.PROF.fey.satyr[0], W.PROF.fey.boggan[0]], ["X1 N.3", "N1 S-.3"], "fey variant E: Satyrs and Boggans");
+    // share window
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const own = { name: "Ann", uid: "ANN600", items: {}, meta: {} }; ids.slice(0, 7).forEach(id => { own.items[id] = { interest: "yes" }; });
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(own) }, session: {} } });
+    ok(!g.d.getElementById("metaName").disabled && /disabled/.test(fs.readFileSync(require("./harness").ROOT + "/index.html", "utf8").match(/<input[^>]*id="metaName"[^>]*>/)[0]), "the name field is disabled in the HTML and enabled once the page is ready");
+    click(g.w, g.d.getElementById("shareBtn"));
+    const cnt = g.d.getElementById("shareCount");
+    ok(!cnt.hidden && cnt.textContent === "Ответов в ссылке: 7" && !cnt.classList.contains("zero"), "share window: “Answers in the link: 7”");
+    ok(g.d.getElementById("sendLink").hidden, "no navigator.share → no “Send…” button");
+    const g2 = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    g2.w.navigator.share = () => Promise.resolve();
+    click(g2.w, g2.d.getElementById("shareBtn"));
+    ok(g2.d.getElementById("shareCount").classList.contains("zero") && /нет ответов/.test(g2.d.getElementById("shareCount").textContent), "an empty list: the red “no answers” line");
+    ok(!g2.d.getElementById("sendLink").hidden, "navigator.share → “Send…” is shown");
+    let shared = null; g2.w.navigator.share = d => { shared = d; return Promise.resolve(); };
+    click(g2.w, g2.d.getElementById("sendLink"));
+    eq(shared && Object.keys(shared), ["url"], "“Send…” passes only the url");
+    ok(shared.url === g2.d.getElementById("shareLink").value, "…the link from the field");
+    // a template applied: the count follows what the link carries
+    const tplId = "T60000"; const tpl = [{ id: "t1", tid: tplId, name: "Two", ids: ids.slice(0, 2), own: true, ts: 1 }];
+    const g3 = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(Object.assign({}, own, { template: { id: tplId, name: "Two" } })), "checklist-templates-v1": JSON.stringify(tpl) }, session: {} } });
+    click(g3.w, g3.d.getElementById("shareBtn"));
+    eq(g3.d.getElementById("shareCount").textContent, "Ответов в ссылке: 2", "with a template applied the count is what the link carries (2 of 7)");
+    // empty / damaged link events
+    const code = K.codec.encode({ name: "Empty", uid: "EMP600", items: {}, meta: {} }, "ru");
+    const e1 = open("form", { hash: K.codec.extract(code), storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    const q1 = JSON.parse(e1.w.sessionStorage.getItem("kcStatsQueue") || "[]");
+    ok(q1.indexOf("open-link") >= 0 && q1.indexOf("open-link-empty") >= 0, "an empty list link → open-link + open-link-empty");
+    const full = K.codec.encode(own, "ru");
+    const e2 = open("form", { hash: K.codec.extract(full), storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    ok(JSON.parse(e2.w.sessionStorage.getItem("kcStatsQueue") || "[]").indexOf("open-link-empty") < 0, "a link with answers → no open-link-empty");
+    // back to my list keeps the language
+    ok(g.KC.form.homeUrl() === g.w.location.pathname + "?lang=ru", "reloads into my own list keep ?lang= (v600)");
+    g.KC.help.open("share"); ok(/Отправить/.test(g.d.getElementById("help-share").textContent), "help: “Send…” explained");
+    ok(!f.errors.length && !g.errors.length && !g2.errors.length && !g3.errors.length && !e1.errors.length && !e2.errors.length, "no script errors");
     _sc.end();
   }
 

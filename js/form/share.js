@@ -42,9 +42,18 @@
     qr.insertAdjacentHTML("afterbegin", '<svg class="qr-frame" viewBox="0 0 ' + W + " " + W + '" width="' + W + '" height="' + W + '" aria-hidden="true">' + g + "</svg>");
   }
 
-  function show(link, kind) {
+  /* v600: how many answers the finished link carries (what the recipient will get — the applied template
+     included); an empty template link (no answers by design) shows no count */
+  function showCount(link, noCount) {
+    const el = KC.$("shareCount"); el.hidden = !!noCount; if (noCount) return;
+    let n = 0; try { n = Object.keys(KC.codec.decode(link.split("#")[1] || "").items || {}).length; } catch (e) {}
+    el.textContent = n ? t("share.count", { n }) : t("share.zero"); el.classList.toggle("zero", !n);
+  }
+  function show(link, kind, noCount) {
     KC.$("shareLink").value = link;
     KC.$("shareKind").textContent = kind;
+    showCount(link, noCount);
+    KC.$("sendLink").hidden = !navigator.share;
     const qr = KC.$("qr"); qr.innerHTML = ""; qr.classList.remove("qr-atlas");
     try { new QRCode(qr, { text: link, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M }); qrFrame(qr); }
     catch (e) { qr.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center">' + KC.esc(t("share.qrTooLong")) + "</div>"; }
@@ -78,7 +87,7 @@
   F.shareTemplate = function (x) {
     const st = S.blank(); st.tpl = { id: x.tid, name: x.name, ids: x.ids };
     KC.$("shareTplNote").hidden = true; KC.$("tplShare").hidden = true; KC.$("shareBack").hidden = true;
-    show(base() + KC.codec.encode(st, KC.i18n.lang), t("share.kindTplOnly", { name: T.label(x) || t("unnamed"), n: x.ids.length }));
+    show(base() + KC.codec.encode(st, KC.i18n.lang), t("share.kindTplOnly", { name: T.label(x) || t("unnamed"), n: x.ids.length }), true);
     modal.open();
   };
 
@@ -132,6 +141,13 @@
   });
   KC.$("shareBack").addEventListener("click", showList);
 
+  /* v600: "Send…" — the phone's own share menu gets the whole link (no pasting into an address bar, where the
+     part after "#" can get lost). Only the url, so messengers do not glue text to it. */
+  KC.$("sendLink").addEventListener("click", () => {
+    if (!navigator.share) return;
+    KC.stats.event("share-send");
+    navigator.share({ url: KC.$("shareLink").value }).catch(e => { if (!e || e.name !== "AbortError") KC.toast(t("share.sendFail")); });
+  });
   KC.$("copyLink").addEventListener("click", async () => {
     const inp = KC.$("shareLink"); inp.select(); inp.setSelectionRange(0, 99999);
     try { await navigator.clipboard.writeText(inp.value); KC.toast(t("toast.copied")); }

@@ -85,12 +85,13 @@
       if (v) answered++;
       if (v === "limit") no++; else if (v === "maybe") maybe++; else if (!v) no += .5;   /* unanswered = half a "No" */
     }); });
-    if (answered < LIM.FEW || !n) return { key: "roll", good: 0, law: 0 };
-    const pNo = no / n, pMaybe = maybe / answered, role = st.meta && st.meta.role;
+    const pNo = n ? no / n : 0;   /* also used for the fey Banality (v599) */
+    if (answered < LIM.FEW || !n) return { key: "roll", good: 0, law: 0, pNo };
+    const pMaybe = maybe / answered, role = st.meta && st.meta.role;
     const sc = scores(d);
     const good = sc.good + (role === "sub" ? LIM.ROLE : 0);
     const law = sc.law + LIM.K * (pNo - LIM.NO0) - LIM.K * (pMaybe - LIM.MAYBE0) + (role === "dom" ? LIM.ROLE : 0);
-    return { key: pNo >= LIM.NO ? "boring" : null, good, law };
+    return { key: pNo >= LIM.NO ? "boring" : null, good, law, pNo };
   }
   function alignment(st, d, set) {
     const a = alignNum(st, d, set); if (a.key) return a.key;
@@ -198,11 +199,14 @@
       return { id: m[0], cr: m[1], xp: m[2], budget }; });
   }
 
-  /* the mode is remembered on this device only: "1" = DnD, "wod" = the World of Darkness (v597), nothing = the sign */
-  const mode = () => { const r = KC.ls.raw(KC.KEYS.dnd); return r === "1" ? "dnd" : r === "wod" && KC.wod ? "wod" : "sign"; };
-  const setMode = m => { if (m === "dnd") KC.ls.setRaw(KC.KEYS.dnd, "1"); else if (m === "wod") KC.ls.setRaw(KC.KEYS.dnd, "wod"); else KC.ls.del(KC.KEYS.dnd); };
-  const on = () => mode() === "dnd";
-  const setOn = v => setMode(v ? "dnd" : "sign");
+  /* the mode is remembered on this device only: "1" = DnD, "wod" = the World of Darkness (v597), nothing = the sign.
+     v599 (owner): the portrait, the pair view and the company view each remember their OWN mode (scope
+     "portrait" | "pair" | "group"), so a choice in the portrait never changes what the compare page opens with. */
+  const KEY = scope => scope === "pair" ? KC.KEYS.dndPair : scope === "group" ? KC.KEYS.dndGroup : KC.KEYS.dnd;
+  const mode = scope => { const r = KC.ls.raw(KEY(scope)); return r === "1" ? "dnd" : r === "wod" && KC.wod ? "wod" : "sign"; };
+  const setMode = (m, scope) => { const k = KEY(scope); if (m === "dnd") KC.ls.setRaw(k, "1"); else if (m === "wod") KC.ls.setRaw(k, "wod"); else KC.ls.del(k); };
+  const on = scope => mode(scope) === "dnd";
+  const setOn = (v, scope) => setMode(v ? "dnd" : "sign", scope);
 
   KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, AXES, scores, keyOf, pick, alignNum, alignment, on, set: setOn, mode, setMode,
     POLES, CL, RACES, RLIM, axes, race, XP, level, DMG, MON, foes };

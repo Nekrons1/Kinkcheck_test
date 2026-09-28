@@ -153,8 +153,8 @@
      pack, … — the switch sits on top of all of them */
   const foldBody = kind => { if (kind === "pair") return KC.space.pairSVG(LAST.A, LAST.B, LAST.nA, LAST.nB);
     if (!KC.dnd || !KC.wod) return KC.space.groupSVG(GROUP, SEL, GFILTER === "allYM");
-    const m = KC.dnd.mode();
-    return KC.space.modeSwitch() + (m === "dnd" ? KC.space.partyHTML(GROUP) : m === "wod" ? KC.space.wodGroupHTML(GROUP) : KC.space.groupSVG(GROUP, SEL, GFILTER === "allYM")); };
+    const m = KC.dnd.mode("group");
+    return KC.space.modeSwitch("group") + (m === "dnd" ? KC.space.partyHTML(GROUP) : m === "wod" ? KC.space.wodGroupHTML(GROUP) : KC.space.groupSVG(GROUP, SEL, GFILTER === "allYM")); };
   const fold = kind => { const on = !!folds()[kind];
     return '<details class="about sp-fold" data-fold="' + kind + '"' + (on ? " open" : "") + "><summary>✦ " + esc(t("sp.fold." + kind)) + '</summary><div class="sp-fold-body">' + (on ? foldBody(kind) : "") + "</div></details>"; };
   KC.$("results").addEventListener("toggle", e => {
@@ -294,19 +294,21 @@
   KC.$("results").addEventListener("click", e => {
     if (e.target.closest('button[data-act="save"]')) { saveCurrent(); return; }
     if (e.target.closest('button[data-act="roulette"]')) { KC.roulette.open(); return; }
-    /* v591: the pair's constellations ↔ DnD classes ↔ (v597) World of Darkness; the choice is shared with the portrait.
-       A button changes the mode (data-mode) or the World of Darkness line (data-wod); either way the block is redrawn */
-    const pickMode = b => { if (!b || !KC.dnd || !KC.wod) return false;
-      if (b.dataset.mode) { const want = b.dataset.mode; if (want === KC.dnd.mode()) return false; KC.dnd.setMode(want); if (want !== "sign") KC.stats.event(want); return true; }
-      if (b.dataset.wod === KC.wod.sub()) return false; KC.wod.setSub(b.dataset.wod); return true; };
+    /* v591: the pair's constellations ↔ DnD classes ↔ (v597) World of Darkness.
+       A button changes the mode (data-mode) or the World of Darkness line (data-wod); either way the block is redrawn.
+       (v592–v598 shared the choice with the portrait; v599, owner: each view remembers its own) */
+    /* v599: the pair and the company remember their own choice (scope), independent of the portrait */
+    const pickMode = (b, scope) => { if (!b || !KC.dnd || !KC.wod) return false;
+      if (b.dataset.mode) { const want = b.dataset.mode; if (want === KC.dnd.mode(scope)) return false; KC.dnd.setMode(want, scope); if (want !== "sign") KC.stats.event(want); return true; }
+      if (b.dataset.wod === KC.wod.sub(scope)) return false; KC.wod.setSub(b.dataset.wod, scope); return true; };
     const gm = e.target.closest('.sp-fold[data-fold="group"] .pt-mode [data-mode], .sp-fold[data-fold="group"] .pt-mode [data-wod]');
     if (gm && GROUP) {
-      if (pickMode(gm)) gm.closest(".sp-fold").querySelector(".sp-fold-body").innerHTML = foldBody("group");
+      if (pickMode(gm, "group")) gm.closest(".sp-fold").querySelector(".sp-fold-body").innerHTML = foldBody("group");
       return;
     }
     const md = e.target.closest(".sp-signs .pt-mode [data-mode], .sp-signs .pt-mode [data-wod]");
     if (md && LAST) {
-      if (!pickMode(md)) return;
+      if (!pickMode(md, "pair")) return;
       const box = KC.$("results").querySelector(".sp-signs"), tmp = document.createElement("div");
       tmp.innerHTML = KC.space.pairSigns(LAST.A, LAST.B, LAST.nA, LAST.nB); if (box && tmp.firstChild) box.replaceWith(tmp.firstChild);
       return;

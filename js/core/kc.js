@@ -28,8 +28,12 @@ window.KC = window.KC || {};
     fav:   "checklist-favs-v1",             // favourites (♥) of lists opened from links: {listKey: [ids]}
     cmp:   "checklist-compares-v1",         // saved comparisons (3+ people): [{id, name, parts, ts}]
     folds: "checklist-folds",               // compare page: which picture folds are open {pair, group}
-    dnd:   "checklist-dnd",                 // the portrait's mode (raw string): "1" = DnD class, "wod" = World of Darkness, none = the sign
-    wod:   "checklist-wod",                 // World of Darkness line (raw string): vamp | wolf | fey | demon
+    dnd:   "checklist-dnd",                 // the PORTRAIT's mode (raw string): "1" = DnD class, "wod" = World of Darkness, none = the sign
+    wod:   "checklist-wod",                 // the portrait's World of Darkness line (raw string): vamp | wolf | fey | demon
+    dndPair:  "checklist-dnd-pair",         // v599: the same, remembered separately for the pair view of compare.html
+    wodPair:  "checklist-wod-pair",
+    dndGroup: "checklist-dnd-group",        // … and for the company (group) view
+    wodGroup: "checklist-wod-group",
   };
 
   KC.ls = {

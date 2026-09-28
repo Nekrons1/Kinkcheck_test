@@ -112,8 +112,11 @@
     KC.store.mine.setActive("");
     const st = KC.store.blank(); st.onlyMarked = F.state.onlyMarked;
     KC.store.writeOwn(st);
-    location.href = location.pathname;
+    location.href = F.homeUrl();
   };
+  /* my own list, reloaded in the language shown now (v600: without ?lang= a visitor who never picked a language
+     got the phone's language after "Start a new list") */
+  F.homeUrl = () => location.pathname + "?lang=" + KC.i18n.lang;
 
   /* profile: role block at the top + "About me" */
   F.renderProfile = function () {
