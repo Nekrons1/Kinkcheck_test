@@ -13,7 +13,7 @@
       "core/codec.js", "core/store.js", "core/match.js", "core/help.js", "core/stats.js", "core/migrate.js", "core/portrait.js",
     ],
     form:    ["form/render.js", "form/events.js", "form/pdf.js", "form/share.js", "form/library.js", "form/signs.js", "form/portrait.js", "form/nebula.js", "form/migrate.js", "form/main.js"],
-    compare: ["compare/space.js", "compare/main.js", "compare/roulette.js"],
+    compare: ["form/signs.js", "compare/space.js", "compare/main.js", "compare/roulette.js"],
   };
   window.KC_MANIFEST = MANIFEST;
   var me = document.currentScript;

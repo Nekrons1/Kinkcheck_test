@@ -15,24 +15,23 @@
     out.forEach(g => { g.share = g.n / (all || 1); });
     return out.sort((a, b) => b.n - a.n);
   }
+  /* soft clouds are radial gradients, not blur filters: a list of templates stays cheap to draw on phones */
   function svg(ids, W, H, seed) {
     const G = shares(ids), k = ++uid, r = seeded(seed || 3), cx = W / 2, cy = H / 2, big = Math.min(W, H);
-    const defs = '<filter id="nb' + k + '" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="' + (big / 18).toFixed(1) + '"/></filter>'
-      + '<filter id="nc' + k + '" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="' + (big / 40).toFixed(1) + '"/></filter>';
-    let clouds = "", cores = "";
+    let defs = "", clouds = "";
     G.forEach((g, i) => {
+      const gid = "nb" + k + "-" + i;
+      defs += '<radialGradient id="' + gid + '"><stop offset="0" stop-color="' + COL[g.id] + '" stop-opacity=".95"/><stop offset=".45" stop-color="' + COL[g.id] + '" stop-opacity=".45"/><stop offset="1" stop-color="' + COL[g.id] + '" stop-opacity="0"/></radialGradient>';
       /* golden-angle spiral: the biggest group in the middle, smaller ones further out */
-      const ang = i * 2.4 + r() * .5, dist = i === 0 ? 0 : big * (.14 + .07 * Math.sqrt(i)), R = big * (.12 + .32 * Math.sqrt(g.share));
+      const ang = i * 2.4 + r() * .5, dist = i === 0 ? 0 : big * (.14 + .07 * Math.sqrt(i)), R = big * (.2 + .42 * Math.sqrt(g.share));
       const x = cx + Math.cos(ang) * dist * (W / big), y = cy + Math.sin(ang) * dist * .8;
-      for (let p = 0; p < 3; p++) { const a = r() * 6.28, d = R * .35 * r();
-        clouds += '<ellipse cx="' + (x + Math.cos(a) * d).toFixed(1) + '" cy="' + (y + Math.sin(a) * d).toFixed(1) + '" rx="' + (R * (.7 + r() * .4)).toFixed(1) + '" ry="' + (R * (.45 + r() * .3)).toFixed(1)
-          + '" transform="rotate(' + Math.round(r() * 180) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="' + COL[g.id] + '" opacity="' + (.35 + .3 * g.share).toFixed(2) + '"/>'; }
-      cores += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (R * .3).toFixed(1) + '" fill="' + COL[g.id] + '" opacity=".55"/>';
+      for (let p = 0; p < 3; p++) { const a = r() * 6.28, d = R * .3 * r();
+        clouds += '<ellipse cx="' + (x + Math.cos(a) * d).toFixed(1) + '" cy="' + (y + Math.sin(a) * d).toFixed(1) + '" rx="' + (R * (.75 + r() * .4)).toFixed(1) + '" ry="' + (R * (.5 + r() * .3)).toFixed(1)
+          + '" transform="rotate(' + Math.round(r() * 180) + " " + x.toFixed(1) + " " + y.toFixed(1) + ')" fill="url(#' + gid + ')" opacity="' + (.45 + .35 * g.share).toFixed(2) + '"/>'; }
     });
     let stars = "";
     for (let i = 0; i < Math.round(W * H / 700); i++) stars += '<circle cx="' + (r() * W).toFixed(1) + '" cy="' + (r() * H).toFixed(1) + '" r="' + (r() * .8 + .25).toFixed(2) + '" fill="var(--nb-star)" opacity="' + (r() * .6 + .3).toFixed(2) + '"/>';
-    return '<svg class="nb-svg" viewBox="0 0 ' + W + " " + H + '" aria-hidden="true"><defs>' + defs + '</defs><rect width="' + W + '" height="' + H + '" fill="var(--nb-bg)"/>'
-      + '<g filter="url(#nb' + k + ')">' + clouds + '</g><g filter="url(#nc' + k + ')" style="mix-blend-mode:var(--nb-blend)">' + cores + "</g>" + stars + "</svg>";
+    return '<svg class="nb-svg" viewBox="0 0 ' + W + " " + H + '" aria-hidden="true"><defs>' + defs + '</defs><rect width="' + W + '" height="' + H + '" fill="var(--nb-bg)"/>' + clouds + stars + "</svg>";
   }
   /* the big card: the nebula, the name, the item count and a legend with shares */
   function card(ids, name, seed) {

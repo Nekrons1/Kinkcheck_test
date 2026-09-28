@@ -1139,8 +1139,8 @@ const S = (title) => console.log("\n## " + title);
   S("v560: interface fully translated");
   const SAME_OK = { pt: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h"], es: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "scale.limit"], ja: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], th: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], zh: ["rl.pair", "card.file", "help.pdf.h", "pdf.file"] };
   /* v586: words that are the same as in English on purpose (D/s, S/M, Bondage, names of creatures) */
-  const SAME586 = { pt: ["pt.s.bondage", "sign.flamingo", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa", "sign.wyvern"],
-    es: ["pt.s.bondage", "sign.collar", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa"], ja: [], th: [], zh: [] };
+  const SAME586 = { pt: ["sign.caracal", "pt.s.bondage", "sign.flamingo", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa", "sign.wyvern"],
+    es: ["sign.caracal", "sign.cobra", "pt.s.bondage", "sign.collar", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa"], ja: [], th: [], zh: [] };
   Object.keys(SAME586).forEach(l => { SAME_OK[l] = SAME_OK[l].concat(SAME586[l], ["pt.s.ds", "pt.s.sm"]); });
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0), [], l + ": no interface string left in English"));
@@ -1612,6 +1612,7 @@ const S = (title) => console.log("\n## " + title);
     ok(/Доминант \/ Верх · Большой/.test(p.d.getElementById("portraitBody").textContent), "role and experience");
     eq(p.d.querySelectorAll("#portraitBody .pt-chips span").length, 2, "all Love items as chips");
     click(p.w, p.d.querySelector('.item[data-id="' + ids.bondage[5] + '"] .scale button[data-v="love"]'));
+    await sleep(250);   /* v587: redrawn shortly after the last answer */
     eq(p.d.querySelectorAll("#portraitBody .pt-chips span").length, 3, "follows new answers while open");
     click(p.w, p.d.querySelector('#langSw button[data-lang="en"]'));
     ok(p.d.getElementById("portraitTitle").textContent === "My portrait" && /Dominant/.test(p.d.getElementById("portraitBody").textContent), "follows the language");
@@ -1769,11 +1770,11 @@ const S = (title) => console.log("\n## " + title);
     const _sc = scope();
     const f = open("form"), K = f.KC, SG = K.signs, SIGNS = SG.SIGNS;
     // the 46 signs
-    eq(SIGNS.length, 46, "46 signs: 9 single + 36 pairs + the Chimera");
+    eq(SIGNS.length, 82, "82 signs: 9 single + 72 ordered pairs + the Chimera (v589)");
     const keys = SIGNS.map(s => s[0]), letters = "nbfrdsxvw".split("");
     const pairs = []; letters.forEach((a, i) => letters.slice(i + 1).forEach(b => pairs.push(a + b)));
-    ok(letters.every(l => keys.indexOf(l) >= 0) && pairs.every(p2 => keys.some(k => k.length === 2 && k.indexOf(p2[0]) >= 0 && k.indexOf(p2[1]) >= 0)) && keys.indexOf("*") >= 0, "every group and every pair of groups has its sign");
-    eq(new Set(SIGNS.map(s => s[1])).size, 46, "sign ids are unique");
+    ok(letters.every(l => keys.indexOf(l) >= 0) && pairs.every(p2 => keys.indexOf(p2) >= 0 && keys.indexOf(p2[1] + p2[0]) >= 0) && keys.indexOf("*") >= 0, "every group and every pair of groups, in both orders, has its sign");
+    eq([new Set(SIGNS.map(s => s[1])).size, new Set(keys).size], [82, 82], "sign ids and group keys are unique");
     ok(SIGNS.every(s => s[2].length === 9 && s[2].every(p2 => p2[0] >= 0 && p2[0] <= 100 && p2[1] >= 0 && p2[1] <= 100)), "every sign has exactly 9 stars inside its box (one per portrait group)");
     ok(SIGNS.every(s => { const used = new Set(); s[3].forEach(l => l.forEach(i => { if (i !== "d") used.add(i); })); return used.size === 9; }), "every star is joined to the figure (no loose stars)");
     ok(SIGNS.every(s => s[4].length === (s[0] === "*" ? 3 : s[0].length)), "bright stars: 1 for a single sign, 2 for a pair, 3 for the Chimera");
@@ -1784,7 +1785,7 @@ const S = (title) => console.log("\n## " + title);
     const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct)) });
     const all = (o) => Object.assign({ intimacy: 10, bondage: 10, fetishes: 10, "role-play": 10, ds: 10, sm: 10, "sex-penetration": 10, "voyeurism-exhibitionism": 10, "bodily-fluids": 10 }, o);
     let r = SG.pick(D(all({ bondage: 80, ds: 60, sm: 40 })));
-    eq([r.kind, r.id, r.stars.filter(x => x.bright).map(x => x.s.id).sort()], ["pair", "chain", ["bondage", "ds"]], "two strongest groups → the pair sign (Bondage + D/s = Chain), their stars are bright");
+    eq([r.kind, r.id, r.stars.filter(x => x.bright).map(x => x.s.id).sort()], ["pair", "web", ["bondage", "ds"]], "two strongest groups → the pair sign (Bondage + D/s = Web, v587), their stars are bright");
     eq(SG.pick(D(all({ bondage: 90, ds: 60 }))).kind, "single", "first group 30 points ahead → single sign");
     eq(SG.pick(D(all({ bondage: 89, ds: 60 }))).kind, "pair", "29 points ahead → still a pair");
     r = SG.pick(D(all({ bondage: 73, sm: 73, "sex-penetration": 68 })));
@@ -1852,6 +1853,53 @@ const S = (title) => console.log("\n## " + title);
     ok(/^Kinkosmos · /.test(p.d.title) && p.d.querySelector('meta[name="description"]').getAttribute("content") === tr.en["seo.desc"], "page title starts with Kinkosmos; the description follows the language");
     ok(/index\.html\?lang=en$/.test(p.d.querySelector('link[rel="canonical"]').href), "canonical address with the page language");
     ok(!f.errors.length && !p.errors.length && !c.errors.length && !c2.errors.length && !n.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v587: sun number, Yes/Maybe/Love system, card switches, Web ↔ Chain");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC;
+    const ids = {}; K.CATS.forEach(c => { ids[c.id] = c.items.map(([, id]) => id); });
+    const st = (vals) => { const it = {}; Object.keys(vals).forEach(c => ids[c].forEach((id, i) => { if (i < vals[c][1]) it[id] = { interest: vals[c][0] }; })); return { items: it, meta: {} }; };
+    const c = open("compare"), S2 = c.KC.space;
+    const P = [{ name: "A", st: st({ bondage: ["yes", 10], intimacy: ["maybe", 10] }) }, { name: "B", st: st({ bondage: ["yes", 10], intimacy: ["maybe", 10] }) }, { name: "C", st: st({ bondage: ["yes", 6], fetishes: ["yes", 5] }) }];
+    const sunOf = h => +(/<text[^>]*font-size="15"[^>]*>(\d+)<\/text>/.exec(h) || [])[1];
+    eq(sunOf(S2.groupSVG(P, null, false)), 10, "the number over the sun: practices more than half of the group marked Yes/Love (10 bondage items)");
+    eq(sunOf(S2.groupSVG(P, null, true)), 20, "“Yes/Maybe/Love” filter: Maybe counts too (+10 intimacy items)");
+    ok(/Да\/Может\/Обожаю/.test(S2.groupSVG(P, null, true)), "…with its own legend");
+    const p = open("form"); click(p.w, p.d.getElementById("portraitSection").querySelector("summary"));
+    eq(K.signs.SIGNS.find(x => x[1] === "web")[0] + "," + K.signs.SIGNS.find(x => x[1] === "chain")[0], "bd,fd", "Bondage + D/s = Web, Fetishes + D/s = Chain");
+    ok(fs.readFileSync(require("./harness").ROOT + "/js/form/portrait.js", "utf8").indexOf('["sign", true], ["bars", true]') >= 0, "picture card: “Constellation” and “Sections” are separate switches");
+    ok(!f.errors.length && !c.errors.length && !p.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v589: order matters; the pair's constellations");
+  {
+    const _sc = scope();
+    const f = open("form"), SG = f.KC.signs;
+    const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct)) });
+    const all = o => Object.assign({ intimacy: 10, bondage: 10, fetishes: 10, "role-play": 10, ds: 10, sm: 10, "sex-penetration": 10, "voyeurism-exhibitionism": 10, "bodily-fluids": 10 }, o);
+    const a = SG.pick(D(all({ ds: 70, sm: 60 }))), b = SG.pick(D(all({ sm: 70, ds: 60 })));
+    eq([a.id, b.id], ["wyvern", "basilisk"], "D/s + S/M = Wyvern, S/M + D/s = Basilisk");
+    eq(a.stars.filter(x => x.bright).map(x => x.s.id).sort().join(), "ds,sm", "…the two main groups are the bright stars");
+    eq(SG.closeness(a, a).level, "same", "same sign → “one constellation”");
+    eq(SG.closeness(a, b).level, "mirror", "same groups, other order → mirror");
+    const c = SG.pick(D(all({ ds: 70, bondage: 60 })));
+    eq([SG.closeness(a, c).level, SG.closeness(a, c).shared], ["near", ["ds"]], "one main group in common → neighbours");
+    eq(SG.closeness(a, SG.pick(D(all({ intimacy: 70, "sex-penetration": 60 })))).level, "far", "nothing in common → different systems");
+    // on the compare page
+    const ids = {}; f.KC.CATS.forEach(c2 => { ids[c2.id] = c2.items.map(([, id]) => id); });
+    const mk = (name, uid, cats) => { const it = {}; cats.forEach(([c2, v]) => ids[c2].forEach(id => { it[id] = { interest: v }; })); return f.KC.codec.encode({ name, uid, items: it, meta: {} }, "ru"); };
+    const cp = open("compare");
+    const tas = cp.d.querySelectorAll("#parts textarea");
+    tas[0].value = mk("Ann", "ANN009", [["bondage", "love"], ["service-control", "yes"], ["intimacy", "limit"]]); tas[1].value = mk("Bob", "BOB009", [["bondage", "love"], ["impact-rough-play", "yes"], ["intimacy", "limit"]]);
+    click(cp.w, cp.d.getElementById("cmpBtn"));
+    const box = cp.d.querySelector("#results .sp-signs");
+    ok(!!box && /Созвездия пары/.test(box.textContent) && box.querySelectorAll(".sg-mini").length === 2 && /Ann/.test(box.textContent) && /Bob/.test(box.textContent), "two people: both signs side by side with names");
+    ok(/Соседние созвездия|Одно созвездие|Зеркальные созвездия|Разные системы/.test(box.textContent), "…and how close they are");
+    ok(!f.errors.length && !cp.errors.length, "no script errors");
     _sc.end();
   }
 

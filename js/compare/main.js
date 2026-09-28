@@ -218,7 +218,7 @@
     let html = savedBar() + rlBtn() + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
       + P.map(p => profileLine(p.name, p.st)).join("");
     if (SELG !== GROUP) { SEL = null; SELG = GROUP; }   /* a new company: no planet selected */
-    html += KC.space.groupSVG(P, SEL);
+    html += KC.space.groupSVG(P, SEL, GFILTER === "allYM");   /* the "…and Maybe" filter counts Maybe too */
     if (GFILTER === "pairs") {
       const role = p => p.st.meta.role || "";
       html += '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
