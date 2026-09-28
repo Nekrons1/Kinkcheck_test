@@ -3,7 +3,9 @@
    opened from a link (then it is "Portrait: <name>"). Follows the applied template like the rest of the page.
    The card is drawn on a <canvas> (1080×1920): no names or answers leave the device unless the user saves it.
    On top of both: the constellation sign (KC.signs) — 9 stars, one per group, each labelled "group / %".
-   The card follows the site theme: light theme = paper card, dark theme = night card. */
+   The card follows the site theme: light theme = paper card, dark theme = night card.
+   DnD mode (v591, KC.dnd): a switch above the picture shows a D&D class, subclass and joke alignment instead of
+   the sign; the picture card follows the mode shown. Grey stars of a class figure only shape the drawing. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   const SITE = (KC.migrate ? KC.migrate.NEW_URL : "").replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -20,44 +22,65 @@
   const spark = (x, y, r) => "M" + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + "Z";
   const seeded = n => { let x = n; return () => (x = (x * 16807) % 2147483647) / 2147483647; };
   const signSub = sg => sg.kind === "even" ? t("sign.even") : sg.main.map(m => short(m.id)).join(" + ");
+  /* the figure shown: the DnD class when that mode is on, else the sign */
+  const dndOn = () => !!(KC.dnd && KC.dnd.on());
+  const figOf = d => dndOn() ? KC.dnd.pick(d) : KC.signs.pick(d);
+  /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
+  function headOf(sg) {
+    if (!sg.dnd) return { over: t(F.viewingShared ? "sign.of" : "sign.mine"), name: t("sign." + sg.id), sub: signSub(sg), al: null };
+    const al = KC.dnd.alignment(F.shown(), data(), F.tplSet());
+    return { over: t(F.viewingShared ? "dnd.of" : "dnd.mine"), name: t("dnd.c." + sg.cls), sub: t("dnd.s." + sg.cls + "." + sg.sub) + " · " + signSub(sg),
+      al: { name: t("dnd.al." + al), quip: t("dnd.aq." + al) }, alKey: al };
+  }
   /* star radius: bright stars are big, the others grow with their group's percentage */
-  const starR = (st, big) => st.bright ? big : st.s && st.s.pct !== null ? big * (.27 + st.s.pct / 100 * .45) : big * .27;
+  const starR = (st, big) => st.grey ? big * .2 : st.bright ? big : st.s && st.s.pct !== null ? big * (.27 + st.s.pct / 100 * .45) : big * .27;
   function segsOf(sg, X, Y) {
     const segs = [];
     sg.lines.forEach(l => { const q = l[0] === "d" ? l.slice(1) : l; for (let i = 1; i < q.length; i++) segs.push([X(sg.stars[q[i - 1]]), Y(sg.stars[q[i - 1]]), X(sg.stars[q[i]]), Y(sg.stars[q[i]])]); });
     return segs;
   }
   function signSVG(d) {
-    const sg = KC.signs.pick(d); if (!sg) return "";
+    const sg = figOf(d); if (!sg) return "";
+    const hd = headOf(sg);
     const W = 320, H = 320, box = 196, ox = (W - box) / 2, oy = (H - box) / 2, k = box / 100, rnd = seeded(9);
     const X = st => ox + st.x * k, Y = st => oy + st.y * k;
     /* label width: CJK characters are about twice as wide as Latin, Cyrillic or Thai ones */
     const textW = s2 => Array.from(s2).reduce((a, ch) => a + (/[⺀-鿿가-힯＀-￯]/.test(ch) ? 13 : /[ัิ-ฺ็-๎]/.test(ch) ? 0 : 7.3), 0);
     const pts = sg.stars.map(st => ({ x: X(st), y: Y(st), r: starR(st, 10), bright: st.bright }));
-    const sizes = sg.stars.map(st => ({ w: Math.max(textW(short(st.s.id)), 30) + 2, h: 30 }));
+    const sizes = sg.stars.map(st => st.s ? { w: Math.max(textW(short(st.s.id)), 30) + 2, h: 30 } : { w: 1, h: 1 });
     const L = KC.signs.placeLabels(pts, segsOf(sg, X, Y), sizes, W, H);
     /* only the part of the sky the figure uses: no empty band above and below */
     const bb = KC.signs.bbox(pts.map(p => ({ x: p.x, y: p.y, r: p.bright ? 15 : p.r })), L, 10);
-    let g = '<svg viewBox="' + bb.x.toFixed(1) + " " + bb.y.toFixed(1) + " " + bb.w.toFixed(1) + " " + bb.h.toFixed(1) + '" style="width:' + Math.min(100, bb.w / W * 118).toFixed(1) + '%" role="img" aria-label="' + esc(t("sign." + sg.id)) + '">';
+    let g = '<svg viewBox="' + bb.x.toFixed(1) + " " + bb.y.toFixed(1) + " " + bb.w.toFixed(1) + " " + bb.h.toFixed(1) + '" style="width:' + Math.min(100, bb.w / W * 118).toFixed(1) + '%" role="img" aria-label="' + esc(hd.name) + '">';
     let dust = ""; for (let i = 0; i < 50; i++) dust += '<circle cx="' + (bb.x + rnd() * bb.w).toFixed(1) + '" cy="' + (bb.y + rnd() * bb.h).toFixed(1) + '" r="' + (rnd() * .9 + .3).toFixed(2) + '"/>';
     g += '<g fill="var(--dust)">' + dust + "</g>";
     g += '<g fill="none" stroke="var(--ink-line)" stroke-width="1.1" stroke-linejoin="round">' + sg.lines.map(l => { const dash = l[0] === "d", q = dash ? l.slice(1) : l;
       return '<polyline points="' + q.map(i => X(sg.stars[i]).toFixed(1) + "," + Y(sg.stars[i]).toFixed(1)).join(" ") + '"' + (dash ? ' stroke-dasharray="3 4"' : "") + "/>"; }).join("") + "</g>";
     sg.stars.forEach((st, i) => {
       const x = pts[i].x, y = pts[i].y, v = st.s ? st.s.pct : null;
-      if (st.bright) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="15" fill="var(--star)" opacity=".16"/><path d="' + spark(x, y, 10) + '" fill="var(--star)"/>';
+      if (st.grey) g += '<circle class="sg-grey" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2" fill="var(--muted)" opacity=".55"/>';
+      else if (st.bright) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="15" fill="var(--star)" opacity=".16"/><path d="' + spark(x, y, 10) + '" fill="var(--star)"/>';
       else if (v === null) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="none" stroke="var(--muted)" stroke-width="1"/>';
       else g += '<path d="' + spark(x, y, pts[i].r) + '" fill="var(--muted)" opacity="' + (.45 + v / 180).toFixed(2) + '"/>';
     });
     /* labels last, with a halo, so a line under a label never makes it unreadable */
     sg.stars.forEach((st, i) => {
-      const v = st.s ? st.s.pct : null, b = L[i], cx = (b.x + b.w / 2).toFixed(1);
+      if (!st.s) return;
+      const v = st.s.pct, b = L[i], cx = (b.x + b.w / 2).toFixed(1);
       g += '<text x="' + cx + '" y="' + (b.y + 12).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-family="Inter,sans-serif" fill="currentColor" paint-order="stroke" stroke="var(--bg)" stroke-width="3" stroke-linejoin="round"' + (st.bright ? ' font-weight="600"' : "") + ">" + esc(short(st.s.id))
         + '<tspan x="' + cx + '" dy="15" font-weight="700" fill="' + (st.bright ? "var(--star)" : v === null ? "var(--muted)" : "var(--accent)") + '">' + pctText(v) + "</tspan></text>";
     });
-    return '<div class="pt-sign"><div class="sg-over">' + esc(t(F.viewingShared ? "sign.of" : "sign.mine")) + '</div><div class="sg-name">' + esc(t("sign." + sg.id)) + '</div><div class="sg-sub">' + esc(signSub(sg)) + "</div>" + g + "</svg></div>";
+    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : "") + '"' + (sg.dnd ? ' data-cls="' + sg.cls + '" data-al="' + hd.alKey + '"' : "") + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + '</div><div class="sg-sub">' + esc(hd.sub) + "</div>"
+      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg></div>";
   }
   F.signOf = () => KC.signs.pick(data());
+
+  /* the "✦ Constellation | 🎲 DnD" switch above the picture (only when there is a picture) */
+  function modeSwitch(d) {
+    if (!KC.dnd || !KC.signs.pick(d)) return "";
+    const on = dndOn(), b = (m, key, pressed) => '<button type="button" class="btn ghost mini" data-mode="' + m + '" aria-pressed="' + pressed + '">' + esc(t(key)) + "</button>";
+    return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">' + b("sign", "dnd.toSign", !on) + b("dnd", "dnd.toDnd", on) + "</div>";
+  }
 
   /* ---------- the block on the page ---------- */
   function title() {
@@ -71,6 +94,7 @@
     if (!d.answered) { body.innerHTML = '<p class="pt-empty">' + esc(t("pt.empty")) + "</p>"; return; }
     const meta = metaBits(st);
     let h = (meta.length ? '<div class="pt-meta">' + esc(meta.join(" · ")) + "</div>" : "")
+      + modeSwitch(d)
       + signSVG(d)
       + '<div class="pt-bars">' + d.sections.map(s => '<div class="pt-row"><span class="pt-name">' + esc(KC.portrait.label(s.id)) + "</span>"
         + '<span class="pt-bar"><i style="width:' + (s.pct || 0) + '%"></i></span><span class="pt-pct">' + pctText(s.pct) + "</span></div>").join("") + "</div>"
@@ -81,7 +105,11 @@
     body.innerHTML = h;
   };
   sec.addEventListener("toggle", () => { if (sec.open) { KC.stats.event("portrait"); F.renderPortrait(); } });
-  body.addEventListener("click", e => { if (e.target.closest("#ptCard")) openCard(); });
+  body.addEventListener("click", e => {
+    if (e.target.closest("#ptCard")) { openCard(); return; }
+    const m = e.target.closest(".pt-mode [data-mode]");
+    if (m) { const want = m.dataset.mode === "dnd"; if (want !== dndOn()) { KC.dnd.set(want); if (want) KC.stats.event("dnd"); F.renderPortrait(); } }
+  });
   /* answers change -> the open portrait follows (the progress line is updated after every answer) */
   const upd = F.updateProgress;
   /* redrawn a moment after the last answer, not on every click: the sign's layout is the heaviest part */
@@ -114,14 +142,20 @@
 
   /* the sign on the card: name, groups, the drawing with a label at every star; returns the new y */
   function cardSign(ctx, sg, C, y, W, M, SANS, SERIF, big) {
-    ctx.textAlign = "center"; ctx.fillStyle = C.star; ctx.font = "600 92px " + SERIF; ctx.fillText(fit(ctx, t("sign." + sg.id), W - 2 * M), W / 2, y + 70);
-    ctx.fillStyle = C.ink; ctx.font = "500 34px " + SANS; ctx.fillText(fit(ctx, signSub(sg), W - 2 * M), W / 2, y + 122); ctx.textAlign = "left";
+    const hd = headOf(sg);
+    ctx.textAlign = "center"; ctx.fillStyle = C.star; ctx.font = "600 92px " + SERIF; ctx.fillText(fit(ctx, hd.name, W - 2 * M), W / 2, y + 70);
+    ctx.fillStyle = C.ink; ctx.font = "500 34px " + SANS; ctx.fillText(fit(ctx, hd.sub, W - 2 * M), W / 2, y + 122);
+    if (hd.al) {   /* DnD: the alignment and its joke */
+      ctx.font = "700 34px " + SANS; ctx.fillStyle = C.accent; ctx.fillText(fit(ctx, hd.al.name, W - 2 * M), W / 2, y + 176);
+      ctx.font = "italic 500 31px " + SANS; ctx.fillStyle = C.muted; ctx.fillText(fit(ctx, hd.al.quip, W - 2 * M), W / 2, y + 220); y += 110;
+    }
+    ctx.textAlign = "left";
     /* lay the figure out in a tall box, then use only the band it needs */
     const SH = big ? 820 : 560, box = big ? 640 : 420, ox = (W - box) / 2, oyL = (SH - box) / 2, k = box / 100;   /* alone on the card: bigger */
     const XL = st => ox + st.x * k - M, YL = st => oyL + st.y * k;
     const pts = sg.stars.map(st => ({ x: XL(st), y: YL(st), r: starR(st, 30), bright: st.bright }));
     ctx.font = "600 29px " + SANS;
-    const sizes = sg.stars.map(st => ({ w: Math.max(ctx.measureText(short(st.s.id)).width, 70) + 6, h: 68 }));
+    const sizes = sg.stars.map(st => st.s ? { w: Math.max(ctx.measureText(short(st.s.id)).width, 70) + 6, h: 68 } : { w: 1, h: 1 });
     const LB = KC.signs.placeLabels(pts, segsOf(sg, XL, YL), sizes, W - 2 * M, SH);
     const bb = KC.signs.bbox(pts.map(p => ({ x: p.x, y: p.y, r: p.bright ? 44 : p.r })), LB, 16);
     const dy = y + 150 - bb.y, X = st => XL(st) + M, Y = st => YL(st) + dy;
@@ -131,14 +165,16 @@
     const spk = (x, yy, r) => { ctx.beginPath(); ctx.moveTo(x, yy - r); ctx.quadraticCurveTo(x, yy, x + r, yy); ctx.quadraticCurveTo(x, yy, x, yy + r); ctx.quadraticCurveTo(x, yy, x - r, yy); ctx.quadraticCurveTo(x, yy, x, yy - r); ctx.fill(); };
     sg.stars.forEach((st, i) => {
       const x = X(st), yy = Y(st), v = st.s ? st.s.pct : null;
-      if (st.bright) { ctx.globalAlpha = .18; ctx.fillStyle = C.star; ctx.beginPath(); ctx.arc(x, yy, 44, 0, 7); ctx.fill(); ctx.globalAlpha = 1; spk(x, yy, 30); }
+      if (st.grey) { ctx.globalAlpha = .55; ctx.fillStyle = C.muted; ctx.beginPath(); ctx.arc(x, yy, 6, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+      else if (st.bright) { ctx.globalAlpha = .18; ctx.fillStyle = C.star; ctx.beginPath(); ctx.arc(x, yy, 44, 0, 7); ctx.fill(); ctx.globalAlpha = 1; spk(x, yy, 30); }
       else if (v === null) { ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, yy, 8, 0, 7); ctx.stroke(); }
       else { ctx.globalAlpha = .45 + v / 180; ctx.fillStyle = C.muted; spk(x, yy, pts[i].r); ctx.globalAlpha = 1; }
     });
     /* labels on top, with a halo in the card's background colour */
     ctx.lineJoin = "round"; ctx.strokeStyle = C.bg; ctx.lineWidth = 8;
     sg.stars.forEach((st, i) => {
-      const v = st.s ? st.s.pct : null, b = LB[i], cx = b.x + M + b.w / 2, ty = b.y + dy;
+      if (!st.s) return;
+      const v = st.s.pct, b = LB[i], cx = b.x + M + b.w / 2, ty = b.y + dy;
       ctx.textAlign = "center"; ctx.font = (st.bright ? "600 " : "500 ") + "29px " + SANS; ctx.strokeText(short(st.s.id), cx, ty + 28); ctx.fillStyle = C.ink; ctx.fillText(short(st.s.id), cx, ty + 28);
       ctx.font = "700 30px " + SANS; ctx.strokeText(pctText(v), cx, ty + 62); ctx.fillStyle = st.bright ? C.star : v === null ? C.muted : C.accent; ctx.fillText(pctText(v), cx, ty + 62); ctx.textAlign = "left";
     });
@@ -172,7 +208,7 @@
     y += 10;
     const bottom = H - 150;
     /* the sign and the percentages can be switched on and off separately (v587, owner) */
-    const sg = o.sign ? KC.signs.pick(d) : null;
+    const sg = o.sign ? figOf(d) : null;   /* the mode shown on the page: sign or DnD class */
     if (sg) y = cardSign(ctx, sg, C, y, W, M, SANS, SERIF, !o.bars);
     if (o.bars) {
       const rows = d.sections, rh = sg ? 44 : 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
@@ -231,7 +267,9 @@
   }
   function readOpts() { const o = {}; OPTS.forEach(([k]) => { o[k] = opt(k); }); return o; }
   function openCard() {
-    KC.$("cardOpts").innerHTML = OPTS.map(([k, on]) => '<label class="only-toggle"><input type="checkbox" id="cardO_' + k + '"' + (on ? " checked" : "") + "> " + esc(t("card.o." + k)) + "</label>").join("");
+    /* in DnD mode the "sign" switch is the class */
+    const lab = k => t(k === "sign" && dndOn() ? "card.o.dnd" : "card.o." + k);
+    KC.$("cardOpts").innerHTML = OPTS.map(([k, on]) => '<label class="only-toggle"><input type="checkbox" id="cardO_' + k + '"' + (on ? " checked" : "") + "> " + esc(lab(k)) + "</label>").join("");
     KC.$("cardShare").hidden = !(navigator.canShare && window.File);
     cardModal.open(); preview();
   }

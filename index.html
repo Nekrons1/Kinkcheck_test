@@ -42,7 +42,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=589">
+<link rel="stylesheet" href="css/style.css?v=591">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -140,7 +140,7 @@
   </details>
 
   <details class="about portrait" id="portraitSection">
-    <summary><span id="portraitTitle"></span></summary>
+    <summary><span id="portraitTitle"></span> <button class="help-q" type="button" data-help="portrait" data-i18n-title="help.open">?</button></summary>
     <div class="portrait-body" id="portraitBody"></div>
   </details>
 
@@ -242,7 +242,7 @@
 
 <div class="overlay" id="cardOverlay">
   <div class="modal">
-    <h3 data-i18n="card.h"></h3>
+    <h3><span data-i18n="card.h"></span> <button class="help-q" type="button" data-help="portrait" data-i18n-title="help.open">?</button></h3>
     <p data-i18n="card.p"></p>
     <div class="card-opts" id="cardOpts"></div>
     <img class="card-preview" id="cardPreview" alt="">
@@ -261,6 +261,6 @@
   </div>
 </div>
 
-<script src="js/boot.js?v=589" data-page="form" data-v="589"></script>
+<script src="js/boot.js?v=591" data-page="form" data-v="591"></script>
 </body>
 </html>

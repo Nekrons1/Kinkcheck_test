@@ -4,10 +4,11 @@
      Top = planet with a ring, Bottom = pink planet with a moon, no role = grey. A tap on a planet shows its
      links: its two most similar people (dashed) and its most similar Top/Bottom partner (solid), with %.
    - two people as paired planets (closer = more in common) and their two constellations laid over each other;
-   - the roulette sky: a dot per shared practice, the ideas that came up are lit and numbered.
    Similarity of two lists = shared Yes/Love / sqrt(Yes/Love of one × Yes/Love of the other). */
 (function (KC) {
   const esc = KC.esc, t = (k, v) => KC.i18n.t(k, v), short = id => t("pt.s." + id);
+  /* a picture's title with the "?" that opens the help about the compare pictures */
+  const head = key => '<div class="sp-h">' + esc(t(key)) + ' <button class="help-q" type="button" data-help="compare" title="' + esc(t("help.open")) + '" aria-label="' + esc(t("help.open")) + '">?</button></div>';
   const POS = { yes: 1, love: 1 }, POSM = { yes: 1, love: 1, maybe: 1 };
   /* the practices a list likes: Yes/Love (or Yes/Maybe/Love with the "…and Maybe" filter) */
   const liked = (st, withMaybe) => { const pos = withMaybe ? POSM : POS, o = {}; Object.keys(st.items || {}).forEach(id => { if (pos[st.items[id].interest]) o[id] = 1; }); return o; };
@@ -40,20 +41,6 @@
     });
     return '<div class="sp-h sp-h2">' + esc(t("sp.pair.stars")) + "</div>" + h + "</svg>"
       + '<div class="sp-note"><span class="sp-sa">✦</span> ' + esc(nA) + ' &nbsp; <span class="sp-sb">✦</span> ' + esc(nB) + " · " + esc(t("sp.pair.both")) + "</div>";
-  }
-
-  /* roulette: every dot = a practice you both like; the chosen one is lit */
-  function sharedSky(n, seed, lit) {
-    const W = 320, H = 96, r = seeded(seed || 5), m = Math.min(n, 220), pts = [];
-    for (let i = 0; i < m; i++) pts.push([12 + r() * (W - 24), 12 + r() * (H - 24)]);
-    lit = Math.min(lit || 1, m);
-    /* lit stars spread out so their numbers do not collide */
-    const pick = []; let guard = 0; while (pick.length < lit && guard++ < 500) { const k = Math.floor(r() * m); if (pick.every(q => Math.hypot(pts[q][0] - pts[k][0], pts[q][1] - pts[k][1]) > 60)) pick.push(k); }
-    let g = '<svg viewBox="0 0 ' + W + " " + H + '" role="img"><g fill="var(--accent)" opacity=".35">' + pts.map((p, i) => pick.indexOf(i) >= 0 ? "" : '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="1.4"/>').join("") + "</g>";
-    pick.forEach((k, i) => { const c = pts[k];
-      g += '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="13" fill="var(--star)" opacity=".18"/><path d="' + spark(+c[0].toFixed(1), +c[1].toFixed(1), 9) + '" fill="var(--star)"/>';
-      if (lit > 1) g += '<text x="' + (c[0] + 11).toFixed(1) + '" y="' + (c[1] - 7).toFixed(1) + '" font-size="12" font-weight="700" font-family="Fraunces,Georgia,serif" fill="var(--star)">' + (i + 1) + "</text>"; });
-    return '<div class="sp-disc">' + g + "</svg></div>";
   }
 
   /* ---------- VARIANT: the company as a solar system ---------- */
@@ -160,7 +147,7 @@
     g += "</svg>";
     const tune = P.map((p, i) => [i, inTune[i]]).sort((a, b) => b[1] - a[1]).map(([i, v]) => "<span><b>" + esc(P[i].name) + "</b> " + pc(v) + "%</span>");
     const dash = '<span class="lg-line lg-dash"></span>', line = '<span class="lg-line"></span>';
-    return '<div class="sp-box"><div class="sp-h">' + esc(t("sp.sys.h")) + "</div>" + g
+    return '<div class="sp-box">' + head("sp.sys.h") + g
       + '<div class="sp-legend"><div>' + t(withMaybe ? "sp.sys.legendYM_html" : "sp.sys.legend_html", { n: sunN }) + "</div><div>" + t("sp.sys.tap_html", { dash, line }) + "</div></div>"
       + '<div class="sp-near"><div class="sp-sub">' + esc(t("sp.sys.tune")) + "</div>" + tune.join("") + "</div></div>";
   }
@@ -194,7 +181,7 @@
     if (!a || !b) return "";
     const c = KC.signs.closeness(a, b), n = { same: 3, mirror: 2, near: 1, far: 0 }[c.level];
     const why = c.level === "near" ? t("sp.sg.nearWhy", { g: c.shared.map(short).join(", ") }) : t("sp.sg." + c.level + "Why");
-    return '<div class="sp-box sp-signs"><div class="sp-h">' + esc(t("sp.sg.h")) + '</div><div class="sg-match"><span class="st">' + "✦".repeat(n) + "<i>" + "✦".repeat(3 - n) + "</i></span>" + esc(t("sp.sg." + c.level)) + "</div>"
+    return '<div class="sp-box sp-signs">' + head("sp.sg.h") + '<div class="sg-match"><span class="st">' + "✦".repeat(n) + "<i>" + "✦".repeat(3 - n) + "</i></span>" + esc(t("sp.sg." + c.level)) + "</div>"
       + '<div class="sg-why">' + esc(why) + '</div><div class="sg-pair">' + signMini(a, nA, c.shared) + signMini(b, nB, c.shared) + "</div></div>";
   }
 
@@ -210,7 +197,7 @@
     g += nm(cx - sep / 2, nA) + nm(cx + sep / 2, nB);
     g += '<text x="' + cx + '" y="' + (cy - 44) + '" text-anchor="middle" font-size="12" font-family="Inter,sans-serif" fill="currentColor">' + esc(t("sp.pair.common", { n: c })) + ' · <tspan font-weight="700" fill="var(--star)">' + esc(t("sp.pair.sim", { p: Math.round(s * 100) })) + "</tspan></text>";
     g += '<text x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10.5" font-family="Inter,sans-serif" fill="var(--muted)">' + esc(t("sp.pair.cap")) + "</text></svg>";
-    return '<div class="sp-box"><div class="sp-h">' + esc(t("sp.pair.h")) + "</div>" + g + pairStars(A, B, nA, nB) + "</div>" + pairSigns(A, B, nA, nB);
+    return '<div class="sp-box">' + head("sp.pair.h") + g + pairStars(A, B, nA, nB) + "</div>" + pairSigns(A, B, nA, nB);
   }
-  KC.space = { groupSVG, pairSVG, pairSigns, sharedSky, simMatrix, liked };
+  KC.space = { groupSVG, pairSVG, pairSigns, simMatrix, liked };
 })(window.KC);

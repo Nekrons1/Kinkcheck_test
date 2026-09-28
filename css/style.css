@@ -634,17 +634,14 @@ header.top{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .sp-near .sp-sub{flex-basis:100%;font-size:12px;color:var(--muted)}
 .sp-near b{font-weight:600}
 
-/* roulette: the sky and the ideas */
-.sp-disc svg{display:block;width:100%;max-width:320px;margin:0 auto 6px;height:auto}
+/* roulette: the ideas */
 .rl-lead{font-size:13.5px;line-height:1.5;margin:4px 0 8px;color:var(--ink)}
-.rl-cap{font-size:12px;color:var(--muted);margin:2px 0 6px;text-align:center}
-.rl-idea{position:relative;border:1px solid var(--line);border-left:3px solid var(--star);border-radius:10px;padding:10px 30px 10px 12px;margin:8px 0;background:var(--panel)}
+.rl-idea{position:relative;border:1px solid var(--line);border-left:3px solid var(--star);border-radius:10px;padding:10px 12px;margin:8px 0;background:var(--panel)}
 .rl-idea b{display:block;font-size:15px}
 .rl-idea .sub{display:block;font-size:12px;color:var(--muted)}
 .rl-idea .rl-desc{display:block;font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.45}
 .rl-sec{font-size:11.5px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
 .rl-ans{font-size:12.5px;margin-top:6px;color:var(--muted)}
-.rl-num{position:absolute;right:10px;top:8px;font-family:Fraunces,Georgia,serif;font-weight:600;color:var(--star)}
 
 /* share: the atlas frame around the QR code (outside the white quiet zone) */
 #qr.qr-atlas{position:relative;width:min(312px,100%);height:auto;aspect-ratio:1/1;margin:14px auto 4px;align-items:center}
@@ -684,3 +681,8 @@ header.top{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.
 .sg-mini .nm{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:19px;color:var(--star);line-height:1.15;overflow-wrap:anywhere}
 .sg-mini .grp{font-size:11.5px;color:var(--ink)}
 .sp-box .sg-mini svg{display:block;width:100%;max-width:220px;height:auto;margin:0 auto;color:var(--ink)}
+/* v591: the portrait's "✦ Constellation | 🎲 DnD" switch and the DnD alignment line */
+.pt-mode{display:flex;justify-content:flex-end;gap:6px;margin:0 0 6px}
+.pt-mode .btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.sg-al{font-size:13px;color:var(--muted);padding:2px 10px 0;line-height:1.4}
+.sg-al b{color:var(--accent);font-weight:600}

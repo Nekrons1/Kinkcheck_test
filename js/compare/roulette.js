@@ -1,7 +1,7 @@
 /* compare/roulette.js — "What shall we try?" on the compare page.
    Two people: OPTIONS random practices both marked Yes/Love. Group (3+): random pairs, each pair gets
-   OPTIONS practices (a practice may not suit the place, so there is a choice). Above the ideas: a "sky" —
-   a dot for every practice the pair shares, the ideas that came up are lit and numbered (v586, owner). "Bolder" also takes a
+   OPTIONS practices (a practice may not suit the place, so there is a choice); under every idea, both answers.
+   (v591, owner: the "sky" over the ideas and their numbers are gone — they only decorated.) "Bolder" also takes a
    practice one of the two marked Yes/Love and the other Maybe. A "No" from anyone never comes up.
    What comes up (owner's choice, v577):
    - a section is picked first, by WEIGHT (only sections where the pair has something), then a practice in it;
@@ -131,19 +131,14 @@
   const catOf = id => { const c = KC.CATS.find(c => c.items.some(x => x[1] === id)); return c ? KC.i18n.cat(c.id) : ""; };
   const ansOf = (p, id) => { const v = (p.st.items[id] || {}).interest; return v ? esc(p.name) + ' <span class="badge ' + BADGE[v] + '">' + esc(t("scale." + v)) + "</span>" : ""; };
   /* one idea: section, name (+ English), hint, and both answers */
-  const idea = (id, a, b, num) => '<div class="rl-idea">' + (num ? '<span class="rl-num">' + num + "</span>" : "")
+  const idea = (id, a, b) => '<div class="rl-idea">'
     + '<div class="rl-sec">' + esc(catOf(id)) + "</div><b>" + esc(KC.i18n.item(id).name) + "</b>"
     + (KC.i18n.lang !== "en" ? '<span class="sub">' + esc(KC.i18n.item(id, "en").name) + "</span>" : "")
     + (KC.i18n.item(id).desc ? '<span class="rl-desc">' + esc(KC.i18n.item(id).desc) + "</span>" : "")
     + '<div class="rl-ans">' + ansOf(a, id) + " &nbsp; " + ansOf(b, id) + "</div></div>";
-  /* the sky over one pair's ideas, then the ideas */
-  const pairBlock = (a, b, bold, r) => {
-    const n = pool(a.st, b.st, bold).length;
-    return (r.reset ? '<p class="rl-note">' + esc(t("rl.reset")) + "</p>" : "")
-      + KC.space.sharedSky(n, n + a.name.length, r.ids.length)
-      + '<p class="rl-cap">' + esc(t(bold ? "rl.skyBold" : "rl.sky", { n })) + "</p>"
-      + r.ids.map((id, i) => idea(id, a, b, i + 1)).join("");
-  };
+  /* one pair's ideas */
+  const pairBlock = (a, b, bold, r) => (r.reset ? '<p class="rl-note">' + esc(t("rl.reset")) + "</p>" : "")
+    + r.ids.map(id => idea(id, a, b)).join("");
 
   function spin() {
     const S = KC.cmpState(), bold = KC.$("rlBold").checked, out = KC.$("rlOut");

@@ -4,7 +4,7 @@
    a few event names below — never answers, names or links (those live after "#" and are not read here).
    CODE = the site code chosen at goatcounter.com ("" = counter off). If the counter script is blocked
    (ad blocker, no network), nothing happens and the site works as usual.
-   Events: open-link, open-template, share, pdf, compare-2, compare-3plus, compare-saved. */
+   Events: open-link, open-template, share, pdf, compare-2, compare-3plus, compare-saved, portrait, card, roulette, dnd. */
 (function (KC) {
   const CODE = "klevatess";
   /* where this file was loaded from -> the vendor copy next to it, same ?v= */

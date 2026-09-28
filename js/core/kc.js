@@ -27,6 +27,7 @@ window.KC = window.KC || {};
     tpl:   "checklist-templates-v1",        // templates: own ("My lists") and received
     fav:   "checklist-favs-v1",             // favourites (♥) of lists opened from links: {listKey: [ids]}
     cmp:   "checklist-compares-v1",         // saved comparisons (3+ people): [{id, name, parts, ts}]
+    dnd:   "checklist-dnd",                 // "1" = the portrait shows the DnD class instead of the sign (raw string)
   };
 
   KC.ls = {

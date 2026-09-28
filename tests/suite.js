@@ -1002,7 +1002,7 @@ const S = (title) => console.log("\n## " + title);
   const qs = [...hp0.d.querySelectorAll("[data-help]")].map(b => b.dataset.help);
   ok(hp0.d.querySelector(".brand-row .help-q") && ["start", "share", "lists", "received", "tpl", "pdf"].every(s => qs.indexOf(s) >= 0), "“?” in the header and in each window: " + qs.join(","));
   click(hp0.w, hp0.d.querySelector('.brand-row [data-help="start"]'));
-  ok(hp0.d.getElementById("helpOverlay").classList.contains("show") && hp0.d.querySelectorAll("#helpBody section").length === 10, "help window with 10 sections (What's new is its own tab)");
+  ok(hp0.d.getElementById("helpOverlay").classList.contains("show") && hp0.d.querySelectorAll("#helpBody section").length === 12, "help window with 12 sections (What's new is its own tab)");
   ok(/Чек-лист практик для разговора/.test(hp0.d.getElementById("helpBody").textContent) && /Шаблон — это набор пунктов/.test(hp0.d.getElementById("helpBody").textContent), "help text in Russian");
   click(hp0.w, hp0.d.querySelector('#langSw button[data-lang="en"]'));
   click(hp0.w, hp0.d.querySelector('#mineOverlay [data-help="lists"]'));
@@ -1142,6 +1142,8 @@ const S = (title) => console.log("\n## " + title);
   const SAME586 = { pt: ["sign.caracal", "pt.s.bondage", "sign.flamingo", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa", "sign.wyvern"],
     es: ["sign.caracal", "sign.cobra", "pt.s.bondage", "sign.collar", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa"], ja: [], th: [], zh: [] };
   Object.keys(SAME586).forEach(l => { SAME_OK[l] = SAME_OK[l].concat(SAME586[l], ["pt.s.ds", "pt.s.sm"]); });
+  /* v591: the "🎲 DnD" button reads the same everywhere */
+  Object.keys(SAME_OK).forEach(l => { SAME_OK[l].push("dnd.toDnd"); });
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0), [], l + ": no interface string left in English"));
   ok(!/TEMPORARY/.test(["pt", "es", "ja", "th", "zh"].map(l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8")).join("")), "no TEMPORARY markers left");
@@ -1693,7 +1695,7 @@ const S = (title) => console.log("\n## " + title);
     ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => {
       hp.KC.i18n.set(l); hp.KC.help.open("news");
       const s3 = hp.d.getElementById("helpNews");
-      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 1 && /27/.test(s3.querySelector("h5").textContent) && s3.querySelectorAll("li").length === 3, l + ": “What's new” tab with the dated entry (27 Sept, 3 features)");
+      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 2 && /28/.test(s3.querySelectorAll("h5")[0].textContent) && /27/.test(s3.querySelectorAll("h5")[1].textContent) && s3.querySelectorAll("ul")[0].querySelectorAll("li").length === 9 && s3.querySelectorAll("ul")[1].querySelectorAll("li").length === 3, l + ": “What's new” tab: 28 Sept (9 points) on top, 27 Sept (3) below");
       ok(hp.d.getElementById("helpNewsTab").textContent === hp.KC.i18n.t("help.news.h") && !!hp.d.querySelector("#helpNewsTab .new-dot"), l + ": tab name with a green dot");
     });
     eq([hp.KC.help.SECTIONS.indexOf("news"), !!hp.d.getElementById("help-news"), hp.d.querySelectorAll('#helpToc button[data-go="news"]').length], [-1, false, 0], "“What's new” is not a section of “How to use”");
@@ -1779,7 +1781,7 @@ const S = (title) => console.log("\n## " + title);
     ok(SIGNS.every(s => { const used = new Set(); s[3].forEach(l => l.forEach(i => { if (i !== "d") used.add(i); })); return used.size === 9; }), "every star is joined to the figure (no loose stars)");
     ok(SIGNS.every(s => s[4].length === (s[0] === "*" ? 3 : s[0].length)), "bright stars: 1 for a single sign, 2 for a pair, 3 for the Chimera");
     const tr = {}; ["ru", "en", "es", "pt", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); tr[l] = box; });
-    const need = SIGNS.map(s => "sign." + s[1]).concat(SG.GROUPS.map(g => "pt.s." + g), ["sign.mine", "sign.of", "sign.even", "sp.sys.h", "sp.sys.legend_html", "sp.sys.tap_html", "sp.sys.tune", "sp.pair.h", "sp.pair.common", "sp.pair.sim", "sp.pair.cap", "sp.pair.stars", "sp.pair.both", "rl.leadPair_html", "rl.leadGroup_html", "rl.sky", "rl.skyBold", "tpl.nebula", "seo.desc"]);
+    const need = SIGNS.map(s => "sign." + s[1]).concat(SG.GROUPS.map(g => "pt.s." + g), ["sign.mine", "sign.of", "sign.even", "sp.sys.h", "sp.sys.legend_html", "sp.sys.tap_html", "sp.sys.tune", "sp.pair.h", "sp.pair.common", "sp.pair.sim", "sp.pair.cap", "sp.pair.stars", "sp.pair.both", "rl.leadPair_html", "rl.leadGroup_html", "tpl.nebula", "seo.desc"]);
     eq(Object.keys(tr).map(l => need.filter(k => !tr[l][k])), [[], [], [], [], [], [], []], "all new texts exist in all 7 languages");
     // which sign
     const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct)) });
@@ -1824,7 +1826,6 @@ const S = (title) => console.log("\n## " + title);
     ok(/stroke-dasharray="2 3"/.test(sys().querySelector("svg").innerHTML) && sys().querySelectorAll("svg path[stroke-linecap]").length >= 1, "tap on a planet: it is marked and its links appear");
     click(c.w, sys().querySelector('[data-planet="0"] circle'));
     eq(sys().querySelector("svg").innerHTML, before, "second tap: back to the plain picture, same layout");
-    // roulette for a group: the sky and 3 numbered ideas per pair
     // two people: paired planets + the two constellations
     const c2 = open("compare");
     const two = [mkSt("Eve", "EVE001", "dom", ["bondage", "fetishes", "intimacy", "sex-penetration"]), mkSt("Fox", "FOX001", "sub", ["bondage", "fetishes", "intimacy", "sex-penetration"])];
@@ -1835,7 +1836,8 @@ const S = (title) => console.log("\n## " + title);
     c2.w.matchMedia = () => ({ matches: true });
     click(c2.w, c2.d.querySelector('#results button[data-act="roulette"]'));
     const out = c2.d.getElementById("rlOut");
-    ok(out.querySelectorAll(".rl-idea").length === 3 && out.querySelectorAll(".sp-disc svg").length === 1 && /Другие идеи/.test(c2.d.getElementById("rlAgain").textContent), "roulette for two: the sky, 3 numbered ideas, “Other ideas”");
+    ok(out.querySelectorAll(".rl-idea").length === 3 && /Другие идеи/.test(c2.d.getElementById("rlAgain").textContent), "roulette for two: 3 ideas, “Other ideas”");
+    ok(!out.querySelector("svg") && !out.querySelector(".rl-num, .rl-cap, .sp-disc") && [...out.querySelectorAll(".rl-idea")].every(x => x.querySelectorAll(".badge").length === 2), "v591: no sky and no numbers over the ideas; both answers under every idea");
     // nebula of a template
     const tpl = [{ id: "t1", tid: "AAAAAA", name: "Evening", ids: ids.bondage.slice(0, 6).concat(ids.intimacy.slice(0, 2)), own: true, ts: 1 }];
     const n = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-templates-v1": JSON.stringify(tpl) }, session: {} } });
@@ -1900,6 +1902,94 @@ const S = (title) => console.log("\n## " + title);
     ok(!!box && /Созвездия пары/.test(box.textContent) && box.querySelectorAll(".sg-mini").length === 2 && /Ann/.test(box.textContent) && /Bob/.test(box.textContent), "two people: both signs side by side with names");
     ok(/Соседние созвездия|Одно созвездие|Зеркальные созвездия|Разные системы/.test(box.textContent), "…and how close they are");
     ok(!f.errors.length && !cp.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v590: help covers the new features; what's new");
+  {
+    const _sc = scope();
+    const h = open("form");
+    eq(h.KC.help.SECTIONS.slice(), ["start", "answer", "filters", "portrait", "lists", "share", "received", "tpl", "pdf", "compare", "roulette", "privacy"], "help sections: portrait and roulette added");
+    h.KC.help.open("portrait");
+    ok(/созвезд/i.test(h.d.getElementById("help-portrait").textContent) && /Что попробуем/.test(h.d.getElementById("help-roulette").textContent), "portrait (with the constellation) and roulette are explained");
+    ok(/Система компании/.test(h.d.getElementById("help-compare").textContent) && /туманност/.test(h.d.getElementById("help-tpl").textContent), "compare pictures and template nebulas are explained");
+    h.KC.help.open("news");
+    eq(h.d.querySelector("#helpNews h5").textContent, "28 сентября 2026", "what's new: the newest entry on top");
+    ok(!!h.d.querySelector('#portraitSection summary .help-q[data-help="portrait"]'), "“?” next to the portrait");
+    ok(!h.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v591: DnD mode of the portrait; the roulette without the sky");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, DD = K.dnd, SG = K.signs;
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const keys = Object.keys(DD.VAR);
+    eq(keys.length, 46, "46 variants: 9 single, 36 pairs, the Chimera");
+    const count = {}; keys.forEach(k => { count[DD.VAR[k][0]] = (count[DD.VAR[k][0]] || 0) + 1; });
+    eq([Object.keys(count).length, Object.values(count).every(n => n >= 3 && n <= 4)], [13, true], "13 classes, 3–4 variants each");
+    eq(Object.keys(DD.VAR).filter(k => k.length === 2).length, 36, "36 pairs, one per unordered pair");
+    const bad = [];
+    Object.keys(DD.FIG).forEach(c => { const [P, E, L, B] = DD.FIG[c], n = P.length + E.length;
+      if (P.length !== 9 || new Set(B).size !== 3 || B.some(i => i < 0 || i > 8)) bad.push(c + ": stars");
+      L.forEach(l => (l[0] === "d" ? l.slice(1) : l).forEach(i => { if (!(i >= 0 && i < n)) bad.push(c + ": line " + i); })); });
+    eq(bad, [], "every class figure: 9 group stars, 3 bright slots, lines only to existing stars");
+    const miss = [];
+    const need = ["dnd.switch", "dnd.toSign", "dnd.toDnd", "dnd.mine", "dnd.of", "card.o.dnd", "help.portraitDnd_html"]
+      .concat(Object.keys(DD.FIG).map(c => "dnd.c." + c), keys.map(k => "dnd.s." + DD.VAR[k].join(".")), DD.ALIGN.map(a => "dnd.al." + a), DD.ALIGN.map(a => "dnd.aq." + a));
+    LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); }));
+    eq(miss, [], "every DnD text exists in all 7 languages");
+    const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct)) });
+    const all = o => Object.assign({ intimacy: 10, bondage: 10, fetishes: 10, "role-play": 10, ds: 10, sm: 10, "sex-penetration": 10, "voyeurism-exhibitionism": 10, "bodily-fluids": 10 }, o);
+    const a = DD.pick(D(all({ ds: 70, sm: 60 }))), b = DD.pick(D(all({ sm: 70, ds: 60 })));
+    eq([a.cls, a.sub, b.cls, b.sub], ["paladin", "vengeance", "paladin", "vengeance"], "D/s + S/M and S/M + D/s: the same class (Paladin, Oath of Vengeance)");
+    eq(a.stars.filter(x => x.bright).map(x => x.s.id).sort().join(), "ds,sm", "…the two main groups are the bright stars");
+    eq([a.stars.filter(x => !x.grey).length, a.stars.filter(x => !x.grey && x.s).length, a.stars.filter(x => x.grey && x.s).length], [9, 9, 0], "…9 stars carry the groups, grey stars carry none");
+    eq([DD.pick(D(all({ intimacy: 90 }))).sub, DD.pick(D(all({ intimacy: 50, bondage: 49, fetishes: 48 }))).sub], ["life", "wildmagic"], "one group far ahead → its own subclass; three close → Sorcerer, Wild Magic");
+    // alignment
+    const items = {}; let N = 0; K.CATS.forEach(c => { if (!K.portrait.OUT[c.id]) c.items.forEach(([, id]) => { items[id] = c.id; N++; }); });
+    const ids = Object.keys(items);
+    const mkS = (fn, role) => { const it = {}; ids.forEach((id, i) => { const v = fn(i, items[id]); if (v) it[id] = { interest: v }; }); return { items: it, meta: role ? { role } : {} }; };
+    const DP = st => K.portrait.compute(st, null);
+    const al = (st) => DD.alignment(st, DP(st), null);
+    eq(al(mkS(i => i < 10 ? "yes" : null)), "roll", "fewer than 20 answers → “Still rolling the dice”");
+    eq(al(mkS(i => i % 10 < 7 ? "limit" : "yes")), "boring", "60%+ “No” → “Lawful Boring”");
+    eq(al(mkS(i => i % 10 < 3 ? "limit" : "yes", "dom")).charAt(0), "L", "a Top is always Lawful");
+    eq(al(mkS(i => i % 10 < 3 ? "maybe" : "yes", "sub")), "CG", "a Bottom is always Good; 30%+ “Maybe” → Chaotic");
+    eq(al(mkS(i => i % 2 ? "yes" : null)).charAt(0), "N", "half unanswered: counts as a quarter “No” → not Lawful");
+    eq(al(mkS(i => i % 10 < 3 ? "yes" : i % 10 < 4 ? "limit" : null)).charAt(0), "L", "unanswered = half a “No”: 10% No + 60% unanswered → Lawful");
+    const smSt = mkS((i, c) => ["impact-rough-play", "sensation-play", "marking"].indexOf(c) >= 0 ? "love" : i % 3 ? "yes" : "limit");
+    eq(al(smSt).charAt(1), "E", "lots of S/M → Evil");
+    // the page: the switch, the class, the card, remembered on this device
+    const own = { items: mkS((i, c) => c === "bondage" ? "love" : ["service-control", "humiliation"].indexOf(c) >= 0 ? "yes" : i % 4 ? "maybe" : "limit", "sub").items, meta: { role: "sub" }, name: "Ann" };
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(own) }, session: {} } });
+    const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+    const sw = () => g.d.querySelector("#portraitBody .pt-mode");
+    ok(!!sw() && sw().querySelector('[data-mode="sign"]').getAttribute("aria-pressed") === "true" && /Созвездие/.test(sw().textContent) && /DnD/.test(sw().textContent), "the portrait has the “✦ Constellation | 🎲 DnD” switch, the constellation by default");
+    ok(!!g.d.querySelector(".pt-sign:not(.pt-dnd)"), "…and shows the sign");
+    click(g.w, sw().querySelector('[data-mode="dnd"]'));
+    const dv = g.d.querySelector(".pt-sign.pt-dnd");
+    ok(!!dv && /Ваш класс/.test(dv.textContent) && dv.querySelectorAll("svg .sg-grey").length > 0 && !!dv.querySelector(".sg-al b"), "DnD: “Your class”, the class figure with grey stars, the alignment line");
+    ok(/Колдун|Монах|Воин|Паладин|Следопыт|Друид|Плут/.test(dv.querySelector(".sg-name").textContent) && /Бондаж/.test(dv.querySelector(".sg-sub").textContent), "…the class of the strongest groups, with the subclass and the groups");
+    eq(dv.dataset.al.charAt(1), "G", "…a Bottom is Good");
+    eq(g.w.localStorage.getItem("checklist-dnd"), "1", "the mode is remembered on this device");
+    click(g.w, g.d.getElementById("ptCard"));
+    ok(/Класс DnD/.test(g.d.getElementById("cardOpts").textContent), "picture card: the switch is “DnD class”");
+    // (the picture itself is drawn on a canvas: checked in the browser scenarios)
+    g.d.getElementById("cardClose").click();
+    click(g.w, g.d.querySelector('#portraitBody .pt-mode [data-mode="sign"]'));
+    ok(!g.d.querySelector(".pt-dnd") && !!g.d.querySelector(".pt-sign") && g.w.localStorage.getItem("checklist-dnd") === null, "back to the constellation");
+    // help and what's new
+    g.KC.help.open("portrait");
+    ok(/DnD/.test(g.d.getElementById("help-portrait").textContent) && /Мировоззрение/.test(g.d.getElementById("help-portrait").textContent) && /половина «Нет»/.test(g.d.getElementById("help-portrait").textContent), "help: the DnD mode and the alignment are explained");
+    ok(!/Небо|пронумерован/.test(g.d.getElementById("help-roulette").textContent), "help: the roulette sky is no longer mentioned");
+    g.KC.help.open("news");
+    const top = g.d.querySelector("#helpNews ul");
+    ok(/DnD/.test(top.textContent) && !/небо общих/.test(top.textContent), "what's new: the DnD mode is in, the roulette sky is out");
+    const skyKeys = []; LANGS.forEach(l => ["rl.sky", "rl.skyBold"].forEach(k => { if (K.i18n.has("ui", k, l)) skyKeys.push(l + ":" + k); }));
+    eq(skyKeys, [], "the sky's texts are gone in every language");
+    ok(!f.errors.length && !g.errors.length, "no script errors");
     _sc.end();
   }
 
