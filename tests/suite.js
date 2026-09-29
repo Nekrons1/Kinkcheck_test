@@ -1582,7 +1582,7 @@ const S = (title) => console.log("\n## " + title);
     eq(one("intimacy", ["love", "love", "love"]), 73, "3× Love alone: 73% (average 100%, amount 45%)");
     ok(one("intimacy", ["love", "love", "love"]) > one("intimacy", ["yes", "yes", "yes"]) && one("intimacy", ["yes", "yes", "yes"]) > one("intimacy", ["maybe", "maybe", "maybe"]), "Love > Yes > Maybe");
     ok(one("intimacy", ["love", "yes", "limit", "maybe"]) < one("intimacy", ["love", "yes", "maybe"]), "No pulls the group down");
-    eq(one("intimacy", ["limit", "limit", "yes"]), 0, "never below 0%");
+    eq([one("intimacy", ["limit", "limit", "limit"]), one("intimacy", ["limit", "limit", "yes"])], [0, 8], "never below 0%; v603 (variant A): a “Yes” among “No” still counts in “how many” (8%)");
     eq(one("intimacy", ["love", "love"]), null, "fewer than 3 answers: no percentage");
     eq(P.compute({ items: {} }).sections.map(s => s.id).sort(), ["bodily-fluids", "bondage", "ds", "fetishes", "intimacy", "role-play", "sex-penetration", "sm", "voyeurism-exhibitionism"], "9 groups: D/s and S/M merged, role play on its own");
     const outSt = { items: Object.assign(mk("session-length", ["love", "love", "love"]), mk("non-monogamy", ["love", "love", "love"])) };
@@ -1948,11 +1948,15 @@ const S = (title) => console.log("\n## " + title);
     eq(miss, [], "every DnD text exists in all 7 languages");
     const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => (b.pct === null ? -1 : b.pct) - (a.pct === null ? -1 : a.pct)) });
     const all = o => Object.assign({ intimacy: 10, bondage: 10, fetishes: 10, "role-play": 10, ds: 10, sm: 10, "sex-penetration": 10, "voyeurism-exhibitionism": 10, "bodily-fluids": 10 }, o);
-    const a = DD.pick(D(all({ ds: 70, sm: 60 }))), b = DD.pick(D(all({ sm: 70, ds: 60 })));
-    eq([a.cls, a.sub, b.cls, b.sub], ["paladin", "vengeance", "paladin", "vengeance"], "D/s + S/M and S/M + D/s: the same class (Paladin, Oath of Vengeance)");
+    /* v603: the class is a profile; a pair variant still does not depend on the order of its two groups */
+    const a = DD.pick(D(all({ ds: 70, sm: 65 })));
+    eq([a.cls, a.sub, a.kind], ["paladin", "vengeance", "pair"], "D/s far above, S/M close behind → Paladin, Oath of Vengeance (D/s + S/M)");
+    const dvOf = o => DD.devs(D(all(o))).dev;
+    eq([DD.variant("paladin", dvOf({ ds: 70, sm: 65 })).key, DD.variant("paladin", dvOf({ ds: 65, sm: 80 })).key], ["ds", "ds"], "…S/M + D/s in the other order: the same variant");
     eq(a.stars.filter(x => x.bright).map(x => x.s.id).sort().join(), "ds,sm", "…the two main groups are the bright stars");
     eq([a.stars.filter(x => !x.grey).length, a.stars.filter(x => !x.grey && x.s).length, a.stars.filter(x => x.grey && x.s).length], [9, 9, 0], "…9 stars carry the groups, grey stars carry none");
-    eq([DD.pick(D(all({ intimacy: 90 }))).sub, DD.pick(D(all({ intimacy: 50, bondage: 49, fetishes: 48 }))).sub], ["life", "wildmagic"], "one group far ahead → its own subclass; three close → Sorcerer, Wild Magic");
+    const ch = DD.pick(D(all({ "sex-penetration": 76, "bodily-fluids": 41, intimacy: 56 })));
+    eq([DD.pick(D(all({ intimacy: 90 }))).sub, ch.cls + " " + ch.sub, ch.kind], ["life", "sorcerer wildmagic", "even"], "one group far ahead → its own subclass; a Sorcerer with three groups close (after the usual skew) → Wild Magic");
     // alignment
     const items = {}; let N = 0; K.CATS.forEach(c => { if (!K.portrait.OUT[c.id]) c.items.forEach(([, id]) => { items[id] = c.id; N++; }); });
     const ids = Object.keys(items);
@@ -1984,7 +1988,7 @@ const S = (title) => console.log("\n## " + title);
     click(g.w, sw().querySelector('[data-mode="dnd"]'));
     const dv = g.d.querySelector(".pt-sign.pt-dnd");
     ok(!!dv && /Ваш класс/.test(dv.textContent) && dv.querySelectorAll("svg .sg-grey").length > 0 && !!dv.querySelector(".sg-al b"), "DnD: “Your class”, the class figure with grey stars, the alignment line");
-    ok(/Колдун|Монах|Воин|Паладин|Следопыт|Друид|Плут/.test(dv.querySelector(".sg-name").textContent) && /Бондаж/.test(dv.querySelector(".sg-sub").textContent), "…the class of the strongest groups, with the subclass and the groups");
+    ok(/Колдун|Монах|Воин|Паладин|Следопыт|Друид|Плут/.test(dv.querySelector(".sg-name").textContent) && /D\/s/.test(dv.querySelector(".sg-sub").textContent), "…the class by its profile, with the subclass and the variant's groups");
     ok(DD.ALIGN.indexOf(dv.dataset.al) >= 0, "…with an alignment");
     eq(g.w.localStorage.getItem("checklist-dnd"), "1", "the mode is remembered on this device");
     click(g.w, g.d.getElementById("ptCard"));
@@ -2084,9 +2088,13 @@ const S = (title) => console.log("\n## " + title);
     const ids = [...all];
     const mk = (fn, meta) => { const it = {}; ids.forEach((id, i) => { const v = fn(id, i); if (v) it[id] = { interest: v }; }); return { items: it, meta: meta || {} }; };
     const inCl = (...cl) => { const s2 = new Set(); cl.forEach(k => DD.CL[k][1].split(" ").forEach(id => s2.add(id))); return s2; };
-    eq(DD.race(mk(() => "yes"), null), "human", "everything the same → Human");
-    const rope = inCl("rope", "protocol", "orgasm", "wardrobe", "worship");
-    eq(DD.race(mk((id, i) => rope.has(id) ? "love" : i % 3 ? "limit" : "maybe"), null), "elf", "ritual + slow build (rope, protocol, edging) → Elf");
+    /* v603: poles are measured from the usual value of real lists (AXT), so a list right at the usual values is Human */
+    const same = mk(() => "yes"), keep = DD.AXT.slice();
+    DD.axes(same, null).forEach((v, i) => { DD.AXT[i] = v; });
+    const hu = DD.race(same, null); keep.forEach((v, i) => { DD.AXT[i] = v; });
+    eq(hu, "human", "a list right at the usual values of real lists → Human");
+    const rope = inCl("rope", "protocol", "orgasm", "wardrobe", "worship"), rit = inCl("protocol", "touch");
+    eq(DD.race(mk((id, i) => rit.has(id) ? "love" : i % 3 ? "limit" : "maybe"), null), "elf", "ritual + slow build (protocol, slow caresses) → Elf");
     const iron = inCl("iron", "wardrobe", "orgasm");
     eq(DD.race(mk((id, i) => iron.has(id) ? "love" : i % 3 ? "limit" : "maybe"), null), "dwarf", "gear + power (iron, gear, orgasm control) → Dwarf");
     const soft = inCl("home", "touch");
@@ -2180,7 +2188,7 @@ const S = (title) => console.log("\n## " + title);
     eq(W.choose(D(all({ "voyeurism-exhibitionism": 70 })), "vamp"), "malkavian", "voyeurism far above everything → Malkavians");
     ok(W.choose(D(all({ "voyeurism-exhibitionism": 70, "role-play": 66 })), "vamp") !== "malkavian", "…but not when a second group is close behind");
     ok(W.choose(D(all({ bondage: 60 })), "vamp") !== "malkavian", "bondage 30 points above the rest is ordinary for real lists (the usual skew): not a Malkavian");
-    eq(W.choose(D({ intimacy: 36, bondage: 77, fetishes: 62, "role-play": 52, ds: 74, sm: 69, "sex-penetration": 41, "voyeurism-exhibitionism": 34, "bodily-fluids": 26 }), "vamp"), "ventrue", "the owner's portrait → Ventrue (v601: Giovanni = fluids + D/s)");
+    eq(W.choose(D({ intimacy: 36, bondage: 77, fetishes: 62, "role-play": 52, ds: 74, sm: 69, "sex-penetration": 41, "voyeurism-exhibitionism": 34, "bodily-fluids": 26 }), "vamp"), "ventrue", "the owner's portrait → Ventrue (v601: Giovanni = fluids + D/s; v603 recalibrated: still Ventrue)");
     const fig = W.pick(D(all({ "bodily-fluids": 80, "sex-penetration": 75 })), "demon");
     eq([fig.wod, fig.line, fig.id, fig.stars.filter(x => x.bright).map(x => x.s.id).sort().join()], [true, "demon", "defilers", "bodily-fluids,sex-penetration"], "the figure: the sign's main groups are the bright stars");
     // details
@@ -2196,11 +2204,12 @@ const S = (title) => console.log("\n## " + title);
     const t20 = det(lv20, "wolf", "talons");
     eq([t20.breed, t20.rank, t20.gnosis, t20.rage], ["lupus", "elder", 8, W.RAGE0[t20.aus] + 3], "Elder Red Talon: Gnosis 5 + 3 = 8, Rage = auspice start + 3");
     const f20 = det(lv20, "fey", "boggan");
-    eq([f20.seem, f20.glamour, f20.banality], ["grump", 7, 4], "level 20 Grump who likes everything: Glamour 4 + 3 = 7, Banality 3 + Grump 1 = 4");
+    eq([f20.seem, f20.glamour, f20.banality], ["grump", 10, 2], "level 20 Grump who loves everything: Glamour at its cap 10, Banality 1 + Grump 1 = 2 (v603)");
     const allNo = mk(() => "limit"), fNo = det(allNo, "fey", "boggan");
-    eq([fNo.seem, fNo.glamour, fNo.banality], ["childling", 5, 7], "all “No”: a Childling with Glamour 5, Banality at its cap 7");
+    eq([fNo.seem, fNo.glamour, fNo.banality], ["childling", 3, 7], "all “No”: a Childling with Glamour 2 + 1 = 3, Banality at its cap 7 (v603)");
     ok(!/wod\./.test(W.lines(t20, K.i18n.t).sub + W.lines(f20, K.i18n.t).sub) && /Ярость/.test(W.lines(t20, K.i18n.t).sub) && /Банальность/.test(W.lines(f20, K.i18n.t).sub), "the lines show Rage · Gnosis and Glamour · Banality");
-    ok(Object.keys(W.PATHS).indexOf(det(lv20, "vamp", "brujah").path) >= 0, "everything even → still a path (v602: no “flat = Humanity” rule)");
+    const v20 = det(lv20, "vamp", "brujah");
+    ok(v20.sect === "sab" ? Object.keys(W.PATHS).indexOf(v20.path) >= 0 : v20.hum >= 3, "everything even → a path in the Sabbat, Humanity in the Camarilla (v602: no “flat = Humanity” rule; v603)");
     eq(det(mk(() => "yes"), "wolf", "talons").breed, "lupus", "Red Talons are always Lupus");
     const taboo = new Set(DD.CL.taboo[1].split(" "));
     const met = mk((id, i) => taboo.has(id) ? "love" : i % 2 ? "limit" : "maybe");
@@ -2267,11 +2276,11 @@ const S = (title) => console.log("\n## " + title);
     const P = a => D(Object.fromEntries(G.map((g, i) => [g, a[i]])));
     const group = { P1: [36,77,62,52,74,69,41,34,26], P2: [29,73,47,58,63,73,68,45,0], P3: [39,42,0,0,0,24,74,44,15], P4: [52,77,48,55,17,9,60,12,9], P5: [50,71,55,54,50,61,52,38,24] };
     const got = Object.keys(group).map(n => W.LINES.map(L => W.choose(P(group[n]), L)).join(" "));
-    eq(got, ["ventrue shadow sidhe devils", "gangrel fenris sidhe devourers", "setite fianna satyr defilers", "tremere gaia boggan malefactors", "assamite stargazers troll scourges"], "the owner's first group (v601 weights; nobody is a Slayer)");
+    eq(got, ["ventrue shadow sidhe malefactors", "gangrel talons pooka devourers", "setite fianna satyr defilers", "tremere uktena boggan malefactors", "tremere uktena nocker malefactors"], "the owner's first group (v603 weights; nobody is a Slayer)");
     const group2 = { P1: [35,78,58,54,73,68,52,37,25], P2: [29,73,47,58,63,73,68,45,0], P6: [47,56,50,37,57,58,59,53,23], P3: [46,71,46,54,51,71,81,53,54], P4: [49,76,58,58,22,10,59,10,14], P7: [37,46,0,44,0,0,52,66,0], P5: [49,72,54,54,51,63,49,39,20] };
     eq(Object.keys(group2).map(n => W.LINES.map(L => W.choose(P(group2[n]), L)).join(" ")),
-      ["ventrue shadow sidhe devils", "gangrel fenris sidhe devourers", "toreador striders troll fiends", "assamite gnawers redcap defilers", "tremere uktena boggan malefactors", "malkavian striders eshu fiends", "gangrel talons troll scourges"],
-      "the owner's coterie of seven: the table agreed in v601 (no Caitiff, no Stargazers / Ghille Dhu flood, one Malkavian)");
+      ["lasombra shadow sidhe devils", "gangrel talons pooka devourers", "toreador striders sidhe fiends", "nosferatu gnawers redcap defilers", "tremere uktena nocker malefactors", "malkavian striders eshu fiends", "tremere uktena sluagh malefactors"],
+      "the owner's coterie of seven: the table after v603 (no Caitiff, one Malkavian)");
     ok(!/W/.test(W.PROF.demon.slayers[0]) && W.PROF.demon.slayers[0] === "R1 S.6", "Slayers: no fluids (owner)");
     eq([W.PROF.fey.satyr[0], W.PROF.fey.boggan[0]], ["X1 N.3", "N1 S-.3"], "fey variant E: Satyrs and Boggans");
     // share window
@@ -2365,7 +2374,7 @@ const S = (title) => console.log("\n## " + title);
     eq(Object.keys(W.AUSP).map(k => W.AUSP[k].length), [2, 3, 3, 3, 3], "auspices own 2–3 poles each (one strongest pole decides)");
     const all = [].concat(...Object.keys(W.AUSP).map(k => W.AUSP[k])).sort();
     eq(all, [].concat(...K.dnd.POLES).sort(), "…and together they cover all 14 poles exactly once");
-    ok(Object.keys(W.PATHB).length === 14 && Object.keys(W.PATHS).every(k => W.PATHB[k] !== undefined), "every path has its calibrated shift");
+    ok(Object.keys(W.PATHB).length === 13 && Object.keys(W.PATHS).every(k => W.PATHB[k] !== undefined), "every path has its calibrated shift (v603: 13, no Path of Humanity)");
     ok(K.dnd.axes({ items: {}, meta: {} }, null, true).every(v => v === null) && K.dnd.axes({ items: {}, meta: {} }, null).every(v => v === 0), "axes(…, true): a pole with too few answers is null (0 without the flag, as before)");
     /* the owner's group is checked outside the repo (their lists are private); here: the rules on made-up lists */
     const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
@@ -2376,8 +2385,77 @@ const S = (title) => console.log("\n## " + title);
     eq(det(mk(["extreme", "spank"]), "wolf").aus, "ahroun", "hard impact → Ahroun");
     const facs = ["reconciler", "faustian", "luciferan", "ravener", "cryptic"];
     const F = (law, good) => { const dl = law - W.CENTRE.LAW, dg = good - W.CENTRE.GOOD; return Math.abs(dl) < W.CENTRE.R && Math.abs(dg) < W.CENTRE.R ? "cryptic" : dl >= 0 ? (dg >= 0 ? "reconciler" : "faustian") : (dg >= 0 ? "luciferan" : "ravener"); };
-    eq([F(15, 10), F(15, -11), F(-6, 28), F(-10, -10), F(1, -4)], facs, "demon factions: four quarters around (law +2, good 0) and Cryptic in the middle");
+    eq([F(15, 10), F(15, -11), F(-6, 28), F(-10, -10), F(3, -1)], facs, "demon factions: four quarters around the centre (v603: law +4, good +2) and Cryptic in the middle");
     ok(!f.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v603: portrait without 0 % groups; DnD classes by profile, races on standardised poles; fey Glamour / Banality; Camarilla Humanity");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, DD = K.dnd, W = K.wod;
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const catOf = {}; K.CATS.forEach(c => c.items.forEach(([, id]) => { catOf[id] = c.id; }));
+    const mk = (fn, meta) => { const it = {}; ids.forEach((id, i) => { const v = fn(id, i); if (v) it[id] = { interest: v }; }); return { items: it, meta: meta || {} }; };
+    // portrait, variant A: "No" does not wipe out "how many"
+    const bond = ids.filter(id => catOf[id] === "bondage");
+    const st = mk((id, i) => { const k = bond.indexOf(id); if (k >= 0) return k < 15 ? "yes" : k < 24 ? "maybe" : "limit"; return i % 2 ? "yes" : "maybe"; });
+    const g = K.portrait.compute(st, null).sections.find(x => x.id === "bondage");
+    ok(bond.length - 24 > 15 && g.pct > 0, "a group with more “No” than “Yes” and 15 “Yes” is above 0 % (" + g.pct + " %)");
+    const allNo = K.portrait.compute(mk(() => "limit"), null).sections.filter(x => x.pct !== null);
+    ok(allNo.length && allNo.every(x => x.pct === 0), "only “No” → 0 % everywhere, as before");
+    // the usual skew: 9 groups, shared by DnD and the World of Darkness
+    eq(Object.keys(DD.TYP).sort(), K.signs.GROUPS.slice().sort(), "TYP covers all 9 groups");
+    ok(W.TYP === DD.TYP && W.AXT === DD.AXT && W.AXSD === DD.AXSD, "…shared with the World of Darkness, as are AXT / AXSD");
+    // classes: a profile each, every class reachable
+    eq(Object.keys(DD.CLS).sort(), Object.keys(DD.FIG).sort(), "every class has a profile (13)");
+    ok(Object.keys(DD.CLS).every(c => Math.abs(DD.CLS[c][1]) <= 1.2), "class biases within ±1.2");
+    const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => b.pct - a.pct) });
+    const L = K.signs.KEY, got = {};
+    Object.keys(DD.CLS).forEach(c => { const p = {}; K.signs.GROUPS.forEach(gid => { p[gid] = 40 + DD.TYP[gid]; });
+      DD.CLS[c][0].split(" ").forEach(tk => { p[L[tk[0]]] += 30 * parseFloat(tk.slice(1)); }); got[c] = DD.pick(D(p)).cls; });
+    eq(Object.keys(got).filter(c => got[c] !== c), [], "a portrait shaped like a class's profile gets that class — all 13 reachable");
+    const fig = DD.pick(D({ intimacy: 36, bondage: 60, fetishes: 40, "role-play": 55, ds: 40, sm: 45, "sex-penetration": 50, "voyeurism-exhibitionism": 60, "bodily-fluids": 20 }));
+    eq([fig.cls, fig.stars.filter(x => x.bright).length, fig.stars.filter(x => x.bright).every(x => fig.main.indexOf(x.s) >= 0)], ["rogue", fig.main.length, true], "voyeurism + role-play above the usual → Rogue; the variant's groups are the bright stars");
+    ok(Object.keys(DD.VAR).filter(k => DD.VAR[k][1] === "wildmagic").every(k => DD.VAR[k][0] === "sorcerer"), "Wild Magic belongs to the Sorcerer only");
+    // races: every race reachable on made-up lists
+    const inCl = (...cl) => { const s2 = new Set(); cl.forEach(k => DD.CL[k][1].split(" ").forEach(id => s2.add(id))); return s2; };
+    const R = { human: ["pet", "classic"], elf: ["protocol", "touch"], drow: ["protocol"], dwarf: ["protocol", "iron"], dragonborn: ["protocol", "service"],
+      halforc: ["service", "company"], goliath: ["pet", "spank"], tiefling: ["protocol", "feast"], yuanti: ["dark", "home"], halfling: ["home"],
+      tabaxi: ["pet", "edge"], changeling: ["pet"], kenku: ["spank", "home"] };
+    const rg = {}; Object.keys(R).forEach(r => { const s2 = inCl(...R[r]); rg[r] = DD.race(mk((id, i) => s2.has(id) ? "love" : i % 3 ? "limit" : "maybe"), null); });
+    eq(Object.keys(rg).filter(r => rg[r] !== r), [], "all 13 races reachable");
+    ok(Object.keys(DD.RACEB).length === 13 && DD.RLIM.FLAT === .5, "every race has its bias; Human when every |z| < .5");
+    const soft = inCl("home", "touch"), z = DD.zPoles(mk((id, i) => soft.has(id) ? "love" : i % 3 ? "limit" : "maybe"), null);
+    ok(z.soft > 0 && z.hard === 0, "a pole's z is measured from the usual value (softness above the usual → soft > 0)");
+    // fey: Glamour 1–10, Banality 1–7; vampires: Humanity 3–10 only in the Camarilla, the Sabbat keeps a path
+    let rs = 1; const rnd = () => { rs = (rs * 16807) % 2147483647; return rs / 2147483647; };
+    const A = ["limit", "maybe", "yes", "love", null], glam = new Set(), ban = new Set(), bad = [];
+    for (let n = 0; n < 150; n++) {
+      const w = [rnd(), rnd(), rnd(), rnd(), rnd() * .6], sum = w.reduce((a, b) => a + b, 0);
+      const s2 = mk(() => { let r = rnd() * sum, k = 0; while (r > w[k]) r -= w[k++]; return A[k]; }, { role: n % 2 ? "dom" : "sub" });
+      const d = K.portrait.compute(s2, null), fy = W.details(s2, d, null, "fey", "boggan"), vp = W.details(s2, d, null, "vamp", W.choose(d, "vamp") || "brujah");
+      glam.add(fy.glamour); ban.add(fy.banality);
+      if (!(fy.glamour >= 1 && fy.glamour <= 10 && fy.banality >= 1 && fy.banality <= 7)) bad.push("fey " + fy.glamour + "/" + fy.banality);
+      if (vp.sect === "cam" ? !(vp.hum >= 3 && vp.hum <= 10 && vp.path === undefined) : !(vp.hum === undefined && W.PATHS[vp.path])) bad.push("vamp " + JSON.stringify(vp));
+    }
+    eq(bad, [], "Glamour 1–10, Banality 1–7; Humanity 3–10 only in the Camarilla, a path otherwise (150 made-up lists)");
+    ok(glam.size >= 4 && ban.size >= 4, "Glamour and Banality are spread (" + [...glam].sort((a, b) => a - b).join(",") + " / " + [...ban].sort((a, b) => a - b).join(",") + ")");
+    ok(!W.PATHS.humanity && !W.PATHB.humanity, "no Path of Humanity in the Sabbat (owner, v603)");
+    const lawful = mk((id, i) => i % 2 ? "limit" : "yes", { role: "dom" }), vc = W.details(lawful, K.portrait.compute(lawful, null), null, "vamp", "ventrue");
+    eq([vc.sect, vc.hum >= 3, vc.path], ["cam", true, undefined], "a Camarilla vampire has Humanity instead of a path");
+    ok(W.lines(vc, K.i18n.t).sub === "Человечность " + vc.hum, "…shown as “Humanity N” (" + W.lines(vc, K.i18n.t).sub + ")");
+    const hum = (good, l) => Math.max(3, Math.min(10, Math.round(7 + good / 5) - [13, 17].filter(x => l >= x).length));
+    eq([hum(0, 1), hum(20, 5), hum(-40, 10), hum(0, 13), hum(0, 17), hum(20, 20)], [7, 10, 3, 6, 5, 9], "Humanity = 7 + good / 5, −1 from level 13 and 17, within 3–10");
+    const miss = []; LANGS.forEach(l => { if (!K.i18n.has("ui", "wod.hum", l)) miss.push(l); });
+    eq(miss, [], "“Humanity {n}” in all 7 languages");
+    // help texts (owner-approved wording)
+    const h = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    h.KC.help.open("portrait");
+    const ht = h.d.getElementById("help-portrait").textContent;
+    ok(/сильнее, чем обычно тянутся люди/.test(ht) && /Класс решает профиль/.test(ht) && /у Камарильи — Человечность/.test(ht) && !/по двум самым сильным разделам, порядок не важен/.test(ht), "help: race, class and Humanity explained the v603 way");
+    ok(!f.errors.length && !h.errors.length, "no script errors");
     _sc.end();
   }
 
