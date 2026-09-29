@@ -167,11 +167,13 @@
   /* ---------- detailed pair view ---------- */
   function renderPair() {
     const searching = !!KC.$("cmpSearch").value.trim();
-    let html = '<div class="cmp-filter">' + (LAST.fromGroup ? '<button class="btn mini" data-f="group">' + esc(t("cmp.backGroup")) + "</button>" : "")
+    /* v601 (owner): the filters sit under the star map, right above the lists (and the search next to them) */
+    HEAD = profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B) + rlBtn() + (FILTER === "all" ? fold("pair") : "")
+      + '<div class="cmp-filter">' + (LAST.fromGroup ? '<button class="btn mini" data-f="group">' + esc(t("cmp.backGroup")) + "</button>" : "")
       + fbtn(FILTER, "all", t("cmp.all"))
       + fbtn(FILTER, "yesA", t("cmp.yesOf", { who: LAST.nA })) + fbtn(FILTER, "yesB", t("cmp.yesOf", { who: LAST.nB }))
-      + fbtn(FILTER, "ymA", t("cmp.yesMaybeOf", { who: LAST.nA })) + fbtn(FILTER, "ymB", t("cmp.yesMaybeOf", { who: LAST.nB })) + "</div>"
-      + profileLine(LAST.nA, LAST.A) + profileLine(LAST.nB, LAST.B) + rlBtn() + (FILTER === "all" ? fold("pair") : "");
+      + fbtn(FILTER, "ymA", t("cmp.yesMaybeOf", { who: LAST.nA })) + fbtn(FILTER, "ymB", t("cmp.yesMaybeOf", { who: LAST.nB })) + "</div>";
+    let html = "";
     if (FILTER !== "all") {
       const side = FILTER === "yesA" || FILTER === "ymA", who = side ? LAST.nA : LAST.nB, wm = FILTER.indexOf("ym") === 0;
       const rows = only(KC.match.yesOf(side ? LAST.A : LAST.B, wm)).map(r => ({ id: r.id, a: (LAST.A.items[r.id] || {}).interest || null, b: (LAST.B.items[r.id] || {}).interest || null }));
@@ -234,13 +236,15 @@
   }
   function renderGroup() {
     const P = GROUP, searching = !!KC.$("cmpSearch").value.trim();
-    let html = savedBar() + rlBtn() + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>"
-      + P.map(p => profileLine(p.name, p.st)).join("");
     if (SELG !== GROUP) { SEL = null; SELG = GROUP; }   /* a new company: no planet selected */
-    html += fold("group");   /* the system; the "…and Maybe" filter counts Maybe too */
+    /* v601 (owner): "Save" moved under the saved-comparison picker; the filters sit under the star map */
+    KC.$("cmpSaveBar").innerHTML = savedBar(); KC.$("cmpSaveBar").hidden = false;
+    HEAD = rlBtn() + P.map(p => profileLine(p.name, p.st)).join("") + fold("group")   /* the system; "…and Maybe" counts Maybe too */
+      + '<div class="cmp-filter">' + fbtn(GFILTER, "allYes", t("cmp.allYes")) + fbtn(GFILTER, "allYM", t("cmp.allYM")) + fbtn(GFILTER, "pairs", t("cmp.pairs")) + "</div>";
+    let html = "";
     if (GFILTER === "pairs") {
       const role = p => p.st.meta.role || "";
-      html += '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
+      HEAD += '<div class="cmp-filter pair-mode">' + '<button class="btn mini' + (PMODE === "any" ? " on" : "") + '" data-pm="any">' + esc(t("cmp.pairsAny")) + "</button>"
         + '<button class="btn mini' + (PMODE === "role" ? " on" : "") + '" data-pm="role">' + esc(t("cmp.pairsRole")) + "</button></div>"
         + (PMODE === "role" ? '<div class="sub">' + esc(t("cmp.pairsRoleSub")) + "</div>" : "");
       const noRole = P.filter(p => !role(p)).map(p => p.name);
@@ -262,10 +266,16 @@
       rows.map(r => rowHTML(r.id, P.map((p, i) => ({ name: p.name, v: r.vals[i] })))).join(""), rows.length);
   }
 
-  function render(scroll) {
+  /* #results = #resHead (profiles, roulette, star map, filters) + the search box + #resBody (the lists).
+     bodyOnly: typing in the search redraws only the lists, so the star map is not rebuilt and the field keeps focus */
+  let HEAD = "";
+  function render(scroll, bodyOnly) {
     KC.$("cmpSearchBox").hidden = false;
     const out = KC.$("results");
-    out.innerHTML = LAST ? renderPair() : renderGroup();
+    if (LAST) { KC.$("cmpSaveBar").hidden = true; KC.$("cmpSaveBar").innerHTML = ""; }   /* saving is for 3+ people */
+    const body = LAST ? renderPair() : renderGroup();
+    if (!bodyOnly) KC.$("resHead").innerHTML = HEAD;
+    KC.$("resBody").innerHTML = body;
     if (scroll && out.scrollIntoView) out.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -290,9 +300,9 @@
     else { LAST = null; GROUP = P; GFILTER = "allYes"; }
     render(true);
   });
-  KC.$("cmpSearch").addEventListener("input", () => { if (LAST || GROUP) render(false); });
+  KC.$("cmpSearch").addEventListener("input", () => { if (LAST || GROUP) render(false, true); });
+  KC.$("cmpSaveBar").addEventListener("click", e => { if (e.target.closest('button[data-act="save"]')) saveCurrent(); });
   KC.$("results").addEventListener("click", e => {
-    if (e.target.closest('button[data-act="save"]')) { saveCurrent(); return; }
     if (e.target.closest('button[data-act="roulette"]')) { KC.roulette.open(); return; }
     /* v591: the pair's constellations ↔ DnD classes ↔ (v597) World of Darkness.
        A button changes the mode (data-mode) or the World of Darkness line (data-wod); either way the block is redrawn.

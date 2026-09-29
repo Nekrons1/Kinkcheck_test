@@ -4,8 +4,11 @@
    Which subtype: a PROFILE, not only the strongest group — every subtype has weights over the 9 portrait groups
    (letters N B F R D S X V W = intimacy, bondage, fetishes, role-play, D/s, S/M, sex, voyeurism, fluids);
    score = Σ w·(group % − the person's average % − the usual skew TYP) / Σ|w| + a calibrated bias; the highest wins.
-   So a combination counts (fluids + sex → the Defilers), not only one group. A flat portrait (the groups' spread
-   < FLAT points) = the "no clan" subtype: Caitiff / Stargazers / Ghille Dhu (demons have none).
+   So a combination counts (fluids + sex → the Defilers), not only one group.
+   v601 (owner): no Caitiff and no Ravnos; no "flat portrait" rule any more (real lists are much more even than the
+   synthetic ones it was set on — every second person got Caitiff / Stargazers / Ghille Dhu); Stargazers and Ghille Dhu
+   have profiles like the others. Malkavians are not a profile: everything in one point — the strongest group at
+   least MALK points above the second one (after the skew). Biases are calibrated on lists spread like real ones.
    The figure: 9 stars (one per group, the sign's main groups are the bright ones, as in DnD) + grey stars.
    The text lines come from the same numbers as DnD: the race poles (KC.dnd.axes), the level, the alignment:
    - vampire: sect (Lasombra/Tzimisce = Sabbat unless Lawful Good; others Sabbat when Chaotic or Evil),
@@ -24,7 +27,7 @@
      than their own average and fluids / voyeurism less. Without this, bondage lovers all fell into the same few
      subtypes (Malefactors, Sluagh…). It is taken off before the profiles are compared; the biases are calibrated with it. */
   const TYP = { bondage: 20, "sex-penetration": 10, "voyeurism-exhibitionism": -8, "bodily-fluids": -25 };
-  const FLAT = 40, NONE = { vamp: "caitiff", wolf: "stargazers", fey: "ghille" };
+  const MALK = 15.8;   /* Malkavians: the gap between the two strongest groups (owner, v601: "concentrated in one point") */
   const LET = { N: "intimacy", B: "bondage", F: "fetishes", R: "role-play", D: "ds", S: "sm", X: "sex-penetration", V: "voyeurism-exhibitionism", W: "bodily-fluids" };
   /* [9 points in a 100×100 box, grey points, lines (index paths; "d" first = dashed), 3 bright slots] */
   const FIG = {
@@ -41,8 +44,6 @@
       assamite: [[[50,4],[50,18],[30,30],[70,30],[74,52],[66,78],[32,98],[40,78],[48,54]],[[44,8],[56,8],[50,30],[60,58],[52,80]],[[9,0,10],[0,1,11],[2,11,3],[11,4,5,6,7,8,11],["d",11,12,13,6]],[0,6,4]],
       giovanni: [[[20,40],[50,6],[80,40],[26,66],[74,66],[50,94],[36,48],[64,48],[50,62]],[[30,86],[70,86],[38,80],[50,82],[62,80],[46,68],[54,68],[29,48],[43,48],[57,48],[71,48]],[[0,1,2,4,10,5,9,3,0],["d",11,12,13],[8,14],[8,15],[16,6,17],[18,7,19]],[6,7,5]],
       setite: [[[60,8],[52,26],[72,40],[84,62],[60,86],[28,82],[16,58],[34,44],[52,60]],[[66,0],[72,4],[46,66],[44,14],[68,14]],[[0,1,2,3,4,5,6,7,8,11],[0,9],[0,10],[12,0,13]],[0,8,4]],
-      ravnos: [[[14,15],[69,3],[86,85],[31,97],[45,28],[68,46],[55,72],[32,54],[50,50]],[[24,22],[76,78],[25,28],[75,72]],[[0,1,2,3,0],[4,5,6,7,4],["d",9,11],["d",10,12]],[8,0,2]],
-      caitiff: [[[30,6],[70,6],[72,36],[62,62],[56,70],[50,62],[44,72],[36,60],[28,34]],[[48,86],[58,94],[42,97],[50,20]],[[0,1,2,3,4,5,6,7,8,0],["d",9,10,11,9]],[0,1,5]],
     },
     wolf: {
       gaia: [[[86,2],[58,26],[42,12],[94,60],[70,72],[48,94],[20,86],[60,40],[28,22]],[[82,46],[90,58],[12,58],[16,38],[34,98]],[[0,1],[2,1,9,3,4,5,13,6,11,12,8,2]],[0,7,5]],
@@ -82,9 +83,9 @@
   };
   /* profile: group letter -> weight; bias: calibrated so that every subtype comes out about equally often */
   const PROF = {
-    vamp: { toreador: ["V1 F.5 X.3 N.4", 6], tremere: ["B1 D.6 R.3", 0.5], tzimisce: ["F1 S.6 W.2", -4], ravnos: ["R1 V.5", 1.5], ventrue: ["D1 F.4", -2.5], brujah: ["S1 X.5", -4.5], setite: ["X1 W.4 D.3", -6], nosferatu: ["W1 V.3", -1.5], lasombra: ["B.8 D.8", -1], giovanni: ["D.8 S.6 W.3", 5], assamite: ["S.7 W.8", 0.5], malkavian: ["R.7 V.7", 6], gangrel: ["R.6 S.6 N-.2", 1] },
-    wolf: { gaia: ["N1 X.3", 6], uktena: ["B1 R.4", -3.5], glass: ["F1 V.3", -6], fangs: ["R1 D.5", 3], shadow: ["D1 B.4", 0], fenris: ["S1 D.3", -2.5], fianna: ["X1 N.3 R.2", -2], striders: ["V1 R.3", 6], gnawers: ["W1 N.2", 0], talons: ["R.6 S.7", 3], wendigo: ["B.7 S.6", 0] },
-    fey: { boggan: ["N1 S-.3", 9], sluagh: ["B1 V.3", -9], nocker: ["F1 B.3", -9], pooka: ["R1 X.2", -6.5], sidhe: ["D1 V.3 F.2", 2], redcap: ["S1 W.6", -8.5], satyr: ["X1 N.3", -8], eshu: ["V1 R.4", 6.5], troll: ["N.7 D.7", 9] },
+    vamp: { toreador: ["V1 F.5 X.3 N.4", 2], tremere: ["B1 D.6 R.3", -0.5], tzimisce: ["F1 S.6 W.2", -1.5], ventrue: ["D1 F.4", -2], brujah: ["S1 X.5", -3.5], setite: ["X1 W.4 D.3", -2], nosferatu: ["W1 V.3", 1.5], lasombra: ["B.8 D.8", -1], giovanni: ["W1 D.5", 3.5], assamite: ["S.7 W.8", 2], gangrel: ["R.6 S.6 N-.2", -1] },
+    wolf: { gaia: ["N1 X.3", 3], uktena: ["B1 R.4", -4], glass: ["F1 V.3", -5.5], fangs: ["R1 D.5", 2], shadow: ["D1 B.4", -2], fenris: ["S1 D.3", -4], fianna: ["X1 N.3 R.2", -2.5], striders: ["V1 R.3", 1.5], gnawers: ["W1 N.2", -2.5], talons: ["R.6 S.7", 0], wendigo: ["B.7 S.6", -3], stargazers: ["R.5 D.5 N.3", 6.5] },
+    fey: { boggan: ["N1 S-.3", 5.5], sluagh: ["B1 V.3", -6], nocker: ["F1 B.3", -5.5], pooka: ["R1 X.2", -4], sidhe: ["D1 V.3 F.2", 0.5], redcap: ["S1 W.6", -3.5], satyr: ["X1 N.3", -3.5], eshu: ["V1 R.4", 2], troll: ["N.7 D.7", 5.5], ghille: ["N.6 X.4 B-.3", 6] },
     demon: { devils: ["D1 R.3 V.3", 0], malefactors: ["B1 F.8", -6], scourges: ["N1 S.4", 6], defilers: ["W1 X.8", -4.5], fiends: ["R.6 V1", 5], devourers: ["S1 X.4 R.3", 0], slayers: ["R1 S.6", 0.5] },
   };
   const prof = {};   /* parsed once: line -> id -> {group: weight} */
@@ -100,8 +101,7 @@
     if (!g.length) return null;
     const mean = g.reduce((a, s) => a + s.pct, 0) / g.length, dev = {};
     g.forEach(s => { dev[s.id] = s.pct - mean - (TYP[s.id] || 0); });
-    const devs = Object.keys(dev).map(k => dev[k]);
-    if (NONE[line] && Math.max.apply(null, devs) - Math.min.apply(null, devs) < FLAT) return NONE[line];
+    if (line === "vamp") { const v = Object.keys(dev).map(k => dev[k]).sort((a, b) => b - a); if (v.length > 1 && v[0] - v[1] >= MALK) return "malkavian"; }
     const W = weights(line); let best = null, bs = -1e9;
     Object.keys(W).forEach(id => { let num = 0, den = 0;
       Object.keys(W[id]).forEach(gid => { num += W[id][gid] * (dev[gid] || 0); den += Math.abs(W[id][gid]); });
@@ -217,5 +217,5 @@
      (Paradox Interactive AB) is in the help texts help.wod_html / help.compareWod_html */
   const noticeHTML = () => '<div class="wod-note">' + KC.esc(KC.i18n.t("wod.notOfficial")) + "</div>";
 
-  KC.wod = { switchHTML, noticeHTML, TYP, FAITH, RAGE0, GNOSIS0, RANKB, GLAM, BANAL, LINES, FIG, PROF, FLAT, NONE, LIM, PATHS, AUSP, HOUSES, LORE, GEN, choose, pick, details, lines, closeness, sub, setSub };
+  KC.wod = { switchHTML, noticeHTML, TYP, FAITH, RAGE0, GNOSIS0, RANKB, GLAM, BANAL, LINES, FIG, PROF, MALK, LIM, PATHS, AUSP, HOUSES, LORE, GEN, choose, pick, details, lines, closeness, sub, setSub };
 })(window.KC);

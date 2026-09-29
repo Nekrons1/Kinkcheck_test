@@ -41,7 +41,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=600">
+<link rel="stylesheet" href="css/style.css?v=601">
 </head>
 <body>
 
@@ -66,17 +66,20 @@
   </section>
 
   <select class="cmp-saved" id="cmpSaved" hidden></select>
+  <div id="cmpSaveBar" hidden></div>
   <div class="cmp-inputs" id="parts"></div>
   <button class="btn ghost" id="addPart" type="button" style="width:100%;margin:0 0 10px" data-i18n="cmp.add"></button>
 
   <button class="btn primary" id="cmpBtn" style="width:100%;padding:12px" data-i18n="cmp.go"></button>
 
-  <div class="search cmp-search" id="cmpSearchBox" hidden>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-    <input type="search" id="cmpSearch" data-i18n-ph="search.ph" autocomplete="off">
+  <div id="results">
+    <div id="resHead"></div>
+    <div class="search cmp-search" id="cmpSearchBox" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="cmpSearch" data-i18n-ph="search.ph" autocomplete="off">
+    </div>
+    <div id="resBody"></div>
   </div>
-
-  <div id="results"></div>
 
   <footer class="foot" data-i18n="cmp.foot"></footer>
   <p class="foot-legal" data-i18n="foot.legal"></p>
@@ -93,6 +96,6 @@
   </div>
 </div>
 
-<script src="js/boot.js?v=600" data-page="compare" data-v="600"></script>
+<script src="js/boot.js?v=601" data-page="compare" data-v="601"></script>
 </body>
 </html>

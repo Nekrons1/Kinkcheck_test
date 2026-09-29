@@ -42,7 +42,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=600">
+<link rel="stylesheet" href="css/style.css?v=601">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -80,6 +80,7 @@
       <option value="new" data-i18n="view.new"></option>
       <option value="answered" data-i18n="view.answered"></option>
       <option value="positive" data-i18n="view.positive"></option>
+      <option value="no" data-i18n="view.no"></option>
     </select>
     <label class="fav-toggle" data-i18n-title="filt.onlyFav"><input type="checkbox" id="onlyFav"><span aria-hidden="true">♥</span></label>
   </div>
@@ -140,7 +141,7 @@
   </details>
 
   <details class="about portrait" id="portraitSection">
-    <summary><span id="portraitTitle"></span> <button class="help-q" type="button" data-help="portrait" data-i18n-title="help.open">?</button></summary>
+    <summary><span id="portraitTitle"></span> <span class="new-dot pt-new" data-i18n-title="item.new"></span> <button class="help-q" type="button" data-help="portrait" data-i18n-title="help.open">?</button></summary>
     <div class="portrait-body" id="portraitBody"></div>
   </details>
 
@@ -161,8 +162,7 @@
     <p class="share-note" id="shareTplNote" hidden></p>
     <div class="share-kind" id="shareKind"></div>
     <div class="linkbox"><input type="text" id="shareLink" readonly><button class="btn primary" id="copyLink" data-i18n="share.copy"></button></div>
-    <div class="share-count" id="shareCount" hidden></div>
-    <button class="btn primary share-send" id="sendLink" type="button" data-i18n="share.send" hidden></button>
+    <div class="share-row"><div class="share-count" id="shareCount" hidden></div><button class="btn ghost mini share-send" id="sendLink" type="button" data-i18n="share.send" hidden></button></div>
     <div id="qr"></div>
     <p style="text-align:center;margin:2px 0 0" data-i18n="share.qrNote"></p>
     <div class="tpl-share" id="tplShare">
@@ -263,6 +263,6 @@
   </div>
 </div>
 
-<script src="js/boot.js?v=600" data-page="form" data-v="600"></script>
+<script src="js/boot.js?v=601" data-page="form" data-v="601"></script>
 </body>
 </html>

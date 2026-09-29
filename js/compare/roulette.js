@@ -128,11 +128,10 @@
   }
 
   const BADGE = { love: "b-match", yes: "b-good", maybe: "b-maybe" };
-  const catOf = id => { const c = KC.CATS.find(c => c.items.some(x => x[1] === id)); return c ? KC.i18n.cat(c.id) : ""; };
   const ansOf = (p, id) => { const v = (p.st.items[id] || {}).interest; return v ? esc(p.name) + ' <span class="badge ' + BADGE[v] + '">' + esc(t("scale." + v)) + "</span>" : ""; };
-  /* one idea: section, name (+ English), hint, and both answers */
+  /* one idea: name (+ English), hint, and both answers (v601, owner: no section name above it — it said nothing useful) */
   const idea = (id, a, b) => '<div class="rl-idea">'
-    + '<div class="rl-sec">' + esc(catOf(id)) + "</div><b>" + esc(KC.i18n.item(id).name) + "</b>"
+    + "<b>" + esc(KC.i18n.item(id).name) + "</b>"
     + (KC.i18n.lang !== "en" ? '<span class="sub">' + esc(KC.i18n.item(id, "en").name) + "</span>" : "")
     + (KC.i18n.item(id).desc ? '<span class="rl-desc">' + esc(KC.i18n.item(id).desc) + "</span>" : "")
     + '<div class="rl-ans">' + ansOf(a, id) + " &nbsp; " + ansOf(b, id) + "</div></div>";
