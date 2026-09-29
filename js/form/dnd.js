@@ -153,12 +153,13 @@
     return (poleIds = P);
   }
   /* the 7 axes, −100…100 (0 when a pole has too few answers) */
-  function axes(st, set) {
+  /* nulls = true: an axis with too few answers is null instead of 0 (the World of Darkness standardises the axes, v602) */
+  function axes(st, set, nulls) {
     const P = poles(), val = {};
     Object.keys(P).forEach(p => { let n = 0, sum = 0;
       P[p].forEach(id => { if (set && !set.has(id)) return; const v = (st.items[id] || {}).interest; if (v) { n++; sum += RW[v]; } });
       val[p] = n >= RLIM.MIN ? 100 * sum / n : null; });
-    return POLES.map(([a, b]) => val[a] === null || val[b] === null ? 0 : val[a] - val[b]);
+    return POLES.map(([a, b]) => val[a] === null || val[b] === null ? (nulls ? null : 0) : val[a] - val[b]);
   }
   function race(st, set) {
     const ax = axes(st, set), str = {};

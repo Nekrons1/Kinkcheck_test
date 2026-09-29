@@ -2200,7 +2200,7 @@ const S = (title) => console.log("\n## " + title);
     const allNo = mk(() => "limit"), fNo = det(allNo, "fey", "boggan");
     eq([fNo.seem, fNo.glamour, fNo.banality], ["childling", 5, 7], "all “No”: a Childling with Glamour 5, Banality at its cap 7");
     ok(!/wod\./.test(W.lines(t20, K.i18n.t).sub + W.lines(f20, K.i18n.t).sub) && /Ярость/.test(W.lines(t20, K.i18n.t).sub) && /Банальность/.test(W.lines(f20, K.i18n.t).sub), "the lines show Rage · Gnosis and Glamour · Banality");
-    eq(det(lv20, "vamp", "brujah").path, "humanity", "everything even → Humanity");
+    ok(Object.keys(W.PATHS).indexOf(det(lv20, "vamp", "brujah").path) >= 0, "everything even → still a path (v602: no “flat = Humanity” rule)");
     eq(det(mk(() => "yes"), "wolf", "talons").breed, "lupus", "Red Talons are always Lupus");
     const taboo = new Set(DD.CL.taboo[1].split(" "));
     const met = mk((id, i) => taboo.has(id) ? "love" : i % 2 ? "limit" : "maybe");
@@ -2265,10 +2265,10 @@ const S = (title) => console.log("\n## " + title);
     const W = K.wod, D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => b.pct - a.pct) });
     const G = ["intimacy", "bondage", "fetishes", "role-play", "ds", "sm", "sex-penetration", "voyeurism-exhibitionism", "bodily-fluids"];
     const P = a => D(Object.fromEntries(G.map((g, i) => [g, a[i]])));
-    const group = { Ns: [36,77,62,52,74,69,41,34,26], Eliza: [29,73,47,58,63,73,68,45,0], Xavko: [39,42,0,0,0,24,74,44,15], Oblako: [52,77,48,55,17,9,60,12,9], Lieschen: [50,71,55,54,50,61,52,38,24] };
+    const group = { P1: [36,77,62,52,74,69,41,34,26], P2: [29,73,47,58,63,73,68,45,0], P3: [39,42,0,0,0,24,74,44,15], P4: [52,77,48,55,17,9,60,12,9], P5: [50,71,55,54,50,61,52,38,24] };
     const got = Object.keys(group).map(n => W.LINES.map(L => W.choose(P(group[n]), L)).join(" "));
     eq(got, ["ventrue shadow sidhe devils", "gangrel fenris sidhe devourers", "setite fianna satyr defilers", "tremere gaia boggan malefactors", "assamite stargazers troll scourges"], "the owner's first group (v601 weights; nobody is a Slayer)");
-    const group2 = { Ns: [35,78,58,54,73,68,52,37,25], Eliza: [29,73,47,58,63,73,68,45,0], Bastardo: [47,56,50,37,57,58,59,53,23], Xavko: [46,71,46,54,51,71,81,53,54], Valik: [49,76,58,58,22,10,59,10,14], Lavinial: [37,46,0,44,0,0,52,66,0], Lieschen: [49,72,54,54,51,63,49,39,20] };
+    const group2 = { P1: [35,78,58,54,73,68,52,37,25], P2: [29,73,47,58,63,73,68,45,0], P6: [47,56,50,37,57,58,59,53,23], P3: [46,71,46,54,51,71,81,53,54], P4: [49,76,58,58,22,10,59,10,14], P7: [37,46,0,44,0,0,52,66,0], P5: [49,72,54,54,51,63,49,39,20] };
     eq(Object.keys(group2).map(n => W.LINES.map(L => W.choose(P(group2[n]), L)).join(" ")),
       ["ventrue shadow sidhe devils", "gangrel fenris sidhe devourers", "toreador striders troll fiends", "assamite gnawers redcap defilers", "tremere uktena boggan malefactors", "malkavian striders eshu fiends", "gangrel talons troll scourges"],
       "the owner's coterie of seven: the table agreed in v601 (no Caitiff, no Stargazers / Ghille Dhu flood, one Malkavian)");
@@ -2355,6 +2355,29 @@ const S = (title) => console.log("\n## " + title);
     await new Promise(r => setTimeout(r, 1300));   /* the short name flicker */
     ok(!c.d.querySelector("#rlOut .rl-sec") && c.d.querySelectorAll("#rlOut .rl-idea").length > 0, "roulette ideas without the red section label");
     ok(!g.errors.length && !f.errors.length && !c.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v602: paths and auspices on standardised poles; sect and demon faction around the centre of real lists");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, W = K.wod;
+    eq(Object.keys(W.AUSP).map(k => W.AUSP[k].length), [2, 3, 3, 3, 3], "auspices own 2–3 poles each (one strongest pole decides)");
+    const all = [].concat(...Object.keys(W.AUSP).map(k => W.AUSP[k])).sort();
+    eq(all, [].concat(...K.dnd.POLES).sort(), "…and together they cover all 14 poles exactly once");
+    ok(Object.keys(W.PATHB).length === 14 && Object.keys(W.PATHS).every(k => W.PATHB[k] !== undefined), "every path has its calibrated shift");
+    ok(K.dnd.axes({ items: {}, meta: {} }, null, true).every(v => v === null) && K.dnd.axes({ items: {}, meta: {} }, null).every(v => v === 0), "axes(…, true): a pole with too few answers is null (0 without the flag, as before)");
+    /* the owner's group is checked outside the repo (their lists are private); here: the rules on made-up lists */
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const cl = {}; Object.keys(K.dnd.CL).forEach(k => K.dnd.CL[k][1].split(" ").forEach(id => { cl[id] = k; }));
+    const mk = (like, meta) => { const it = {}; ids.forEach((id, i) => { it[id] = { interest: like.indexOf(cl[id]) >= 0 ? "love" : i % 3 ? "maybe" : "limit" }; }); return { items: it, meta: meta || {} }; };
+    const det = (st, L) => { const d = K.portrait.compute(st, null); return W.details(st, d, null, L, W.choose(d, L)); };
+    eq(det(mk(["pet", "feast"]), "wolf").aus, "ragabash", "play + spontaneity lists (pet play, food) → Ragabash");
+    eq(det(mk(["extreme", "spank"]), "wolf").aus, "ahroun", "hard impact → Ahroun");
+    const facs = ["reconciler", "faustian", "luciferan", "ravener", "cryptic"];
+    const F = (law, good) => { const dl = law - W.CENTRE.LAW, dg = good - W.CENTRE.GOOD; return Math.abs(dl) < W.CENTRE.R && Math.abs(dg) < W.CENTRE.R ? "cryptic" : dl >= 0 ? (dg >= 0 ? "reconciler" : "faustian") : (dg >= 0 ? "luciferan" : "ravener"); };
+    eq([F(15, 10), F(15, -11), F(-6, 28), F(-10, -10), F(1, -4)], facs, "demon factions: four quarters around (law +2, good 0) and Cryptic in the middle");
+    ok(!f.errors.length, "no script errors");
     _sc.end();
   }
 

@@ -11,14 +11,14 @@
    least MALK points above the second one (after the skew). Biases are calibrated on lists spread like real ones.
    The figure: 9 stars (one per group, the sign's main groups are the bright ones, as in DnD) + grey stars.
    The text lines come from the same numbers as DnD: the race poles (KC.dnd.axes), the level, the alignment:
-   - vampire: sect (Lasombra/Tzimisce = Sabbat unless Lawful Good; others Sabbat when Chaotic or Evil),
-     generation (by level), path of enlightenment (the two strongest poles; all flat = Humanity);
+   - vampire: sect (Lasombra/Tzimisce = Sabbat unless Lawful Good; others Sabbat when law + good are 5 below the
+     centre of real lists), generation (by level), path of enlightenment (the two strongest STANDARDISED poles);
    - werewolf: breed (Metis: taboo items liked 20+ points above the person's share; Lupus: body + hands + spont),
-     auspice (two poles), rank (by level); Rage = the auspice's W20 starting Rage + a rank bonus, Gnosis = the
+     auspice (the one strongest standardised pole), rank (by level); Rage = the auspice's W20 starting Rage + a rank bonus, Gnosis = the
      breed's W20 starting Gnosis + the same bonus (owner, v599);
    - fey: court (law + good > 0 = Seelie), house of that court (the strongest pole), seeming (by level);
      Glamour = 4 (C20 start) + seeming bonus + growth with level; Banality = 3 + the share of "No" (owner, v599);
-   - demon: faction (by alignment), lore of the house (the strongest pole), Faith 3–6 by level (owner, v597: a
+   - demon: faction (quarters of law / good around the centre, Cryptic in the middle), lore of the house (the strongest pole), Faith 3–6 by level (owner, v597: a
      starting demon has Faith 3, a long campaign reaches 5–6; more is near-impossible in play).
    Names are texts: "wod.<line>.<id>" and the "wod.*" keys below. */
 (function (KC) {
@@ -126,7 +126,20 @@
   const PATHS = { humanity: ["soft", "private"], cathari: ["rush", "body"], typhon: ["mind", "ritual"], power: ["power", "mind"],
     accord: ["ritual", "power"], night: ["hard", "mind"], feral: ["hands", "body"], metamorph: ["body", "private"], blood: ["slow", "hard"],
     lilith: ["hard", "ritual"], self: ["private", "ritual"], paradox: ["play", "mind"], scorched: ["slow", "mind"], caine: ["mind", "spont"] };
-  const AUSP = { ragabash: ["play", "spont"], theurge: ["mind", "slow"], philodox: ["power", "ritual"], galliard: ["crowd", "rush"], ahroun: ["hard", "body"] };
+  /* v602 (owner): the auspice follows the ONE strongest pole (each auspice owns 2–3 poles); it was a pair and gave
+     too many Theurges (slow + mind are high in most real lists) */
+  const AUSP = { ragabash: ["play", "spont"], theurge: ["mind", "private", "slow"], philodox: ["power", "ritual", "gear"],
+    galliard: ["crowd", "rush", "soft"], ahroun: ["hard", "body", "hands"] };
+  /* v602: paths and auspices compare STANDARDISED poles — each axis minus its usual value in real lists, divided by its
+     usual spread (real lists are softer, more ritual and "mind", less gear than zero; without this every second person
+     got Humanity or the Scorched Heart). Small calibrated shifts make every path / auspice about equally likely. */
+  const AXT = [-5, 5, 8, -8, 3, 3, -15], AXSD = [13, 8, 9, 12, 16, 8, 16];
+  const PATHB = { humanity: -.3, cathari: -.33, typhon: .2, power: .07, accord: .2, night: .24, feral: -.37, metamorph: -.19, blood: .1,
+    lilith: .26, self: .23, paradox: -.06, scorched: .07, caine: -.07 };
+  const AUSB = { ragabash: .17, theurge: -.04, philodox: -.1, galliard: -.07, ahroun: -.03 };
+  /* v602 (owner): sect and demon faction from the alignment NUMBERS around the centre of real lists (law +2, good 0),
+     not from the ±15 alignment names — almost every real list is "neutral" */
+  const CENTRE = { LAW: 2, GOOD: 0, R: 5, SAB: -5 };
   const HOUSES = { seelie: { gwydion: "power", beaumayn: "mind", eiluned: "ritual", dougal: "gear", liam: "soft", fiona: "rush", scathach: "hard" },
     unseelie: { aesin: "power", ailil: "mind", balor: "hard", daireann: "spont", varich: "play", leanhaun: "rush" } };
   const LORE = { devils: { celestials: "ritual", flame: "hard", radiance: "crowd" }, malefactors: { earth: "hands", forge: "gear", paths: "slow" },
@@ -145,11 +158,12 @@
   const GLAM = { BASE: 4, GROW: 6, POLE: 12 }, BANAL = { BASE: 3, FROM: .3, STEP: .15, MAX: 7 };
   const LIM = { FLAT: 12, METIS: 20, LUPUS: 45, MIN: 5 };
   /* the strongest of named options by pole strength (a tie: the first one) */
-  const best = (opts, val) => Object.keys(opts).reduce((a, b) => val(opts[b]) > val(opts[a]) ? b : a);
+  const best = (opts, val) => Object.keys(opts).reduce((a, b) => val(opts[b], b) > val(opts[a], a) ? b : a);
   function strengths(st, set) {
-    const ax = KC.dnd.axes(st, set), str = {};
-    KC.dnd.POLES.forEach(([a, b], i) => { str[a] = Math.max(0, ax[i]); str[b] = Math.max(0, -ax[i]); });
-    return { ax, str };
+    const ax = KC.dnd.axes(st, set), str = {}, raw = KC.dnd.axes(st, set, true), z = {};
+    KC.dnd.POLES.forEach(([a, b], i) => { str[a] = Math.max(0, ax[i]); str[b] = Math.max(0, -ax[i]);
+      const v = raw[i] === null ? 0 : (raw[i] - AXT[i]) / AXSD[i]; z[a] = Math.max(0, v); z[b] = Math.max(0, -v); });
+    return { ax, str, z };
   }
   /* Metis: the taboo cluster (fluids, blood, "dirty" play) is liked clearly more than everything else */
   function metis(st, set) {
@@ -161,17 +175,16 @@
   }
   /* st = the list, d = its portrait, set = the applied template (or null) -> {line, id, ...details} */
   function details(st, d, set, line, id) {
-    const { ax, str } = strengths(st, set), lv = KC.dnd.level(st, set), an = KC.dnd.alignNum(st, d, set), al = KC.dnd.alignment(st, d, set);
+    const { str, z } = strengths(st, set), lv = KC.dnd.level(st, set), an = KC.dnd.alignNum(st, d, set), al = KC.dnd.alignment(st, d, set);
     const roll = al === "roll", o = { line, id, lv, roll };
-    const pair = p => str[p[0]] + str[p[1]];
     if (line === "vamp") {
-      o.sect = roll ? null : (id === "lasombra" || id === "tzimisce") ? (al === "LG" ? "cam" : "sab") : (al !== "boring" && (al[0] === "C" || al[1] === "E")) ? "sab" : "cam";
+      o.sect = roll ? null : (id === "lasombra" || id === "tzimisce") ? (al === "LG" ? "cam" : "sab") : (an.law - CENTRE.LAW) + (an.good - CENTRE.GOOD) < CENTRE.SAB ? "sab" : "cam";
       o.gen = GEN[Math.min(20, Math.max(1, lv)) - 1];
-      o.path = ax.every(v => Math.abs(v) < LIM.FLAT) ? "humanity" : best(PATHS, pair);
+      o.path = best(PATHS, (p, k) => z[p[0]] + z[p[1]] + PATHB[k]);
     } else if (line === "wolf") {
       o.breed = id === "talons" ? "lupus" : metis(st, set) ? "metis" : str.body + str.hands + str.spont >= LIM.LUPUS ? "lupus" : "homid";
       if (o.breed === "metis" && (id === "fianna" || id === "fangs")) o.breed = "homid";
-      o.aus = best(AUSP, pair); o.rank = RANK(lv);
+      o.aus = best(AUSP, (ps, k) => Math.max.apply(null, ps.map(p => z[p])) + AUSB[k]); o.rank = RANK(lv);
       o.rage = RAGE0[o.aus] + RANKB[o.rank]; o.gnosis = GNOSIS0[o.breed] + RANKB[o.rank];
     } else if (line === "fey") {
       o.court = roll ? null : an.key === "boring" || an.law + an.good > 0 ? "seelie" : "unseelie";
@@ -180,7 +193,8 @@
       o.glamour = GLAM.BASE + (o.seem === "childling" || (o.seem === "wilder" && Math.max(str.play, str.spont) >= GLAM.POLE) ? 1 : 0) + Math.floor((lv - 1) / GLAM.GROW);
       o.banality = Math.min(BANAL.MAX, BANAL.BASE + Math.floor(Math.max(0, an.pNo - BANAL.FROM) / BANAL.STEP + 1e-9) + (o.seem === "grump" ? 1 : 0));
     } else if (line === "demon") {
-      o.fac = roll ? null : al === "CE" ? "ravener" : al[1] === "G" ? "reconciler" : al[1] === "E" ? "faustian" : al[0] === "C" ? "luciferan" : "cryptic";
+      const dl = an.law - CENTRE.LAW, dg = an.good - CENTRE.GOOD;   /* quarters around the centre, a small middle circle */
+      o.fac = roll ? null : Math.abs(dl) < CENTRE.R && Math.abs(dg) < CENTRE.R ? "cryptic" : dl >= 0 ? (dg >= 0 ? "reconciler" : "faustian") : (dg >= 0 ? "luciferan" : "ravener");
       o.lore = best(LORE[id], p => str[p]); o.faith = FAITH(lv);
     }
     return o;
@@ -217,5 +231,5 @@
      (Paradox Interactive AB) is in the help texts help.wod_html / help.compareWod_html */
   const noticeHTML = () => '<div class="wod-note">' + KC.esc(KC.i18n.t("wod.notOfficial")) + "</div>";
 
-  KC.wod = { switchHTML, noticeHTML, TYP, FAITH, RAGE0, GNOSIS0, RANKB, GLAM, BANAL, LINES, FIG, PROF, MALK, LIM, PATHS, AUSP, HOUSES, LORE, GEN, choose, pick, details, lines, closeness, sub, setSub };
+  KC.wod = { switchHTML, noticeHTML, TYP, AXT, AXSD, PATHB, AUSB, CENTRE, FAITH, RAGE0, GNOSIS0, RANKB, GLAM, BANAL, LINES, FIG, PROF, MALK, LIM, PATHS, AUSP, HOUSES, LORE, GEN, choose, pick, details, lines, closeness, sub, setSub };
 })(window.KC);
