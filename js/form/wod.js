@@ -93,12 +93,15 @@
   /* profile: group letter -> weight; bias: calibrated so that every subtype comes out about equally often */
   /* v603 (owner, v600 rule "nobody in the group is a Slayer"): the Slayers keep a low bias (about 1 in 20 on the
      calibration lists); the other six houses share the rest equally */
+  /* owner, v605: hand-tuned — Ventrue +0.4 / Lasombra −0.4, Devils +1.0 / Malefactors −0.35 on top of the v604 calibration,
+     so that the people the owner knows get the type the owner sees in them. On recalibration: synthetic lists first,
+     then add these shifts again. (Malefactors cannot go lower: a Slayer would appear in the group.) */
   const PROF = {
-    vamp: { toreador: ["V1 F.5 X.3 N.4", 0.25], tremere: ["B1 D.6 R.3", 0.6], tzimisce: ["F1 S.6 W.2", 0.25], ventrue: ["D1 F.4", -0.6], brujah: ["S1 X.5", -0.34], setite: ["X1 W.4 D.3", 0.13], nosferatu: ["W1 V.3", -0.31], lasombra: ["B.8 D.8", 0.29], giovanni: ["W1 D.5", 0.64], assamite: ["S.7 W.8", 0.7], gangrel: ["R.6 S.6 N-.2", 0.07] },
+    vamp: { toreador: ["V1 F.5 X.3 N.4", 0.25], tremere: ["B1 D.6 R.3", 0.6], tzimisce: ["F1 S.6 W.2", 0.25], ventrue: ["D1 F.4", -0.2], brujah: ["S1 X.5", -0.34], setite: ["X1 W.4 D.3", 0.13], nosferatu: ["W1 V.3", -0.31], lasombra: ["B.8 D.8", -0.11], giovanni: ["W1 D.5", 0.64], assamite: ["S.7 W.8", 0.7], gangrel: ["R.6 S.6 N-.2", 0.07] },
     wolf: { gaia: ["N1 X.3", -0.69], uktena: ["B1 R.4", -0.12], glass: ["F1 V.3", -1.75], fangs: ["R1 D.5", 1.12], shadow: ["D1 B.4", -0.17], fenris: ["S1 D.3", 0.06], fianna: ["X1 N.3 R.2", 0.16], striders: ["V1 R.3", -0.85], gnawers: ["W1 N.2", -2.14], talons: ["R.6 S.7", 1.21], wendigo: ["B.7 S.6", 0.54], stargazers: ["R.5 D.5 N.3", 2.64] },
     fey: { boggan: ["N1 S-.3", 0.36], sluagh: ["B1 V.3", -1.38], nocker: ["F1 B.3", -1.66], pooka: ["R1 X.2", -1.77], sidhe: ["D1 V.3 F.2", 0.41], redcap: ["S1 W.6", -0.58], satyr: ["X1 N.3", 0.12], eshu: ["V1 R.4", -0.99], troll: ["N.7 D.7", 1.19], ghille: ["N.6 X.4 B-.3", 2.14],
       selkie: ["W1 N.5 R.3", 1], clurichaun: ["X1 S.6 F.3", 1.15] },
-    demon: { devils: ["D1 R.3 V.3", 0.26], malefactors: ["B1 F.8", -0.81], scourges: ["N1 S.4", -0.61], defilers: ["W1 X.8", -0.34], fiends: ["R.6 V1", 0.32], devourers: ["S1 X.4 R.3", 1.18], slayers: ["R1 S.6", -1.9] },
+    demon: { devils: ["D1 R.3 V.3", 1.26], malefactors: ["B1 F.8", -1.16], scourges: ["N1 S.4", -0.61], defilers: ["W1 X.8", -0.34], fiends: ["R.6 V1", 0.32], devourers: ["S1 X.4 R.3", 1.18], slayers: ["R1 S.6", -1.9] },
   };
   const prof = {};   /* parsed once: line -> id -> {group: weight} */
   function weights(line) {

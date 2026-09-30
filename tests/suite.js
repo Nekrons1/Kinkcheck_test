@@ -2276,11 +2276,11 @@ const S = (title) => console.log("\n## " + title);
     const P = a => D(Object.fromEntries(G.map((g, i) => [g, a[i]])));
     const group = { P1: [36,77,62,52,74,69,41,34,26], P2: [29,73,47,58,63,73,68,45,0], P3: [39,42,0,0,0,24,74,44,15], P4: [52,77,48,55,17,9,60,12,9], P5: [50,71,55,54,50,61,52,38,24] };
     const got = Object.keys(group).map(n => W.LINES.map(L => W.choose(P(group[n]), L)).join(" "));
-    eq(got, ["ventrue shadow sidhe malefactors", "gangrel talons pooka devourers", "setite fianna satyr defilers", "tremere uktena boggan malefactors", "tremere uktena nocker malefactors"], "the owner's first group (v603 weights; nobody is a Slayer)");
+    eq(got, ["ventrue shadow sidhe devils", "gangrel talons pooka devourers", "setite fianna satyr defilers", "tremere uktena boggan malefactors", "tremere uktena nocker malefactors"], "the owner's first group (v605 hand-tuned Devils; nobody is a Slayer)");
     const group2 = { P1: [35,78,58,54,73,68,52,37,25], P2: [29,73,47,58,63,73,68,45,0], P6: [47,56,50,37,57,58,59,53,23], P3: [46,71,46,54,51,71,81,53,54], P4: [49,76,58,58,22,10,59,10,14], P7: [37,46,0,44,0,0,52,66,0], P5: [49,72,54,54,51,63,49,39,20] };
     eq(Object.keys(group2).map(n => W.LINES.map(L => W.choose(P(group2[n]), L)).join(" ")),
-      ["lasombra shadow sidhe devils", "gangrel talons pooka devourers", "toreador striders sidhe fiends", "nosferatu gnawers selkie defilers", "tremere uktena nocker malefactors", "malkavian striders eshu fiends", "tremere uktena sluagh malefactors"],
-      "the owner's coterie of seven: the table after v604 (no Caitiff, one Malkavian, one Selkie)");
+      ["lasombra shadow sidhe devils", "gangrel talons pooka devourers", "toreador striders sidhe devils", "nosferatu gnawers selkie defilers", "tremere uktena nocker malefactors", "malkavian striders eshu fiends", "tremere uktena sluagh malefactors"],
+      "the owner's coterie of seven: the table after v605 (no Caitiff, one Malkavian, one Selkie; old v602 percentages — the v605 section checks a variant-A portrait)");
     ok(!/W/.test(W.PROF.demon.slayers[0]) && W.PROF.demon.slayers[0] === "R1 S.6", "Slayers: no fluids (owner)");
     eq([W.PROF.fey.satyr[0], W.PROF.fey.boggan[0]], ["X1 N.3", "N1 S-.3"], "fey variant E: Satyrs and Boggans");
     // share window
@@ -2490,6 +2490,31 @@ const S = (title) => console.log("\n## " + title);
       const a = DD.race(st, null), b = DD.race({ items: st.items, meta: { attire: ["latex", "leather", "goth"] } }, null); if (a !== b) bad++; }
     eq(bad, 0, "clothing (latex, leather, goth) never changes the race any more");
     ok(!K.wr && !K.i18n.has("ui", "wr.toWr", "ru"), "the Chaos gods are not in this version (a separate plan)");
+    ok(!f.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v605: hand-tuned Ventrue / Lasombra and Devils / Malefactors (owner)");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, W = K.wod;
+    const D = pcts => ({ sections: Object.keys(pcts).map(id => ({ id, pct: pcts[id] })).sort((a, b) => b.pct - a.pct) });
+    eq([W.PROF.vamp.ventrue[1], W.PROF.vamp.lasombra[1], W.PROF.demon.devils[1], W.PROF.demon.malefactors[1]], [-0.2, -0.11, 1.26, -1.16], "v605 biases: Ventrue −0.6 + 0.4, Lasombra 0.29 − 0.4, Devils 0.26 + 1.0, Malefactors −0.81 − 0.35");
+    eq([W.PROF.vamp.ventrue[0], W.PROF.vamp.lasombra[0], W.PROF.demon.devils[0], W.PROF.demon.malefactors[0]], ["D1 F.4", "B.8 D.8", "D1 R.3 V.3", "B1 F.8"], "profiles unchanged (only the biases were hand-tuned)");
+    ok(/owner, v605: hand-tuned/.test(fs.readFileSync(require("./harness").ROOT + "/js/form/wod.js", "utf8")), "hand-tuned shifts are marked in the code (kept on recalibration)");
+    /* a made-up portrait in the owner's shape (variant A percentages, not the owner's list): v604 gave Lasombra + Malefactors */
+    const like = D({ intimacy: 37, bondage: 73, fetishes: 57, "role-play": 47, ds: 68, sm: 69, "sex-penetration": 49, "voyeurism-exhibitionism": 35, "bodily-fluids": 30 });
+    eq([W.choose(like, "vamp"), W.choose(like, "demon")], ["ventrue", "devils"], "a portrait like the owner's → Ventrue and Devils");
+    const P = W.PROF, keep = [P.vamp.ventrue[1], P.vamp.lasombra[1], P.demon.devils[1], P.demon.malefactors[1]];
+    P.vamp.ventrue[1] = -0.6; P.vamp.lasombra[1] = 0.29; P.demon.devils[1] = 0.26; P.demon.malefactors[1] = -0.81;
+    const old = [W.choose(like, "vamp"), W.choose(like, "demon")];
+    [P.vamp.ventrue[1], P.vamp.lasombra[1], P.demon.devils[1], P.demon.malefactors[1]] = keep;
+    eq(old, ["lasombra", "malefactors"], "…the same portrait with the v604 biases was Lasombra + Malefactors (the test would catch a revert)");
+    // nobody is a Slayer: the made-up groups of the v600 section and 2000 random lists around the usual skew
+    const G = K.signs.GROUPS; let n = 0, sl = 0, seed = 605; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 2000; i++) { const x = {}; G.forEach(g => { x[g] = Math.max(0, Math.min(100, Math.round(45 + K.dnd.TYP[g] + (rnd() - 0.5) * 50))); });
+      const id = W.choose(D(x), "demon"); if (id) { n++; if (id === "slayers") sl++; } }
+    ok(n === 2000 && sl / n < 0.1, "Slayers stay rare on random lists (" + sl + " of " + n + ")");
     ok(!f.errors.length, "no script errors");
     _sc.end();
   }
