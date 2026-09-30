@@ -15,7 +15,7 @@
    The text lines come from the same numbers as DnD: the race poles (KC.dnd.axes), the level, the alignment:
    - vampire: sect (Lasombra/Tzimisce = Sabbat unless Lawful Good; others Sabbat when law + good are 5 below the
      centre of real lists), generation (by level); v603 (owner): the Camarilla keeps Humanity (V20 0–10, usually 7 at
-     the start): 7 + good / 5, −1 from level 13 and −1 from level 17 (elders lose it), within 3–10; the Sabbat follows
+     the start): 5.5 + good / 5, −1 from level 13 and −1 from level 17 (elders lose it), within 2–8 (v606); the Sabbat follows
      a path of enlightenment (the two strongest STANDARDISED poles; no "Path of Humanity" any more);
    - werewolf: breed (Metis: taboo items liked 20+ points above the person's share; Lupus: body + hands + spont),
      auspice (the one strongest standardised pole), rank (by level); Rage = the auspice's W20 starting Rage + a rank bonus, Gnosis = the
@@ -170,8 +170,10 @@
      Banality 3–4, now the share of "Love" (Glamour) and of "No" (Banality) spread them. +1 Glamour every 6 levels
      (bought with experience in C20) */
   const GLAM = { BASE: 2, STEP: .07, GROW: 6, MIN: 1, MAX: 10 }, BANAL = { BASE: 1, STEP: .07, MIN: 1, MAX: 7 };
-  /* v603 (owner): Humanity of the Camarilla = 7 + good / HUM.K, −1 from each level in HUM.OLD, within 3–10 */
-  const HUM = { BASE: 7, K: 5, OLD: [13, 17], MIN: 3, MAX: 10 };
+  /* v603 (owner): Humanity of the Camarilla = BASE + good / HUM.K, −1 from each level in HUM.OLD, within MIN–MAX.
+     v606 (owner): within 2–8 (was 3–10); the middle moved from 7 to 5.5 with the same slope, so real lists use
+     the whole 2–8 scale instead of piling up at the cap */
+  const HUM = { BASE: 5.5, K: 5, OLD: [13, 17], MIN: 2, MAX: 8 };
   const LIM = { FLAT: 12, METIS: 20, LUPUS: 45, MIN: 5 };
   /* the strongest of named options by pole strength (a tie: the first one) */
   const best = (opts, val) => Object.keys(opts).reduce((a, b) => val(opts[b], b) > val(opts[a], a) ? b : a);

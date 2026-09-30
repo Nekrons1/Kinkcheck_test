@@ -2209,7 +2209,7 @@ const S = (title) => console.log("\n## " + title);
     eq([fNo.seem, fNo.glamour, fNo.banality], ["childling", 3, 7], "all “No”: a Childling with Glamour 2 + 1 = 3, Banality at its cap 7 (v603)");
     ok(!/wod\./.test(W.lines(t20, K.i18n.t).sub + W.lines(f20, K.i18n.t).sub) && /Ярость/.test(W.lines(t20, K.i18n.t).sub) && /Банальность/.test(W.lines(f20, K.i18n.t).sub), "the lines show Rage · Gnosis and Glamour · Banality");
     const v20 = det(lv20, "vamp", "brujah");
-    ok(v20.sect === "sab" ? Object.keys(W.PATHS).indexOf(v20.path) >= 0 : v20.hum >= 3, "everything even → a path in the Sabbat, Humanity in the Camarilla (v602: no “flat = Humanity” rule; v603)");
+    ok(v20.sect === "sab" ? Object.keys(W.PATHS).indexOf(v20.path) >= 0 : v20.hum >= 2, "everything even → a path in the Sabbat, Humanity in the Camarilla (v602: no “flat = Humanity” rule; v603)");
     eq(det(mk(() => "yes"), "wolf", "talons").breed, "lupus", "Red Talons are always Lupus");
     const taboo = new Set(DD.CL.taboo[1].split(" "));
     const met = mk((id, i) => taboo.has(id) ? "love" : i % 2 ? "limit" : "maybe");
@@ -2438,16 +2438,16 @@ const S = (title) => console.log("\n## " + title);
       const d = K.portrait.compute(s2, null), fy = W.details(s2, d, null, "fey", "boggan"), vp = W.details(s2, d, null, "vamp", W.choose(d, "vamp") || "brujah");
       glam.add(fy.glamour); ban.add(fy.banality);
       if (!(fy.glamour >= 1 && fy.glamour <= 10 && fy.banality >= 1 && fy.banality <= 7)) bad.push("fey " + fy.glamour + "/" + fy.banality);
-      if (vp.sect === "cam" ? !(vp.hum >= 3 && vp.hum <= 10 && vp.path === undefined) : !(vp.hum === undefined && W.PATHS[vp.path])) bad.push("vamp " + JSON.stringify(vp));
+      if (vp.sect === "cam" ? !(vp.hum >= 2 && vp.hum <= 8 && vp.path === undefined) : !(vp.hum === undefined && W.PATHS[vp.path])) bad.push("vamp " + JSON.stringify(vp));
     }
     eq(bad, [], "Glamour 1–10, Banality 1–7; Humanity 3–10 only in the Camarilla, a path otherwise (150 made-up lists)");
     ok(glam.size >= 4 && ban.size >= 4, "Glamour and Banality are spread (" + [...glam].sort((a, b) => a - b).join(",") + " / " + [...ban].sort((a, b) => a - b).join(",") + ")");
     ok(!W.PATHS.humanity && !W.PATHB.humanity, "no Path of Humanity in the Sabbat (owner, v603)");
     const lawful = mk((id, i) => i % 2 ? "limit" : "yes", { role: "dom" }), vc = W.details(lawful, K.portrait.compute(lawful, null), null, "vamp", "ventrue");
-    eq([vc.sect, vc.hum >= 3, vc.path], ["cam", true, undefined], "a Camarilla vampire has Humanity instead of a path");
+    eq([vc.sect, vc.hum >= 2, vc.path], ["cam", true, undefined], "a Camarilla vampire has Humanity instead of a path");
     ok(W.lines(vc, K.i18n.t).sub === "Человечность " + vc.hum, "…shown as “Humanity N” (" + W.lines(vc, K.i18n.t).sub + ")");
-    const hum = (good, l) => Math.max(3, Math.min(10, Math.round(7 + good / 5) - [13, 17].filter(x => l >= x).length));
-    eq([hum(0, 1), hum(20, 5), hum(-40, 10), hum(0, 13), hum(0, 17), hum(20, 20)], [7, 10, 3, 6, 5, 9], "Humanity = 7 + good / 5, −1 from level 13 and 17, within 3–10");
+    const hum = (good, l) => Math.max(2, Math.min(8, Math.round(5.5 + good / 5) - [13, 17].filter(x => l >= x).length));
+    eq([hum(0, 1), hum(20, 5), hum(-40, 10), hum(0, 13), hum(0, 17), hum(20, 20)], [6, 8, 2, 5, 4, 8], "Humanity = 5.5 + good / 5, −1 from level 13 and 17, within 2–8 (v606)");
     const miss = []; LANGS.forEach(l => { if (!K.i18n.has("ui", "wod.hum", l)) miss.push(l); });
     eq(miss, [], "“Humanity {n}” in all 7 languages");
     // help texts (owner-approved wording)
@@ -2515,6 +2515,28 @@ const S = (title) => console.log("\n## " + title);
     for (let i = 0; i < 2000; i++) { const x = {}; G.forEach(g => { x[g] = Math.max(0, Math.min(100, Math.round(45 + K.dnd.TYP[g] + (rnd() - 0.5) * 50))); });
       const id = W.choose(D(x), "demon"); if (id) { n++; if (id === "slayers") sl++; } }
     ok(n === 2000 && sl / n < 0.1, "Slayers stay rare on random lists (" + sl + " of " + n + ")");
+    ok(!f.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v606: Camarilla Humanity within 2–8 (owner)");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, W = K.wod;
+    eq(W.HUM, { BASE: 5.5, K: 5, OLD: [13, 17], MIN: 2, MAX: 8 }, "Humanity: middle 5.5, slope good / 5, −1 at levels 13 and 17, within 2–8");
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const V = ["limit", "maybe", "yes", "love"]; let seed = 606; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const seen = new Set(), bad = [];
+    for (let n = 0; n < 600; n++) {
+      /* made-up lists from very “kind” to very “cruel”: tenderness loved or refused, the rest random */
+      const kind = rnd(), it = {}; ids.forEach(id => { if (rnd() < 0.8) it[id] = { interest: V[Math.floor(rnd() * 4)] }; });
+      K.CATS.filter(c => c.id === "intimacy").forEach(c => c.items.forEach(([, id]) => { it[id] = { interest: kind > 0.5 ? "love" : "limit" }; }));
+      const st = { items: it, meta: { role: rnd() < 0.5 ? "dom" : "sub" } }, d = K.portrait.compute(st, null);
+      const vc = W.details(st, d, null, "vamp", "ventrue");
+      if (vc.hum !== undefined) { seen.add(vc.hum); if (vc.hum < 2 || vc.hum > 8 || vc.hum !== Math.round(vc.hum)) bad.push(vc.hum); }
+    }
+    eq(bad, [], "Humanity never below 2 or above 8");
+    ok(seen.size >= 4, "Humanity still spreads over the scale (" + [...seen].sort((a, b) => a - b).join(",") + ")");
     ok(!f.errors.length, "no script errors");
     _sc.end();
   }
