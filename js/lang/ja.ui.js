@@ -687,6 +687,8 @@ KC.addLang("ja", "ui", {
   "wod.fey.eshu": "エシュ",
   "wod.fey.troll": "トロール",
   "wod.fey.ghille": "ギリー・ドゥー",
+  "wod.fey.selkie": "セルキー",
+  "wod.fey.clurichaun": "クルラホーン",
   "sp.wod.grp.fey": "モトリー",
   "sp.wod.h.fey": "ふたりの種族",
   "sp.wod.same.fey": "同じ種族",

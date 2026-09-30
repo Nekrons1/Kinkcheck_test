@@ -715,6 +715,8 @@ KC.addLang("zh", "ui", {
   "wod.fey.eshu": "艾舒",
   "wod.fey.troll": "巨魔",
   "wod.fey.ghille": "吉利杜",
+  "wod.fey.selkie": "賽爾基",
+  "wod.fey.clurichaun": "克魯瑞肯",
   "sp.wod.grp.fey": "雜伍",
   "sp.wod.h.fey": "兩人的族裔",
   "sp.wod.same.fey": "同一族裔",

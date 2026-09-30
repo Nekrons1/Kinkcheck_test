@@ -1,6 +1,6 @@
 /* form/wod.js — the joke "World of Darkness" mode of the portrait (v597, owner), next to DnD: four lines, each
    with its own constellations — 🧛 Vampire (V20 clans), 🐺 Werewolf (W20 tribes), 🧚 Fey (Changeling kiths),
-   😈 Demon (Demon: The Fallen houses). Russian names follow wod.su.
+   😈 Demon (Demon: The Fallen houses). Russian names follow wod.su. v604 (owner): + the Selkies and the Clurichauns (C20).
    Which subtype: a PROFILE, not only the strongest group — every subtype has weights over the 9 portrait groups
    (letters N B F R D S X V W = intimacy, bondage, fetishes, role-play, D/s, S/M, sex, voyeurism, fluids);
    score = Σ w·(group % − the person's average % − the usual skew TYP) / Σ|w| + a calibrated bias; the highest wins.
@@ -76,6 +76,9 @@
       eshu: [[[50,4],[50,96],[96,50],[4,50],[64,24],[36,76],[50,50],[82,82],[18,18]],[[89,60],[78,78],[60,89],[40,89],[22,78],[11,60],[11,40],[22,22],[40,11],[60,11],[78,22],[89,40]],[["d",9,10,11,12,13,14,15,16,17,18,19,20,9],[4,6,5],[0,6,1],[3,6,2]],[4,0,2]],
       troll: [[[14,94],[30,74],[40,52],[54,62],[58,22],[78,6],[94,30],[80,46],[70,30]],[[52,10],[98,16],[98,46],[64,54],[22,84]],[[0,13,1,2,4,5,6,7,3,1],[4,9],[5,10],[6,11],[7,12]],[5,8,0]],
       ghille: [[[50,8],[18,34],[82,34],[16,48],[84,48],[22,68],[78,68],[50,97],[92,6]],[[50,0],[62,12],[78,2],[34,40],[50,40],[66,40],[36,84],[64,84]],[[0,9],[1,0,2],[1,3,4,2],[3,5,15,7,16,6,4],[0,10,8,11,0],["d",12,13,14]],[0,7,8]],
+      /* v604 (owner): the Selkies (a seal over the waves) and the Clurichauns (a tankard with foam) */
+      selkie: [[[86,26],[97,34],[70,40],[50,46],[28,56],[8,48],[10,72],[62,66],[40,70]],[[4,90],[22,82],[40,90],[58,82],[76,90],[94,82]],[[1,0,2,3,4,5],[4,6],[2,7,8,4],["d",9,10,11,12,13,14]],[0,7,5]],
+      clurichaun: [[[22,32],[64,32],[24,94],[62,94],[88,54],[34,18],[52,10],[43,62],[88,74]],[[14,24],[70,20],[64,44],[64,82],[36,46],[50,80]],[[0,1],[0,2,3,1],[11,4,8,12],[9,5,6,10],["d",13,7,14]],[6,7,4]],
     },
     demon: {
       devils: [[[50,40],[50,4],[80,40],[20,40],[50,97],[64,26],[36,26],[64,54],[36,54]],[[56,34],[44,34],[56,46],[44,46],[50,70]],[[1,9,2,11,4],[4,12,3,10,1],["d",0,13]],[0,1,4]],
@@ -93,7 +96,8 @@
   const PROF = {
     vamp: { toreador: ["V1 F.5 X.3 N.4", 0.25], tremere: ["B1 D.6 R.3", 0.6], tzimisce: ["F1 S.6 W.2", 0.25], ventrue: ["D1 F.4", -0.6], brujah: ["S1 X.5", -0.34], setite: ["X1 W.4 D.3", 0.13], nosferatu: ["W1 V.3", -0.31], lasombra: ["B.8 D.8", 0.29], giovanni: ["W1 D.5", 0.64], assamite: ["S.7 W.8", 0.7], gangrel: ["R.6 S.6 N-.2", 0.07] },
     wolf: { gaia: ["N1 X.3", -0.69], uktena: ["B1 R.4", -0.12], glass: ["F1 V.3", -1.75], fangs: ["R1 D.5", 1.12], shadow: ["D1 B.4", -0.17], fenris: ["S1 D.3", 0.06], fianna: ["X1 N.3 R.2", 0.16], striders: ["V1 R.3", -0.85], gnawers: ["W1 N.2", -2.14], talons: ["R.6 S.7", 1.21], wendigo: ["B.7 S.6", 0.54], stargazers: ["R.5 D.5 N.3", 2.64] },
-    fey: { boggan: ["N1 S-.3", 0.53], sluagh: ["B1 V.3", -1.05], nocker: ["F1 B.3", -1.29], pooka: ["R1 X.2", -1.41], sidhe: ["D1 V.3 F.2", 0.61], redcap: ["S1 W.6", -0.82], satyr: ["X1 N.3", -0.05], eshu: ["V1 R.4", -0.14], troll: ["N.7 D.7", 1.43], ghille: ["N.6 X.4 B-.3", 2.18] },
+    fey: { boggan: ["N1 S-.3", 0.36], sluagh: ["B1 V.3", -1.38], nocker: ["F1 B.3", -1.66], pooka: ["R1 X.2", -1.77], sidhe: ["D1 V.3 F.2", 0.41], redcap: ["S1 W.6", -0.58], satyr: ["X1 N.3", 0.12], eshu: ["V1 R.4", -0.99], troll: ["N.7 D.7", 1.19], ghille: ["N.6 X.4 B-.3", 2.14],
+      selkie: ["W1 N.5 R.3", 1], clurichaun: ["X1 S.6 F.3", 1.15] },
     demon: { devils: ["D1 R.3 V.3", 0.26], malefactors: ["B1 F.8", -0.81], scourges: ["N1 S.4", -0.61], defilers: ["W1 X.8", -0.34], fiends: ["R.6 V1", 0.32], devourers: ["S1 X.4 R.3", 1.18], slayers: ["R1 S.6", -1.9] },
   };
   const prof = {};   /* parsed once: line -> id -> {group: weight} */

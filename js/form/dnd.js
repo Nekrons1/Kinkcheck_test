@@ -69,9 +69,9 @@
   }
   /* class profiles: group letter (as in the signs) -> weight, + a bias calibrated so that every class comes out about
      equally often on lists spread like real ones (owner, v603) */
-  const CLS = { cleric: ["n1 d.4", 0.2], rogue: ["v1 r.5", 0], wizard: ["r1 f.5", -0.02], monk: ["b1 n.3", -0.51], fighter: ["s.7 x.7", 0.38],
-    barbarian: ["s1 w.3", -0.67], paladin: ["d1 n.3", -0.26], warlock: ["d.7 f.7", 0.4], sorcerer: ["x1 w.5", 0.16], bard: ["x.7 v.7", 0.36],
-    druid: ["w1 n.4", -0.25], ranger: ["b.7 r.7", 0.3], artificer: ["f1 b.5", -0.1] };
+  const CLS = { cleric: ["n1 d.4", 0.14], rogue: ["v1 r.5", 0], wizard: ["r1 f.5", -0.54], monk: ["b1 n.3", -0.52], fighter: ["s.7 x.7", 0.15],
+    barbarian: ["s1 w.3", -0.81], paladin: ["d1 n.3", 0.2], warlock: ["d.7 f.7", 0.35], sorcerer: ["x1 w.5", 0.01], bard: ["x.7 v.7", 0.18],
+    druid: ["w1 n.4", -0.3], ranger: ["b.6 r.6 v.4", 1.25], artificer: ["f1 b.5", -0.1] };
   /* a single variant: its group GAP_D ahead of the second (the sign's 30 points × .45, the spread of real lists);
      the Chimera: the three strongest within EVEN_D (owner, v603) */
   const GAP_D = 13.6, EVEN_D = 2.3;
@@ -162,21 +162,22 @@
      its usual spread AXSD (an axis with too few answers: z = 0); a race's points = z of its two poles + a calibrated
      bias RACEB; the most points wins. Before, raw poles were compared and softness + privacy (the Halfling) are the
      strongest poles of almost every real list. Every |z| < .5 → Human. "About me" (in z): large/extensive
-     experience +.6 Dragonborn, latex / leather / goth +.6 Tiefling. Session length counts for "slow" / "rush".
+     experience +.6 Dragonborn (v604, owner: clothing no longer counts for the Tiefling). Session length counts for
+     "slow" / "rush".
      AXT / AXSD are shared with the World of Darkness (paths, auspices). */
   const POLES = [["power", "play"], ["mind", "body"], ["ritual", "spont"], ["gear", "hands"], ["slow", "rush"], ["crowd", "private"], ["hard", "soft"]];
   const CL = {
     protocol: ["1+ 2+ 3+ 5+", "following-orders discipline rituals honorifics contract-slave total-power-exchange 24-7-d-s-lifestyle prompt-obedience eye-contact-rules speech-restrictions no-sounds gor-training kneeling daily-diary mantra-meditation personality-modification name-change symbolic-jewelry collar-in-private metal-collar punishment-scene chosen-food bathroom-control exercise-required photo-proof initiation-rites standing-in-corner kneeling-on-buckwheat corner-kneeler"],
-    pet: ["1- 3+", "age-play dd-lg-md-lb animal-roleplay puppy-play kitten-play pony-play furry leash muzzles hand-feeding kigurumi bratting brat-taming switching-roles wrestling praise begging schoolroom-scenes"],
+    pet: ["1- 3+", "age-play dd-lg-md-lb animal-roleplay puppy-play kitten-play pony-play furry leash muzzles hand-feeding kigurumi bratting brat-taming switching-roles wrestling praise begging schoolroom-scenes cow-play pig-play"],
     service: ["1+ 3+", "chores serving-as-a-maid massage pedicures-foot-massage manicures chauffeuring forced-servitude uniform-wearing erotic-dancing serving-other-doms other-sub-serves-you"],
-    object: ["1+ 2+", "objectification sex-doll-use depersonalisation dronification mindbreak freeuse glory-hole stuck-in-wall fuck-box serving-as-furniture serving-as-art used-as-toy-for-other-sub sleep-play unseen-actor blind-stranger auctioned"],
-    words: ["2+ 1+", "verbal-humiliation forced-thanking forced-self-degradation humiliating-body-writing body-writing lecturing dirty-talk forced-begging-acts humiliation-in-private mouth-soaping phone-sex"],
+    object: ["1+ 2+", "objectification sex-doll-use depersonalisation dronification mindbreak freeuse glory-hole stuck-in-wall fuck-box serving-as-furniture serving-as-art used-as-toy-for-other-sub sleep-play unseen-actor blind-stranger auctioned hair-as-mop"],
+    words: ["2+ 1+", "verbal-humiliation forced-thanking forced-self-degradation humiliating-body-writing body-writing lecturing dirty-talk forced-begging-acts humiliation-in-private mouth-soaping phone-sex floor-licking"],
     look: ["2+ 3+", "forced-dressing forced-feminization cross-dressing chosen-clothing shaving-head-hair shaving-body-hair forced-nudity forced-nudity-private slutty-clothing"],
     wardrobe: ["3+ 4+", "leather-wearing rubber-latex-wearing latex-sweat spandex-clothing corsets lingerie-wearing stockings-wearing high-heel-wearing formal-clothing gas-masks masks cosplay clothed-sex clothes-tearing tights-tearing clothes-cutting piercing-fetish harness-leather cuffs-leather leather-restraints nerd-hikikomori clowncore"],
     worship: ["3+ 2-", "boot-worship cock-worship foot-worship toe-licking-giving toe-licking-receiving ass-worship pussy-worship high-heel-worship stocking-worship armpit-fetish homage-with-tongue oral-fixation"],
     rope: ["3+ 4+ 5+", "rope-bondage-simple rope-bondage-shibari semenawa harness-rope suspension-upright suspension-horizontal suspension-inverted partial-suspension breast-bondage hair-bondage predicament-bondage mutually-restrictive-bondage bondage-light arm-leg-sleeves spreader-bars wall-cross-mounting loveswing"],
     iron: ["4+ 5+ 1+", "cages-cells chains manacles-irons cuffs-metal cuffs-handcuff thumb-cuffs toe-cuffs zip-tie-bondage tape-bondage stocks chastity-device locking-anal-plug locking-vaginal-insert bondage-all-day bondage-heavy left-tied-unattended straight-jacket mummification sleep-sacks bondage-bag vacbed immobilisation mitts prison-scenes nose-hook"],
-    dark: ["2+ 4+ 5+", "blindfolds ear-plugs hood-full-head sensory-deprivation gag-ball gag-bit gag-cloth gag-inflatable gag-phallic gag-ring gag-tape panty-gag sex-in-total-darkness sleep-deprivation"],
+    dark: ["2+ 4+ 5+", "blindfolds ear-plugs hood-full-head sensory-deprivation gag-ball gag-bit gag-cloth gag-inflatable gag-phallic gag-ring gag-tape panty-gag sex-in-total-darkness sleep-deprivation sock-gag-own sock-gag-top"],
     touch: ["7- 1- 5+ 2-", "teasing tickling scratching wartenberg-pinwheel ice-cubes wax-play hot-wax-dripping scent-play caning-sensation vampire-gloves finger-claws nipple-play biting hickies ear-licking oil-play nuru-massage suction-cups ice-dildo"],
     spank: ["2- 7+ 4-", "spanking-hand spanking-over-the-knee spanking-hairbrush spanking-leather-slappers spanking-wooden-paddles body-slapping whipping-belt whipping-flogger whipping-cat-o-nine whipping-single-tail riding-crop rubber-band-snapping caning-english rattan birching bastinado palm-strikes strapping pussy-spanking breast-whipping impact-bruising sap-gloves pain-mild pain-massage pressure-points beating-soft bruising-temporary hair-pulling rough-grabbing"],
     extreme: ["7+ 2- 4+", "pain-severe beating-hard punching kicking face-slapping ballbusting pussy-punching pussy-kicking pussy-whipping breast-torture cbt cbt-crushing cbt-stretching ball-stretching zippers-clothespins zippers-clamps zippers-needles nipple-weights tongue-clothespins clamps-labia-clit piercing-temporary labia-sewing-needle labia-stapling medical-stapler branding scarification tattooing piercing-permanent nipple-piercing wax-burns standing-on-nails spike-mat reducing-to-tears brutal-treatment trampling-barefoot trampling-shoes trampling-punk-boots face-stepping biting-hard wasabi-on-genitals menthol-balm-labia menthol-eye-drops figging fire-play fire-cupping hot-wax-high-temp hot-wax-hair-removal wax-inside-vagina riding-the-horse abrasion clothespins nipple-clamps"],
@@ -185,7 +186,7 @@
     orgasm: ["5+ 1+", "edging orgasm-control orgasm-denial forced-orgasm overstimulation sexual-deprivation tantric-yoni forced-masturbation masturbation mutual-masturbation"],
     public: ["6+ 2+", "collar-in-public leash-walk-outside humiliation-in-public anal-plug-public exhibitionism-friends exhibitionism-strangers forced-nudity-others outdoor-scenes stripping erotic-photos photo-exchange video-of-you fake-public-use"],
     watch: ["6+ 2+", "voyeurism-others voyeurism-your-dom video-others forced-watching-others forced-porn-watching mirror-play sex-in-front-of-a-mirror cuckolding-hotwife"],
-    wild: ["3- 4- 7+", "sex-in-snow sex-in-rain hair-drag-snow hair-drag-rain nude-in-snow mud-play outdoor-sex outdoor-bondage chained-outdoors cold-shower sauna-whisk nettle-play-urtication leeches"],
+    wild: ["3- 4- 7+", "sex-in-snow sex-in-rain hair-drag-snow hair-drag-rain nude-in-snow mud-play outdoor-sex outdoor-bondage chained-outdoors cold-shower sauna-whisk nettle-play-urtication leeches abandoned-building-sex"],
     feast: ["1- 3- 4-", "food-play nyotaimori sake-from-thighs food-smearing-sploshing drinking-from-feet forced-drinking-from-feet forced-unpleasant-food forced-drinking-beer-cider drinking-bathwater forced-drinking-bathwater funnel-play smoking-fetish"],
     taboo: ["3- 7+", "golden-showers swallowing-urine urination-in-front omorashi period-play blood-play spitting spitting-in-mouth human-ashtray trash-play forced-staying-in-sweat-cum underwear-sniffing wearing-partners-underwear milking pussy-juice-play squirting licking-fingers-clean rimming"],
     home: ["7- 6- 4-", "romance-affection hugging gentle-touch kissing-body kissing-mouth spooning using-real-names sleepover aftercare shared-bathing lap-pillow-ear-cleaning petting-over-clothes thigh-sex"],
@@ -235,7 +236,6 @@
     const m = st.meta || {}, sc = {};
     Object.keys(RACES).forEach(r => { sc[r] = z[RACES[r][0]] + z[RACES[r][1]] + RACEB[r]; });
     if (m.exp === "large" || m.exp === "extensive") sc.dragonborn += RLIM.BONUS;
-    if ((m.attire || []).some(a => a === "latex" || a === "leather" || a === "goth")) sc.tiefling += RLIM.BONUS;
     return Object.keys(sc).reduce((a, b) => sc[b] > sc[a] ? b : a);   /* a tie: the earlier race in RACES */
   }
 

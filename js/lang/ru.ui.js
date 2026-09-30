@@ -688,6 +688,8 @@ KC.addLang("ru", "ui", {
   "wod.fey.eshu": "Эшу",
   "wod.fey.troll": "Тролли",
   "wod.fey.ghille": "Гилли Ду",
+  "wod.fey.selkie": "Селки",
+  "wod.fey.clurichaun": "Клуриконы",
   "sp.wod.grp.fey": "Табор",
   "sp.wod.h.fey": "Рода пары",
   "sp.wod.same.fey": "Один род",

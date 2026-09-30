@@ -675,6 +675,8 @@ KC.addLang("th", "ui", {
   "wod.fey.eshu": "เอชู",
   "wod.fey.troll": "โทรลล์",
   "wod.fey.ghille": "กิลลีดู",
+  "wod.fey.selkie": "เซลกี",
+  "wod.fey.clurichaun": "คลูริคอน",
   "sp.wod.grp.fey": "คณะ",
   "sp.wod.h.fey": "เชื้อสายของคู่",
   "sp.wod.same.fey": "เชื้อสายเดียวกัน",

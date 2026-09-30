@@ -688,6 +688,8 @@ KC.addLang("pt", "ui", {
   "wod.fey.eshu": "Eshu",
   "wod.fey.troll": "Trolls",
   "wod.fey.ghille": "Ghille Dhu",
+  "wod.fey.selkie": "Selkies",
+  "wod.fey.clurichaun": "Clurichauns",
   "sp.wod.grp.fey": "Bando",
   "sp.wod.h.fey": "Linhagens do casal",
   "sp.wod.same.fey": "A mesma linhagem",
