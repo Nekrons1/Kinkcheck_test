@@ -238,12 +238,17 @@
   const sub = scope => { const r = KC.ls.raw(KEY(scope)); return LINES.indexOf(r) >= 0 ? r : "vamp"; };
   const setSub = (v, scope) => { if (LINES.indexOf(v) >= 0) KC.ls.setRaw(KEY(scope), v); };
 
-  /* the mode switch built the same way for the portrait and the compare page (each view keeps its own choice): "✦ Constellation | 🎲 DnD | 🦇 World of Darkness",
-     and in the World of Darkness a second row "🧛 Vampire | 🐺 Werewolf | 🧚 Fey | 😈 Demon" */
+  /* the mode switch built the same way for the portrait and the compare page (each view keeps its own choice):
+     one row — "⚔ Wr" on the left (v611, only when one of its tabs is switched on), "✦ Constellation | 🎲 DnD | 🦇 World of Darkness" on the right;
+     under it, the tabs of the open group: World of Darkness "🧛 Vampire | 🐺 Werewolf | 🧚 Fey | 😈 Demon",
+     or ⚔ Wr "Chaos gods | 🌌 40K | 🛡 Legion" (only the tabs that are switched on, and only when there are two or more) */
   function switchHTML(scope) {
-    const t = k => KC.i18n.t(k), esc = KC.esc, m = KC.dnd.mode(scope), cur = sub(scope);
-    const b = (attr, v, key, pressed) => '<button type="button" class="btn ghost mini" ' + attr + '="' + v + '" aria-pressed="' + pressed + '">' + esc(t(key)) + "</button>";
-    return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">' + b("data-mode", "sign", "dnd.toSign", m === "sign") + b("data-mode", "dnd", "dnd.toDnd", m === "dnd") + b("data-mode", "wod", "wod.toWod", m === "wod") + "</div>"
+    const t = k => KC.i18n.t(k), esc = KC.esc, m = KC.dnd.mode(scope), cur = sub(scope), tabs = KC.dnd.wrTabs(), wrOn = KC.dnd.isWr(m);
+    const b = (attr, v, key, pressed, cls) => '<button type="button" class="btn ghost mini' + (cls ? " " + cls : "") + '" ' + attr + '="' + v + '" aria-pressed="' + pressed + '">' + esc(t(key)) + "</button>";
+    return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">'
+      + (tabs.length ? b("data-mode", wrOn ? m : KC.dnd.wrLast(scope), "wr.toWr", wrOn, "pt-wrb") : "")
+      + b("data-mode", "sign", "dnd.toSign", m === "sign") + b("data-mode", "dnd", "dnd.toDnd", m === "dnd") + b("data-mode", "wod", "wod.toWod", m === "wod") + "</div>"
+      + (wrOn && tabs.length > 1 ? '<div class="pt-mode pt-wr-sub" role="group" aria-label="' + esc(t("wr.switch")) + '">' + tabs.map(x => b("data-mode", x, { wr: "wr.gods", wh: "wh.toWh", leg: "leg.toLeg" }[x], m === x)).join("") + "</div>" : "")
       + (m === "wod" ? '<div class="pt-mode pt-wod-sub" role="group" aria-label="' + esc(t("wod.switch")) + '">' + LINES.map(l => b("data-wod", l, "wod.l." + l, l === cur)).join("") + "</div>" : "");
   }
   /* under the mode: only "not official World of Darkness material" (owner, v597); the full Dark Pack notice

@@ -271,12 +271,25 @@
      v599 (owner): the portrait, the pair view and the company view each remember their OWN mode (scope
      "portrait" | "pair" | "group"), so a choice in the portrait never changes what the compare page opens with. */
   const KEY = scope => scope === "pair" ? KC.KEYS.dndPair : scope === "group" ? KC.KEYS.dndGroup : KC.KEYS.dnd;
-  const mode = scope => { const r = KC.ls.raw(KEY(scope)); return r === "1" ? "dnd" : r === "wod" && KC.wod ? "wod" : "sign"; };
-  const setMode = (m, scope) => { const k = KEY(scope); if (m === "dnd") KC.ls.setRaw(k, "1"); else if (m === "wod") KC.ls.setRaw(k, "wod"); else KC.ls.del(k); };
+  /* v610: "wr" = Servant of the Chaos gods (KC.wr), "wh" = Warhammer factions (KC.wh), "leg" = legions (KC.leg); each new mode
+     only while its switch in KC.FEATURES is on (a device that chose a switched-off mode sees the constellation) */
+  const EXTRA = { wod: () => !!KC.wod, wr: () => !!(KC.wr && KC.FEATURES && KC.FEATURES.wr), wh: () => !!(KC.wh && KC.FEATURES && KC.FEATURES.wh),
+    leg: () => !!(KC.leg && KC.FEATURES && KC.FEATURES.leg) };
+  const usable = m => !!(EXTRA[m] && EXTRA[m]());
+  const mode = scope => { const r = KC.ls.raw(KEY(scope)); return r === "1" ? "dnd" : usable(r) ? r : "sign"; };
+  const setMode = (m, scope) => { const k = KEY(scope); if (m === "dnd") KC.ls.setRaw(k, "1"); else if (usable(m)) KC.ls.setRaw(k, m); else KC.ls.del(k);
+    if (WR.indexOf(m) >= 0 && usable(m)) KC.ls.setRaw(WRKEY(scope), m); };
+  /* v611: ⚔ Wr is one button on the left that opens its own tabs — Chaos gods (wr), factions (wh), legions (leg).
+     The tab chosen last is remembered (per scope) and reopened by the ⚔ Wr button; a tab that is switched off is skipped. */
+  const WR = ["wr", "wh", "leg"];
+  const WRKEY = scope => scope === "pair" ? KC.KEYS.wrPair : scope === "group" ? KC.KEYS.wrGroup : KC.KEYS.wr;
+  const wrTabs = () => WR.filter(usable);
+  const wrLast = scope => { const r = KC.ls.raw(WRKEY(scope)), on = wrTabs(); return on.indexOf(r) >= 0 ? r : on[0] || null; };
+  const isWr = m => WR.indexOf(m) >= 0;
   const on = scope => mode(scope) === "dnd";
   const setOn = (v, scope) => setMode(v ? "dnd" : "sign", scope);
 
-  KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, AXES, scores, keyOf, pick, alignNum, alignment, on, set: setOn, mode, setMode,
+  KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, AXES, scores, keyOf, pick, alignNum, alignment, on, set: setOn, mode, setMode, usable, wrTabs, wrLast, isWr,
     TYP, devs, CLS, GAP_D, EVEN_D, classes, variant,
     POLES, CL, RACES, RLIM, AXT, AXSD, RACEB, axes, zPoles, race, XP, level, DMG, MON, foes };
 })(window.KC);

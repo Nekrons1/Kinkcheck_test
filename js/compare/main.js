@@ -154,7 +154,8 @@
   const foldBody = kind => { if (kind === "pair") return KC.space.pairSVG(LAST.A, LAST.B, LAST.nA, LAST.nB);
     if (!KC.dnd || !KC.wod) return KC.space.groupSVG(GROUP, SEL, GFILTER === "allYM");
     const m = KC.dnd.mode("group");
-    return KC.space.modeSwitch("group") + (m === "dnd" ? KC.space.partyHTML(GROUP) : m === "wod" ? KC.space.wodGroupHTML(GROUP) : KC.space.groupSVG(GROUP, SEL, GFILTER === "allYM")); };
+    return KC.space.modeSwitch("group") + (m === "dnd" ? KC.space.partyHTML(GROUP) : m === "wod" ? KC.space.wodGroupHTML(GROUP)
+      : ["wr", "wh", "leg"].indexOf(m) >= 0 ? KC.space.modeGroupHTML(GROUP, m) : KC.space.groupSVG(GROUP, SEL, GFILTER === "allYM")); };   /* v610: cult, army, legions */
   const fold = kind => { const on = !!folds()[kind];
     return '<details class="about sp-fold" data-fold="' + kind + '"' + (on ? " open" : "") + "><summary>✦ " + esc(t("sp.fold." + kind)) + '</summary><div class="sp-fold-body">' + (on ? foldBody(kind) : "") + "</div></details>"; };
   KC.$("results").addEventListener("toggle", e => {

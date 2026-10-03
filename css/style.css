@@ -740,3 +740,6 @@ details.sp-fold>summary{font-size:17px}
 /* v608: the practice list written into the /<lang>/ pages for search engines; hidden (not display:none),
    replaced by the real list as soon as the scripts run */
 .seo-list{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+/* v611: ⚔ Wr is on the left of the mode row (the other modes stay on the right); its tabs (gods, 40K, legion) open under it, on the left */
+.pt-mode .pt-wrb{margin-right:auto}
+.pt-wr-sub,.sp-signs .pt-wr-sub,.sp-fold-body>.pt-wr-sub{justify-content:flex-start;margin:-2px 0 6px}

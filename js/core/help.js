@@ -8,8 +8,10 @@
   const SECTIONS = ["start", "answer", "filters", "portrait", "lists", "share", "received", "tpl", "pdf", "compare", "roulette", "privacy"];
   const NEWS = "news";   /* its own tab, not a section of "How to use" */
   /* texts added to a section later, kept as separate keys so the original text stays as it was */
-  const MORE = { portrait: ["help.portraitDnd_html", "help.dndRace_html", "help.wod_html"], compare: ["help.compareSave_html", "help.compareSpace_html", "help.compareFold_html", "help.compareDnd_html", "help.compareParty_html", "help.compareWod_html"], tpl: ["help.tplNebula_html"], share: ["help.shareSend_html"], privacy: ["help.privacyStats_html"] };
-  const shown = k => k !== "help.privacyStats_html" || !!(KC.stats && KC.stats.enabled); /* only while the counter is on */
+  const MORE = { portrait: ["help.portraitDnd_html", "help.dndRace_html", "help.wod_html", "help.wr_html", "help.leg_html"], compare: ["help.compareSave_html", "help.compareSpace_html", "help.compareFold_html", "help.compareDnd_html", "help.compareParty_html", "help.compareWod_html", "help.compareWr_html", "help.compareWh_html", "help.compareLeg_html"], tpl: ["help.tplNebula_html"], share: ["help.shareSend_html"], privacy: ["help.privacyStats_html"] };
+  /* only while the counter is on; v610: a new joke mode's paragraphs only while its switch (KC.FEATURES) is on */
+  const FEAT = { "help.wr_html": "wr", "help.compareWr_html": "wr", "help.compareWh_html": "wh", "help.leg_html": "leg", "help.compareLeg_html": "leg" };
+  const shown = k => k === "help.privacyStats_html" ? !!(KC.stats && KC.stats.enabled) : FEAT[k] ? !!(KC.FEATURES && KC.FEATURES[FEAT[k]]) : true;
   const t = k => KC.i18n.t(k);
   let modal = null;
 

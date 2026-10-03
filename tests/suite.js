@@ -1148,9 +1148,9 @@ const S = (title) => console.log("\n## " + title);
       pt: ["dnd.r.drow", "dnd.r.yuanti", "dnd.r.tabaxi", "dnd.r.kenku", "dnd.m.medusa", "dnd.m.balor", "dnd.m.marilith", "dnd.m.kraken", "dnd.m.kobold", "dnd.m.goblin", "dnd.m.lich", "dnd.m.tarrasque"] };
     Object.keys(same).forEach(l => { SAME_OK[l] = SAME_OK[l].concat(same[l]); }); }
   /* v591: the "🎲 DnD" button reads the same everywhere */
-  Object.keys(SAME_OK).forEach(l => { SAME_OK[l].push("dnd.toDnd"); });
+  Object.keys(SAME_OK).forEach(l => { SAME_OK[l].push("dnd.toDnd", "wr.toWr"); });   /* v610: "⚔ Wr" is the same in every language */
   /* v597: World of Darkness proper names (clans, auspices, ranks, the Babylonian house names…) stay as in English */
-  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$)/;
+  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$|wh\.f\.|leg\.l\.|wh\.toWh$)/;   /* v610: faction and legion names are proper names (often the same as English) */
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0 && !WOD_SAME.test(k)), [], l + ": no interface string left in English"));
   ok(!/TEMPORARY/.test(["pt", "es", "ja", "th", "zh"].map(l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8")).join("")), "no TEMPORARY markers left");
@@ -1860,7 +1860,7 @@ const S = (title) => console.log("\n## " + title);
     ok(/<meta name="description"/.test(html) && /og:image" content="https:\/\/klevatess\.github\.io\/kinkmatch\/img\/og\.png"/.test(html) && (html.match(/hreflang=/g) || []).length === 8 && /<meta name="rating" content="adult">/.test(html), "index.html: description, preview image, 7 languages + default, adult rating");
     ok(fs.existsSync(require("./harness").ROOT + "/img/og.png") && fs.existsSync(require("./harness").ROOT + "/img/favicon.svg") && fs.existsSync(require("./harness").ROOT + "/sitemap.xml"), "preview image, icon and sitemap are in the site");
     ok(p.d.title === tr.en["seo.title"] && /^Kinkosmos — /.test(p.d.title) && p.d.querySelector('meta[name="description"]').getAttribute("content") === tr.en["seo.desc"], "page title = the search title of the language (v608); the description follows the language");
-    eq(p.d.querySelector('link[rel="canonical"]').href, "https://klevatess.github.io/kinkmatch/", "the root page is its own canonical (v608)");
+    eq(p.d.querySelector('link[rel="canonical"]').href, "https://klevatess.github.io/kinkmatch/en/", "the root page points search engines to the English page (v609)");
     ok(!f.errors.length && !p.errors.length && !c.errors.length && !c2.errors.length && !n.errors.length, "no script errors");
     _sc.end();
   }
@@ -2227,7 +2227,7 @@ const S = (title) => console.log("\n## " + title);
     const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
     const pv = g.d.querySelector(".pt-wod");
     ok(!!pv && pv.dataset.line === "fey" && /Ваш род/i.test(pv.querySelector(".sg-over").textContent) && !pv.querySelector(".sg-al") && pv.querySelector(".wod-note").textContent === "Не официальный материал World of Darkness." , "portrait: the fey kith, no alignment line, only “not official” under it (the full notice is in the help)");
-    ok(g.d.querySelectorAll(".pt-mode:not(.pt-wod-sub) [data-mode]").length === 3 && g.d.querySelector('.pt-wod-sub [data-wod="fey"]').getAttribute("aria-pressed") === "true", "three modes; the fey button is pressed");
+    ok(g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wod-sub):not(.pt-wr-sub) [data-mode]").length === 3 + (Object.values(g.KC.FEATURES).some(Boolean) ? 1 : 0) && g.d.querySelector('.pt-wod-sub [data-wod="fey"]').getAttribute("aria-pressed") === "true", "three modes + ⚔ Wr when one of its tabs is switched on (v611); the fey button is pressed");
     click(g.w, g.d.querySelector('.pt-wod-sub [data-wod="vamp"]'));
     ok(g.d.querySelector(".pt-wod").dataset.line === "vamp" && g.w.localStorage.getItem("checklist-wod") === "vamp" && /поколение/.test(g.d.querySelector(".pt-wod .sg-rl").textContent), "→ vampire: sect · generation; the line is remembered");
     click(g.w, g.d.querySelector('.pt-mode [data-mode="dnd"]'));
@@ -2490,7 +2490,7 @@ const S = (title) => console.log("\n## " + title);
     let bad = 0; for (let n = 1; n <= 30; n++) { const st = mk((id, i) => ["limit", "maybe", "yes", "love"][(i * n + n) % 4]);
       const a = DD.race(st, null), b = DD.race({ items: st.items, meta: { attire: ["latex", "leather", "goth"] } }, null); if (a !== b) bad++; }
     eq(bad, 0, "clothing (latex, leather, goth) never changes the race any more");
-    ok(!K.wr && !K.i18n.has("ui", "wr.toWr", "ru"), "the Chaos gods are not in this version (a separate plan)");
+    ok(!!K.wr && K.i18n.has("ui", "wr.toWr", "ru"), "v610: the Chaos gods mode is in (was a separate plan in v604)");
     ok(!f.errors.length, "no script errors");
     _sc.end();
   }
@@ -2553,15 +2553,15 @@ const S = (title) => console.log("\n## " + title);
     // the files on disk are what the tool makes now (catches "changed index.html or a translation, forgot to rebuild")
     const out = B.build(ROOTDIR);
     eq(Object.keys(out).filter(f => !fs.existsSync(ROOTDIR + "/" + f) || fs.readFileSync(ROOTDIR + "/" + f, "utf8") !== out[f]), [], "language pages, index.html hreflang and sitemap.xml are up to date (else: node tools/build-lang-pages.js)");
-    const cluster = LANGS.map(l => [{ pt: "pt-BR", zh: "zh-Hant" }[l] || l, SITE + l + "/"]).concat([["x-default", SITE]]);
+    const cluster = LANGS.map(l => [{ pt: "pt-BR", zh: "zh-Hant" }[l] || l, SITE + l + "/"]).concat([["x-default", SITE + "en/"]]);
     const links = h => [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => [m[1], m[2]]);
     const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const idx = fs.readFileSync(ROOTDIR + "/index.html", "utf8");
-    eq(links(idx), cluster, "root page: hreflang = the seven language pages + default");
-    ok(/<html lang="en">/.test(idx) && /<link rel="canonical" href="https:\/\/klevatess\.github\.io\/kinkmatch\/">/.test(idx) && /og:title" content="Kinkosmos — чек-лист BDSM-практик \/ BDSM checklist"/.test(idx), "root page: English head, its own canonical, the preview stays Russian + English");
+    eq(links(idx), cluster, "root page: hreflang = the seven language pages + default (= the English page, v609)");
+    ok(/<html lang="en">/.test(idx) && /<link rel="canonical" href="https:\/\/klevatess\.github\.io\/kinkmatch\/en\/">/.test(idx) && /og:title" content="Kinkosmos — чек-лист BDSM-практик \/ BDSM checklist"/.test(idx), "root page: English head, canonical → /en/ (v609), the preview stays Russian + English");
     const sm = fs.readFileSync(ROOTDIR + "/sitemap.xml", "utf8");
-    eq([...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]), [SITE].concat(LANGS.map(l => SITE + l + "/")), "sitemap: the root + seven language pages");
-    ok((sm.match(/hreflang="x-default"/g) || []).length === 8, "sitemap: every address carries the full language list");
+    eq([...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]), LANGS.map(l => SITE + l + "/"), "sitemap: the seven language pages only (the root points to /en/, v609)");
+    ok((sm.match(/hreflang="x-default" href="https:\/\/klevatess\.github\.io\/kinkmatch\/en\/"/g) || []).length === 7, "sitemap: every address carries the full language list, default = /en/");
     LANGS.forEach(l => {
       const h = fs.readFileSync(ROOTDIR + "/" + l + "/index.html", "utf8"), t = tr[l], url = SITE + l + "/";
       const bad = [];
@@ -2594,9 +2594,178 @@ const S = (title) => console.log("\n## " + title);
     click(rt.w, rt.d.querySelector('#langSw button[data-lang="es"]'));
     eq([rt.KC.i18n.lang, rwent, rt.KC.i18n.pageLang, rt.d.getElementById("compareBtn").getAttribute("href")], ["es", null, null, "compare.html?lang=es"], "root page: the switcher translates in place, links as before");
     eq(open("form", { search: "?lang=th" }).d.querySelector('link[rel="canonical"]').href, SITE + "th/", "old index.html?lang=th address: canonical → /th/");
+    eq(open("form", { navLang: "ru" }).d.querySelector('link[rel="canonical"]').href, SITE + "en/", "root page shown in Russian: canonical still → /en/ (v609)");
     eq(open("compare", { search: "?lang=pt" }).d.getElementById("backLink").getAttribute("href"), "pt/", "compare → back to the Portuguese page");
     // every language page opens in its language, without errors
     eq(LANGS.map(l => { const pg = open("form", { file: l + "/index.html", navLang: "de" }); return pg.KC.i18n.lang + (pg.errors.length ? "!" : ""); }), LANGS, "all seven pages open in their own language, no script errors");
+    _sc.end();
+  }
+
+  S("v610: Servant of the Chaos gods (⚔ Wr) — the fourth joke mode");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, R = K.wr;
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    eq(R.GODS, ["khorne", "nurgle", "tzeentch", "slaanesh", "rat"], "five patrons");
+    const bad = [];
+    R.GODS.forEach(id => { const [P, E, Ln, B] = R.FIG[id], n = P.length + E.length;
+      if (P.length !== 9 || new Set(B).size !== 3 || B.some(i => i < 0 || i > 8)) bad.push(id + ": stars");
+      Ln.forEach(l => (l[0] === "d" ? l.slice(1) : l).forEach(i => { if (!(i >= 0 && i < n)) bad.push(id + ": line " + i); })); });
+    eq(bad, [], "every sign: 9 group stars, 3 bright slots, lines only to existing stars");
+    const ids = new Set(); K.CATS.forEach(c => c.items.forEach(([, id]) => ids.add(id)));
+    const unknown = [];
+    R.GODS.forEach(g => R.ITEMS[g].split(" ").forEach(id => { if (!ids.has(id)) unknown.push(g + ":" + id); }));
+    const CI = K.clusters.ids(); Object.keys(CI).forEach(k => CI[k].forEach(id => { if (!ids.has(id)) unknown.push(k + ":" + id); }));
+    R.GODS.forEach(g => Object.keys(R.K[g]).forEach(k => { if (!CI[k]) unknown.push(g + " → cluster " + k); }));
+    eq(unknown, [], "every item of the gods and of the clusters exists; every attraction points to a cluster");
+    eq(R.GODS.map(g => R.ITEMS[g].split(" ").length), [16, 18, 26, 17, 11], "items with a bonus: 16 / 18 / 26 / 17 / 11 (owner's table)");
+    eq([R.EXCESS.W, R.EXCESS.L0, R.BIAS.slaanesh], [4, 49, -6.05], "Slaanesh: excess weight 4, from 49 % Yes + Love, bias −6.05 (owner, Oct 3)");
+    // every god is reachable: a made-up list that loves that god's items and clusters
+    const all = [...ids];
+    const mk = (fn, meta) => { const it = {}; all.forEach((id, i) => { const v = fn(id, i); if (v) it[id] = { interest: v }; }); return { items: it, meta: meta || {} }; };
+    const fav = g => { const s = new Set(R.ITEMS[g].split(" ")); Object.keys(R.K[g]).forEach(k => { if (R.K[g][k] > 0) K.clusters.ids()[k].forEach(id => s.add(id)); }); return s; };
+    const got = R.GODS.map(g => { const s = fav(g), st = mk((id, i) => s.has(id) ? "love" : i % 2 ? "limit" : "maybe"); return R.choose(st, K.portrait.compute(st, null), null); });
+    eq(got, R.GODS, "each god wins on a list that loves its own items and themes");
+    // the excess only adds: a list of only “No” loses nothing through it
+    const no = mk(() => "limit"), pNo = R.parts(no, K.portrait.compute(no, null), null).slaanesh, sNo = R.scores(no, K.portrait.compute(no, null), null).slaanesh;
+    const base = 5 * (pNo.P / R.S.slaanesh.P + (pNo.I === null ? 0 : (pNo.I - R.I0.slaanesh) / R.S.slaanesh.I) + pNo.Z / R.S.slaanesh.Z + pNo.K / R.S.slaanesh.K) + R.BIAS.slaanesh;
+    ok(Math.abs(sNo - base) < 1e-9, "all “No”: Slaanesh's excess adds nothing (only counts above the usual)");
+    eq(R.choose(mk((id, i) => i < 3 ? "yes" : null), { sections: [] }, null), null, "no portrait → no patron");
+    // texts
+    const need = ["wr.toWr", "wr.mine", "wr.their", "wr.mut", "wr.spawn", "wr.notOfficial", "card.o.wr", "sp.wr.h", "sp.wr.grp", "sp.wr.same", "sp.wr.near", "sp.wr.far", "help.wr_html", "help.compareWr_html"].concat(R.GODS.map(g => "wr.of." + g));
+    const miss = []; LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); }));
+    eq(miss, [], "every Chaos-mode text exists in all 7 languages (" + need.length + " keys)");
+    // the stored mode: a new value, the old ones unchanged, each view its own
+    const m = open("form", { storage: { local: { "checklist-dnd": "wr" }, session: {} } }).KC.dnd;
+    eq([m.mode(), m.mode("pair"), m.mode("group")], ["wr", "sign", "sign"], "“wr” in checklist-dnd → the Chaos mode for the portrait only");
+    eq(["1", "wod"].map(v => open("form", { storage: { local: { "checklist-dnd": v }, session: {} } }).KC.dnd.mode()), ["dnd", "wod"], "old values “1” and “wod” work as before");
+    // the portrait
+    const lov = fav("tzeentch"), own = mk((id, i) => lov.has(id) ? "love" : i % 3 ? "maybe" : "limit", { role: "dom" }); own.name = "Ann";
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(own) }, session: {} } });
+    const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+    const row = g.d.querySelector("#portraitBody .pt-mode");
+    eq([...row.querySelectorAll("[data-mode]")].map(b => b.textContent), ["⚔ Wr", "✦ Созвездие", "🎲 DnD", "🦇 Мир Тьмы"], "v611: one row — ⚔ Wr first (on the left), then ✦ 🎲 🦇");
+    ok(!g.d.querySelector(".pt-wr-sub"), "no ⚔ Wr tabs before ⚔ Wr is chosen");
+    click(g.w, g.d.querySelector('.pt-mode .pt-wrb'));
+    const pv = g.d.querySelector(".pt-wr");
+    ok(!!pv && pv.dataset.god === "tzeentch" && /Ваш покровитель/.test(pv.querySelector(".sg-over").textContent) && /Служитель Тзинча/.test(pv.querySelector(".sg-name").textContent)
+      && /^(Мутации: \d+ из 10|Порождение Хаоса.*)$/.test(pv.querySelector(".sg-rl").textContent) && +pv.dataset.mut >= 0 && +pv.dataset.mut <= 10 && !pv.querySelector(".sg-al")
+      && pv.querySelector(".wod-note").textContent === "Фанатский неофициальный материал." && g.w.localStorage.getItem("checklist-dnd") === "wr",
+      "portrait: “Your patron · Servant of Tzeentch”, mutations 0–10, the groups, the fan line; remembered as “wr”");
+    const tabs = g.d.querySelector(".pt-wr-sub");
+    ok(!g.d.querySelector(".pt-wod-sub") && !!tabs && [...tabs.querySelectorAll("[data-mode]")].map(b => b.dataset.mode + ":" + b.textContent).join("|") === "wr:Боги Хаоса|wh:🌌 40K|leg:🛡 Легион"
+      && tabs.querySelector('[data-mode="wr"]').getAttribute("aria-pressed") === "true" && g.d.querySelector(".pt-mode .pt-wrb").getAttribute("aria-pressed") === "true",
+      "⚔ Wr opens its tabs under it: Chaos gods (open by default) | 🌌 40K | 🛡 Legion; ⚔ Wr is pressed");
+    g.KC.form.drawCard({ sign: true, bars: true, love: true, limits: false, name: true, role: true, exp: true });
+    ok(!g.errors.length, "the picture card is drawn in the Chaos mode without errors");
+    g.KC.help.open("portrait"); ok(/Служитель богов Хаоса/.test(g.d.getElementById("help-portrait").textContent) && /Games Workshop/.test(g.d.getElementById("help-portrait").textContent), "help (portrait) explains the mode and that it is a fan mode");
+    // the compare page: the pair's patrons, the cult
+    const code = (n, u, s) => { const it = {}; all.forEach((id, i) => { it[id] = { interest: s.has(id) ? "love" : i % 2 ? "limit" : "maybe" }; }); return K.codec.encode({ name: n, uid: u, items: it, meta: {} }, "ru"); };
+    const codes = [code("Ann", "ANN610", fav("khorne")), code("Bob", "BOB610", fav("khorne")), code("Cid", "CID610", fav("nurgle"))];
+    const run = (n, local) => { const cp = open("compare", { storage: { local: Object.assign({ "checklist-lang": "ru" }, local), session: {} } });
+      for (let i = 2; i < n; i++) click(cp.w, cp.d.getElementById("addPart"));
+      cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i]; }); click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
+    const c2 = run(2, { "checklist-dnd-pair": "wr", "checklist-folds": '{"pair":true}' });
+    const box = c2.d.querySelector(".sp-signs.sp-wr");
+    ok(!!box && /Покровители пары/.test(box.textContent) && box.querySelectorAll(".sg-wr").length === 2 && /Один бог/.test(box.querySelector(".sg-match").textContent) && /Фанатский/.test(box.textContent),
+      "pair: “The pair's patrons”, two signs, the same god (both Khorne)");
+    const c3 = run(3, { "checklist-dnd-group": "wr", "checklist-folds": '{"group":true}' });
+    const gf = c3.d.querySelector('details.sp-fold[data-fold="group"]');
+    ok(!!gf.querySelector(".sp-wrgrp") && /Культ/.test(gf.textContent) && gf.querySelectorAll(".sp-wrgrp li").length === 3 && /Служитель Нургла/.test(gf.textContent) && !gf.querySelector("[data-planet]"),
+      "group: the cult, everyone's patron, no system");
+    click(c3.w, gf.querySelector('.pt-mode [data-mode="sign"]'));
+    ok(!!gf.querySelector("[data-planet]") && c3.w.localStorage.getItem("checklist-dnd-group") === null && c3.w.localStorage.getItem("checklist-dnd-pair") === null, "→ the solar system again; the pair's choice untouched");
+    c3.KC.help.open("compare"); ok(/⚔ Wr/.test(c3.d.getElementById("help-compare").textContent), "help (compare) explains the mode");
+    ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length, "no script errors");
+    _sc.end();
+  }
+
+
+  S("v610: Warhammer factions (🌌 40K) and legions (🛡) — two more modes; switches for the new modes");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, H = K.wh, L = K.leg, R = K.wr, C = K.clusters;
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    eq([H.FACTIONS.length, L.LEGIONS.length, Object.keys(C.USUAL).length], [14, 18, 42], "14 factions, 18 legions, 42 clusters");
+    const bad = [];
+    Object.keys(H.FIG).concat(Object.keys(L.FIG).map(k => "L" + k)).forEach(key => { const F = key[0] === "L" && L.FIG[key.slice(1)] ? L.FIG[key.slice(1)] : H.FIG[key];
+      const [P, E, Ln, B] = F, n = P.length + E.length;
+      if (P.length !== 9 || new Set(B).size !== 3 || B.some(i => i < 0 || i > 8)) bad.push(key + ": stars");
+      Ln.forEach(l => (l[0] === "d" ? l.slice(1) : l).forEach(i => { if (!(i >= 0 && i < n)) bad.push(key + ": line " + i); })); });
+    eq(bad, [], "every faction and legion sign: 9 group stars, 3 bright slots, lines only to existing stars");
+    eq([H.FACTIONS.filter(x => !H.FIG[x]), L.LEGIONS.concat(["ii", "xi"]).filter(x => !L.FIG[x])], [[], []], "every faction and legion (and the lost II / XI) has a sign");
+    const parseK = s2 => s2.split(" ").map(t => t.match(/^([a-z]+)/)[1]);
+    eq(H.FACTIONS.concat(L.LEGIONS).filter(x => (H.PROF[x] || L.PROF[x]) && parseK(H.PROF[x] || L.PROF[x]).some(k => !C.USUAL[k])), [], "every profile uses known clusters");
+    // each faction / legion wins on a list that loves its main cluster and its helpers (no rules in the way)
+    const all = []; K.CATS.forEach(c => c.items.forEach(([, id]) => all.push(id)));
+    const mk = (fn, meta) => { const it = {}; all.forEach((id, i) => { const v = fn(id, i); if (v) it[id] = { interest: v }; }); return { items: it, meta: meta || {} }; };
+    const lover = prof => { const w = {}; prof.split(" ").forEach(t => { const m = t.match(/^([a-z]+)(-?[\d.]+)$/); w[m[1]] = +m[2]; });
+      const top = Object.keys(w).filter(k => w[k] >= .5), off = Object.keys(w).filter(k => w[k] < 0);
+      const like = new Set(), hate = new Set(); top.forEach(k => C.ids()[k].forEach(id => like.add(id))); off.forEach(k => C.ids()[k].forEach(id => hate.add(id)));
+      return mk((id, i) => like.has(id) ? "love" : hate.has(id) ? "limit" : i % 3 === 0 ? "maybe" : i % 3 === 1 ? "limit" : null); };
+    const winsF = H.FACTIONS.filter(x => { const st = lover(H.PROF[x]); return H.choose(st, K.portrait.compute(st, null), null) === x; });
+    ok(winsF.length >= 11, "most factions win on a list that loves their own themes (" + winsF.length + "/14: " + H.FACTIONS.filter(x => winsF.indexOf(x) < 0).join(", ") + " overlap others)");
+    const winsL = L.LEGIONS.filter(x => { const st = lover(L.PROF[x]); return L.choose(st, K.portrait.compute(st, null), null) === x; });
+    ok(winsL.length >= 13, "most legions win on a list that loves their own themes (" + winsL.length + "/18)");
+    // the Great Devourer
+    const eater = mk((id, i) => i % 3 ? "love" : "yes");
+    eq(H.choose(eater, K.portrait.compute(eater, null), null), "tyranids", "a list that eats everything (all answered, no “No”, lots of Love) → Tyranids");
+    // WAAAGH
+    const quiet = mk((id, i) => i % 2 ? "maybe" : "limit"), loud = mk(() => "love");
+    eq([H.waaagh(quiet, null), H.waaagh(loud, null), H.waaaghText(1), H.waaaghText(4)], [1, 12, "WAGH!", "WAAAAGH!"], "WAAAGH: 1 A without Love, 12 at most; the text");
+    // mutations
+    eq(R.GODS.map(g => R.mutations(loud, g, null)).every(n => n >= 0 && n <= 10) && R.GODS.map(g => R.mutations(quiet, g, null)).every(n => n >= 0 && n <= 10), true, "mutations always 0–10");
+    eq([R.mutLine(10, K.i18n.t), R.mutLine(3, K.i18n.t)], ["Порождение Хаоса — 10 мутаций из 10", "Мутации: 3 из 10"].map(x => K.i18n.lang === "ru" ? x : K.i18n.t(x === "Мутации: 3 из 10" ? "wr.mut" : "wr.spawn", { n: 3 })), "10 = a Chaos spawn");
+    // texts
+    const need = ["wh.toWh", "wh.mine", "wh.their", "wh.waaagh", "card.o.wh", "sp.wh.h", "sp.wh.grp", "sp.wh.same", "sp.wh.near", "sp.wh.far", "help.compareWh_html", "wr.gods", "wr.switch",
+      "leg.toLeg", "leg.mine", "leg.their", "leg.lost", "leg.expunged", "card.o.leg", "sp.leg.h", "sp.leg.grp", "sp.leg.same", "sp.leg.near", "sp.leg.far", "help.leg_html", "help.compareLeg_html"]
+      .concat(H.FACTIONS.map(x => "wh.f." + x), L.LEGIONS.map(x => "leg.l." + x));
+    const miss = []; LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); }));
+    eq(miss, [], "every faction / legion text exists in all 7 languages (" + need.length + " keys)");
+    // the portrait in both modes
+    const ork = lover(H.PROF.orks); ork.name = "Ann";
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} } });
+    const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+    eq(g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wr-sub) [data-mode]").length, 4, "four buttons in the mode row while every switch is on (⚔ Wr + three)");
+    click(g.w, g.d.querySelector('.pt-mode .pt-wrb')); click(g.w, g.d.querySelector('.pt-wr-sub [data-mode="wh"]'));
+    const pw = g.d.querySelector(".pt-wh");
+    ok(!!pw && pw.dataset.faction === "orks" && /Ваша фракция/.test(pw.querySelector(".sg-over").textContent) && pw.querySelector(".sg-name").textContent === "Орки"
+      && /^Ваш WAAAGH: WA+GH!$/.test(pw.querySelector(".sg-rl").textContent) && !!pw.querySelector(".wod-note") && g.w.localStorage.getItem("checklist-dnd") === "wh",
+      "factions: “Your faction · Orks · Your WAAAGH: WA…GH!”, remembered as “wh”");
+    click(g.w, g.d.querySelector('.pt-wr-sub [data-mode="leg"]'));
+    const pl = g.d.querySelector(".pt-leg");
+    ok(!!pl && /Ваш легион/.test(pl.querySelector(".sg-over").textContent) && /^(I|V|VI|VII|IX|X|XIII|XVIII|XIX|III|IV|VIII|XII|XIV|XV|XVI|XVII|XX) /.test(pl.querySelector(".sg-name").textContent) || /Легион (II|XI)/.test(pl.querySelector(".sg-name").textContent),
+      "legions: “Your legion · <number> <name>”");
+    ok(!g.d.querySelector(".pt-wh"), "the factions and the legions are separate modes");
+    click(g.w, g.d.querySelector('.pt-mode [data-mode="sign"]')); ok(!g.d.querySelector(".pt-wr-sub") && g.d.querySelector(".pt-mode .pt-wrb").dataset.mode === "leg", "back to the constellation: the tabs close, ⚔ Wr remembers the legion tab");
+    click(g.w, g.d.querySelector('.pt-mode .pt-wrb')); ok(!!g.d.querySelector(".pt-leg") && g.w.localStorage.getItem("checklist-wr") === "leg", "⚔ Wr reopens the tab chosen last (checklist-wr)");
+    g.KC.form.drawCard({ sign: true, bars: true, love: true, limits: false, name: true, role: true, exp: true });
+    g.KC.help.open("portrait"); ok(!/14 фракций/.test(g.d.getElementById("help-portrait").textContent) && /18 легионов/.test(g.d.getElementById("help-portrait").textContent), "help: the legions are explained; the factions have no paragraph of their own (owner, v611)");
+    // the lost legions: the record is expunged
+    const lostFig = L.FIG.ii; ok(lostFig[0].length === 9, "the expunged record has a sign too");
+    // the compare page
+    const code = (n, u, st) => K.codec.encode(Object.assign({ name: n, uid: u }, st), "ru");
+    const codes = [code("Ann", "ANN611", lover(H.PROF.orks)), code("Bob", "BOB611", lover(H.PROF.orks)), code("Cid", "CID611", lover(H.PROF.necrons))];
+    const run = (n, local) => { const cp = open("compare", { storage: { local: Object.assign({ "checklist-lang": "ru" }, local), session: {} } });
+      for (let i = 2; i < n; i++) click(cp.w, cp.d.getElementById("addPart"));
+      cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i]; }); click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
+    const c2 = run(2, { "checklist-dnd-pair": "wh", "checklist-folds": '{"pair":true}' });
+    const box = c2.d.querySelector(".sp-signs.sp-wh");
+    ok(!!box && /Фракции пары/.test(box.textContent) && /Одна фракция/.test(box.textContent) && box.querySelectorAll(".sg-wh").length === 2 && /WAAAGH/.test(box.textContent), "pair: “The pair's factions”, one faction (both Orks), their WAAAGH");
+    const c3 = run(3, { "checklist-dnd-group": "leg", "checklist-folds": '{"group":true}' });
+    const gf = c3.d.querySelector('details.sp-fold[data-fold="group"]');
+    ok(!!gf.querySelector(".sp-leggrp") && /Легионы компании/.test(gf.textContent) && gf.querySelectorAll(".sp-leggrp li").length === 3, "group: everyone's legion");
+    // switches: a mode switched off disappears everywhere and a device that chose it sees the constellation
+    const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "wh", "practices-checklist-v1": JSON.stringify(ork) }, session: {} },
+      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true };", "KC.FEATURES = { wr: true, wh: false, leg: false };") } });
+    const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
+    ok(off.KC.dnd.mode() === "sign" && !off.d.querySelector('.pt-mode [data-mode="wh"], .pt-mode [data-mode="leg"]') && off.d.querySelector('.pt-mode .pt-wrb').dataset.mode === "wr" && !off.d.querySelector(".pt-wr-sub") && !off.d.querySelector(".pt-wh"),
+      "factions + legions switched off: no tabs (one tab left → ⚔ Wr opens the gods directly), a device that chose factions sees the constellation");
+    off.KC.help.open("portrait"); ok(!/18 легионов/.test(off.d.getElementById("help-portrait").textContent) && /Служитель богов Хаоса/.test(off.d.getElementById("help-portrait").textContent), "…and their help paragraphs are hidden");
+    const none = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} }, patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true };", "KC.FEATURES = { wr: false, wh: false, leg: false };") } });
+    none.KC.dnd.setMode("wr"); eq(none.KC.dnd.mode(), "sign", "all new modes off: choosing one stores nothing (the constellation stays)");
+    const ns = none.d.getElementById("portraitSection"); ns.open = true; ns.dispatchEvent(new none.w.Event("toggle")); ok(!!none.d.querySelector("#portraitBody .pt-mode") && !none.d.querySelector(".pt-wrb"), "…and there is no ⚔ Wr button");
+    ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length && !none.errors.length, "no script errors");
     _sc.end();
   }
 

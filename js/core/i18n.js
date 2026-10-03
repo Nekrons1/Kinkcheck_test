@@ -116,15 +116,16 @@
       if (tt) document.title = (KC.BRAND && tt.dataset.i18n.indexOf("seo.") !== 0 ? KC.BRAND + " · " : "") + I.t(tt.dataset.i18n);
       /* search engines: the description and the canonical address follow the page language (v586) */
       const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute("content", I.t("seo.desc"));
-      /* canonical (v608): a /<lang>/ page keeps the one written in its HTML; the root form page is its own canonical,
-         and an old index.html?lang=xx address points to the /xx/ page; compare.html (not indexed) as before */
+      /* canonical (v608): a /<lang>/ page keeps the one written in its HTML; the root form page points to /en/ (v609:
+         Google sees it in English anyway, and links to the root then count for the language pages), an old
+         index.html?lang=xx address to the /xx/ page; compare.html (not indexed) as before */
       if (KC.migrate && KC.migrate.NEW_URL && document.head && !pageLang()) {
         const file = location.pathname.split("/").pop() || "index.html";
         let q = null; try { q = new URLSearchParams(location.search).get("lang"); } catch (e) {}
         let cl = document.querySelector('link[rel="canonical"]');
         if (!cl) { cl = document.createElement("link"); cl.rel = "canonical"; document.head.appendChild(cl); }
         cl.href = file !== "index.html" ? KC.migrate.NEW_URL + file + "?lang=" + cur
-          : KC.migrate.NEW_URL + (q && I.usable(q) ? q + "/" : "");
+          : KC.migrate.NEW_URL + (q && I.usable(q) ? q : "en") + "/";
       }
     },
 

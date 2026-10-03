@@ -2,14 +2,15 @@
 <!-- index.html — the checklist form. Markup only: texts come from js/lang/*.ui.js via
      data-i18n* attributes, logic from js/form/*.js (loaded by js/boot.js).
      v608: this file is also the source of the language pages ru/ en/ es/ pt/ ja/ th/ zh/ — after changing it (or a
-     translation) run `node tools/build-lang-pages.js`; the tests fail while those pages are out of date. -->
+     translation) run `node tools/build-lang-pages.js`; the tests fail while those pages are out of date.
+     v609: for search engines this page is the same as /en/ (canonical, x-default); people still get their language here. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title data-i18n="seo.title">Kinkosmos — BDSM &amp; Kink Checklist: Compare Answers with a Partner</title>
 <meta name="description" content="An anonymous BDSM checklist: mark what you like, share a link and compare answers with a partner. No sign-up, nothing is sent to a server. 18+.">
-<link rel="canonical" href="https://klevatess.github.io/kinkmatch/">
+<link rel="canonical" href="https://klevatess.github.io/kinkmatch/en/">
 <meta name="rating" content="adult">
 <!-- hreflang:start (written by tools/build-lang-pages.js) -->
 <link rel="alternate" hreflang="ru" href="https://klevatess.github.io/kinkmatch/ru/">
@@ -19,7 +20,7 @@
 <link rel="alternate" hreflang="ja" href="https://klevatess.github.io/kinkmatch/ja/">
 <link rel="alternate" hreflang="th" href="https://klevatess.github.io/kinkmatch/th/">
 <link rel="alternate" hreflang="zh-Hant" href="https://klevatess.github.io/kinkmatch/zh/">
-<link rel="alternate" hreflang="x-default" href="https://klevatess.github.io/kinkmatch/">
+<link rel="alternate" hreflang="x-default" href="https://klevatess.github.io/kinkmatch/en/">
 <!-- hreflang:end -->
 <meta name="theme-color" content="#f5f1ec" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#161114" media="(prefers-color-scheme: dark)">
@@ -47,7 +48,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=608">
+<link rel="stylesheet" href="css/style.css?v=611">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -268,6 +269,6 @@
   </div>
 </div>
 
-<script src="js/boot.js?v=608" data-page="form" data-v="608"></script>
+<script src="js/boot.js?v=611" data-page="form" data-v="611"></script>
 </body>
 </html>

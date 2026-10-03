@@ -7,7 +7,9 @@
    DnD mode (v591, KC.dnd): a switch above the picture shows a D&D class, subclass and joke alignment instead of
    the sign; the picture card follows the mode shown. Grey stars of a class figure only shape the drawing.
    World of Darkness mode (v597, KC.wod): the third button; a second row picks the line (vampire, werewolf, fey,
-   demon); the figure is the clan / tribe / kith / house, the lines under it come from KC.wod.details. */
+   demon); the figure is the clan / tribe / kith / house, the lines under it come from KC.wod.details.
+   Servant of the Chaos gods (v610, KC.wr): the fourth button; the figure is the patron's sign, under it only
+   "Servant of <god>", the main groups and the "unofficial fan-made material" line. */
 (function (KC) {
   const F = KC.form, t = (k, v) => KC.i18n.t(k, v), esc = KC.esc;
   const SITE = (KC.migrate ? KC.migrate.NEW_URL : "").replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -27,9 +29,12 @@
   /* the figure shown: the DnD class or the World of Darkness subtype when that mode is on, else the sign */
   const mode = () => KC.dnd ? KC.dnd.mode() : "sign";
   const dndOn = () => mode() === "dnd";
-  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.signs.pick(d);
+  const NEWM = ["wr", "wh", "leg"];   /* v610: the modes that need the list itself, not only the portrait */
+  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : NEWM.indexOf(mode()) >= 0 ? KC[mode()].pick(d, F.shown(), F.tplSet()) : KC.signs.pick(d);
   /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
   function headOf(sg) {
+    if (sg.wr || sg.wh || sg.leg) { const h = (sg.wr ? KC.wr : sg.wh ? KC.wh : KC.leg).head(sg, F.viewingShared, t);
+      return { over: h.over, name: h.name, rl: h.rl, sub: signSub(sg), al: null }; }
     if (sg.wod) {
       const dt = KC.wod.details(F.shown(), data(), F.tplSet(), sg.line, sg.id), ln = KC.wod.lines(dt, t);
       return { over: t((F.viewingShared ? "wod.of." : "wod.mine.") + sg.line), name: t("wod." + sg.line + "." + sg.id), sub: ln.sub + " · " + signSub(sg), rl: ln.rl, al: null, dt };
@@ -79,10 +84,11 @@
         + '<tspan x="' + cx + '" dy="15" font-weight="700" fill="' + (st.bright ? "var(--star)" : v === null ? "var(--muted)" : "var(--accent)") + '">' + pctText(v) + "</tspan></text>";
     });
     const attrs = sg.dnd ? ' data-cls="' + sg.cls + '" data-al="' + hd.alKey + '" data-race="' + hd.race + '" data-lv="' + hd.lv + '"'
-      : sg.wod ? ' data-line="' + sg.line + '" data-id="' + sg.id + '" data-lv="' + hd.dt.lv + '"' : "";
-    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
+      : sg.wod ? ' data-line="' + sg.line + '" data-id="' + sg.id + '" data-lv="' + hd.dt.lv + '"' : sg.wr ? ' data-god="' + sg.id + '" data-mut="' + sg.mut + '"'
+      : sg.wh ? ' data-faction="' + sg.id + '"' : sg.leg ? ' data-legion="' + sg.id + '"' : "";
+    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : sg.wr ? " pt-wr" : sg.wh ? " pt-wh" : sg.leg ? " pt-leg" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
       + (hd.rl ? '<div class="sg-rl">' + esc(hd.rl) + "</div>" : "") + '<div class="sg-sub">' + esc(hd.sub) + "</div>"
-      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg>" + (sg.wod ? KC.wod.noticeHTML() : "") + "</div>";
+      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg>" + (sg.wod ? KC.wod.noticeHTML() : sg.wr || sg.wh || sg.leg ? KC.wr.noticeHTML() : "") + "</div>";
   }
   F.signOf = () => KC.signs.pick(data());
 
@@ -155,7 +161,10 @@
   /* the sign on the card: name, groups, the drawing with a label at every star; returns the new y */
   function cardSign(ctx, sg, C, y, W, M, SANS, SERIF, big) {
     const hd = headOf(sg);
-    ctx.textAlign = "center"; ctx.fillStyle = C.star; ctx.font = "600 92px " + SERIF; ctx.fillText(fit(ctx, hd.name, W - 2 * M), W / 2, y + 70);
+    /* v610: a long name ("Servant of the Horned Rat") gets a smaller font before it is cut with "…" */
+    let fs = 92; ctx.font = "600 " + fs + "px " + SERIF;
+    while (fs > 60 && ctx.measureText(hd.name).width > W - 2 * M) { fs -= 4; ctx.font = "600 " + fs + "px " + SERIF; }
+    ctx.textAlign = "center"; ctx.fillStyle = C.star; ctx.fillText(fit(ctx, hd.name, W - 2 * M), W / 2, y + 70);
     if (hd.rl) {   /* DnD: race · level, the subclass, the alignment and its joke */
       ctx.fillStyle = C.ink; ctx.font = "600 40px " + SANS; ctx.fillText(fit(ctx, hd.rl, W - 2 * M), W / 2, y + 124);
       ctx.font = "500 32px " + SANS; ctx.fillText(fit(ctx, hd.sub, W - 2 * M), W / 2, y + 172);
@@ -224,7 +233,7 @@
     let bottom = H - 150;
     /* the sign and the percentages can be switched on and off separately (v587, owner) */
     const sg = o.sign ? figOf(d) : null;   /* the mode shown on the page: sign, DnD class or World of Darkness */
-    if (sg && sg.wod) bottom -= 40;   /* room for the "not official" line */
+    if (sg && (sg.wod || sg.wr || sg.wh || sg.leg)) bottom -= 40;   /* room for the "not official" line */
     if (sg) y = cardSign(ctx, sg, C, y, W, M, SANS, SERIF, !o.bars);
     if (o.bars) {
       const rows = d.sections, rh = sg ? 44 : 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
@@ -270,9 +279,9 @@
       });
       y += 24;
     });
-    if (sg && sg.wod) {   /* "not official World of Darkness material", small, above the footer */
+    if (sg && (sg.wod || sg.wr || sg.wh || sg.leg)) {   /* "not official … material", small, above the footer */
       ctx.fillStyle = C.muted; ctx.font = "500 22px " + SANS; ctx.textAlign = "center";
-      ctx.fillText(fit(ctx, t("wod.notOfficial"), IW), W / 2, H - 130); ctx.textAlign = "left";
+      ctx.fillText(fit(ctx, t(sg.wod ? "wod.notOfficial" : "wr.notOfficial"), IW), W / 2, H - 130); ctx.textAlign = "left";
     }
     ctx.fillStyle = C.muted; ctx.font = "500 32px " + SANS; ctx.textAlign = "center"; ctx.fillText("✦ " + KC.BRAND + (SITE ? " · " + SITE : ""), W / 2, H - 70); ctx.textAlign = "left";
     return c;
