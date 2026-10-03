@@ -416,6 +416,7 @@ KC.addLang("en", "ui", {
   "rl.leadGroup_html": "The group is split into <b>random pairs</b>. Each pair gets {n} ideas from what both like: pick the one that suits the place and the mood.",
   "tpl.nebula": "Template nebula",
   "seo.desc": "An anonymous BDSM checklist: mark what you like, share a link and compare answers with a partner. No sign-up, nothing is sent to a server. 18+.",
+  "seo.title": "Kinkosmos — BDSM & Kink Checklist: Compare Answers with a Partner",   /* v608: search / tab title, starts with the brand */
   /* v589: the other order of every pair; the pair's constellations on the compare page */
   "sign.bow": "Bow",
   "sign.slipper": "Slipper",

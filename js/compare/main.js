@@ -24,7 +24,7 @@
 
   KC.initTheme();
   KC.i18n.set(KC.i18n.detect(null));
-  function applyStatic() { KC.i18n.apply(document); KC.$("backLink").href = "index.html?lang=" + KC.i18n.lang; }
+  function applyStatic() { KC.i18n.apply(document); KC.$("backLink").href = KC.i18n.lang + "/"; }   /* v608: back to the form page of this language */
   KC.i18n.mountSwitcher(() => { applyStatic(); relabel(); drawPickers(); drawSaved(); if (LAST || GROUP) render(false); });
   applyStatic();
 

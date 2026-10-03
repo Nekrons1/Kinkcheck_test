@@ -11,7 +11,7 @@
       sessionStorage.setItem("cmpA", aCode || ""); sessionStorage.setItem("cmpB", bCode || "");
       sessionStorage.setItem("cmpAName", aName || ""); sessionStorage.setItem("cmpBName", bName || "");
     } catch (e) {}
-    location.href = "compare.html?lang=" + KC.i18n.lang;
+    location.href = KC.i18n.root() + "compare.html?lang=" + KC.i18n.lang;
   };
 
   /* acts: array, or function(item) -> array; label: function(item) -> name; extra: function(item) -> text before the date */
@@ -98,7 +98,7 @@
     const btn = e.target.closest("button[data-act]"); if (!btn) return;
     const C = KC.store.cmp, id = btn.closest(".saved-row").dataset.id, a = C.list(), item = a.find(x => x.id === id); if (!item) return;
     switch (btn.dataset.act) {
-      case "open": F.saveNow(); try { sessionStorage.setItem("cmpOpen", id); } catch (err) {} location.href = "compare.html?lang=" + KC.i18n.lang; break;
+      case "open": F.saveNow(); try { sessionStorage.setItem("cmpOpen", id); } catch (err) {} location.href = KC.i18n.root() + "compare.html?lang=" + KC.i18n.lang; break;
       case "rename": { const nn = prompt(t("prompt.cmpName"), C.label(item)); if (nn !== null && nn.trim()) { item.name = nn.trim(); C.write(a); drawMine(); } break; }
       case "del": if (!confirm(t("confirm.cmpDel", { name: C.label(item) || t("unnamed") }))) return;
         C.write(a.filter(x => x.id !== id)); drawMine(); break;

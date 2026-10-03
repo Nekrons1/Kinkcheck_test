@@ -223,7 +223,8 @@ const S = (title) => console.log("\n## " + title);
   eq(open("form", { hash: enHash, storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "en", "EN link opens EN for RU user");
   const noLg = ruLink.replace(/&?lg=ru/, "");
   eq(open("form", { hash: noLg, storage: { local: { "checklist-lang": "en" }, session: {} } }).KC.i18n.lang, "en", "old link without lg -> recipient preference");
-  eq(open("form", { hash: noLg, navLang: "de" }).KC.i18n.lang, "ru", "no lg, unknown browser lang -> RU default");
+  eq(open("form", { hash: noLg, navLang: "de" }).KC.i18n.lang, "en", "no lg, unknown browser lang -> EN (v608)");
+  eq(["uk-UA", "be-BY", "kk-KZ", "de-DE"].map(nl => open("form", { hash: noLg, navLang: nl }).KC.i18n.lang), ["en", "ru", "ru", "en"], "Ukrainian -> EN; Belarusian, Kazakh -> RU (owner, v608)");
   eq(open("form", { hash: noLg, navLang: "en-US" }).KC.i18n.lang, "en", "no lg, English browser -> EN");
   const es = open("form", { hash: ruLink.replace("lg=ru", "lg=es") });
   eq(es.KC.i18n.lang, "es", "lg=es opens in Spanish");
@@ -587,7 +588,7 @@ const S = (title) => console.log("\n## " + title);
   eq(c.d.querySelectorAll(".rrow").length, 4, "results survive language switch (filter kept)");
   ok(/“Yes” from Boris/.test(c.d.querySelector(".cmp-filter").textContent), "filter labels translated");
   eq(c.d.querySelectorAll(".rrow .sub").length, 0, "EN compare: english names only");
-  ok(/index\.html\?lang=en/.test(c.d.getElementById("backLink").href), "back link keeps language");
+  ok(/\/en\/$/.test(c.d.getElementById("backLink").href), "back link keeps language (v608: the English page)");
   // hand-off from form
   const hand = open("form", { storage: own2 });
   hand.KC.form.startCompare("a=Ag", KCn.codec.encode(B), "Me", "Boris");
@@ -1858,8 +1859,8 @@ const S = (title) => console.log("\n## " + title);
     const html = fs.readFileSync(require("./harness").ROOT + "/index.html", "utf8");
     ok(/<meta name="description"/.test(html) && /og:image" content="https:\/\/klevatess\.github\.io\/kinkmatch\/img\/og\.png"/.test(html) && (html.match(/hreflang=/g) || []).length === 8 && /<meta name="rating" content="adult">/.test(html), "index.html: description, preview image, 7 languages + default, adult rating");
     ok(fs.existsSync(require("./harness").ROOT + "/img/og.png") && fs.existsSync(require("./harness").ROOT + "/img/favicon.svg") && fs.existsSync(require("./harness").ROOT + "/sitemap.xml"), "preview image, icon and sitemap are in the site");
-    ok(/^Kinkosmos · /.test(p.d.title) && p.d.querySelector('meta[name="description"]').getAttribute("content") === tr.en["seo.desc"], "page title starts with Kinkosmos; the description follows the language");
-    ok(/index\.html\?lang=en$/.test(p.d.querySelector('link[rel="canonical"]').href), "canonical address with the page language");
+    ok(p.d.title === tr.en["seo.title"] && /^Kinkosmos — /.test(p.d.title) && p.d.querySelector('meta[name="description"]').getAttribute("content") === tr.en["seo.desc"], "page title = the search title of the language (v608); the description follows the language");
+    eq(p.d.querySelector('link[rel="canonical"]').href, "https://klevatess.github.io/kinkmatch/", "the root page is its own canonical (v608)");
     ok(!f.errors.length && !p.errors.length && !c.errors.length && !c2.errors.length && !n.errors.length, "no script errors");
     _sc.end();
   }
@@ -2538,6 +2539,64 @@ const S = (title) => console.log("\n## " + title);
     eq(bad, [], "Humanity never below 2 or above 8");
     ok(seen.size >= 4, "Humanity still spreads over the scale (" + [...seen].sort((a, b) => a - b).join(",") + ")");
     ok(!f.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v608: a page for every language (/ru/ /en/ … built by tools/build-lang-pages.js)");
+  {
+    const _sc = scope();
+    const ROOTDIR = require("./harness").ROOT, SITE = "https://klevatess.github.io/kinkmatch/";
+    const B = require(ROOTDIR + "/tools/build-lang-pages.js"), LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const tr = {}; LANGS.forEach(l => { const box = {}; new Function("KC", fs.readFileSync(ROOTDIR + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); tr[l] = box; });
+    const items = {}; LANGS.forEach(l => { const box = {}; new Function("KC", fs.readFileSync(ROOTDIR + "/js/lang/" + l + ".practices.js", "utf8"))({ addLang: (x, part, o) => { if (part === "items") Object.assign(box, o); } }); items[l] = box; });
+    eq(B.LANGS, LANGS, "the tool makes a page for all seven languages");
+    // the files on disk are what the tool makes now (catches "changed index.html or a translation, forgot to rebuild")
+    const out = B.build(ROOTDIR);
+    eq(Object.keys(out).filter(f => !fs.existsSync(ROOTDIR + "/" + f) || fs.readFileSync(ROOTDIR + "/" + f, "utf8") !== out[f]), [], "language pages, index.html hreflang and sitemap.xml are up to date (else: node tools/build-lang-pages.js)");
+    const cluster = LANGS.map(l => [{ pt: "pt-BR", zh: "zh-Hant" }[l] || l, SITE + l + "/"]).concat([["x-default", SITE]]);
+    const links = h => [...h.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g)].map(m => [m[1], m[2]]);
+    const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const idx = fs.readFileSync(ROOTDIR + "/index.html", "utf8");
+    eq(links(idx), cluster, "root page: hreflang = the seven language pages + default");
+    ok(/<html lang="en">/.test(idx) && /<link rel="canonical" href="https:\/\/klevatess\.github\.io\/kinkmatch\/">/.test(idx) && /og:title" content="Kinkosmos — чек-лист BDSM-практик \/ BDSM checklist"/.test(idx), "root page: English head, its own canonical, the preview stays Russian + English");
+    const sm = fs.readFileSync(ROOTDIR + "/sitemap.xml", "utf8");
+    eq([...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]), [SITE].concat(LANGS.map(l => SITE + l + "/")), "sitemap: the root + seven language pages");
+    ok((sm.match(/hreflang="x-default"/g) || []).length === 8, "sitemap: every address carries the full language list");
+    LANGS.forEach(l => {
+      const h = fs.readFileSync(ROOTDIR + "/" + l + "/index.html", "utf8"), t = tr[l], url = SITE + l + "/";
+      const bad = [];
+      if (h.indexOf('<html lang="' + (l === "zh" ? "zh-Hant" : l) + '" data-page-lang="' + l + '">') < 0) bad.push("html lang");
+      if (h.indexOf("<title data-i18n=\"seo.title\">" + esc(t["seo.title"]) + "</title>") < 0) bad.push("title");
+      if (h.indexOf('<meta name="description" content="' + esc(t["seo.desc"]).replace(/"/g, "&quot;") + '">') < 0) bad.push("description");
+      if (h.indexOf('<link rel="canonical" href="' + url + '">') < 0) bad.push("canonical");
+      if (h.indexOf('og:url" content="' + url + '"') < 0 || h.indexOf('og:title" content="' + esc(t["seo.title"])) < 0) bad.push("og");
+      if (JSON.stringify(links(h)) !== JSON.stringify(cluster)) bad.push("hreflang");
+      if (/\s(src|href)="(css|img|js)\//.test(h) || h.indexOf('href="../css/style.css') < 0 || h.indexOf('src="../js/boot.js') < 0 || h.indexOf('href="../compare.html"') < 0) bad.push("paths");
+      if (h.indexOf(">" + esc(t["intro.h1"]) + "</h1>") < 0) bad.push("h1");
+      const missing = Object.keys(items[l]).filter(id => h.indexOf(esc(items[l][id][0])) < 0);
+      if (missing.length) bad.push("practices: " + missing.slice(0, 3).join(","));
+      if (/data-i18n(-html)?="[^"]+"[^>]*><\//.test(h)) bad.push("empty text element");
+      eq(bad, [], l + "/: language, title, description, canonical, preview, hreflang, ../ paths, texts and all practices are in the file");
+    });
+    // the page's language wins over the saved choice and the browser
+    const ja = open("form", { file: "ja/index.html", navLang: "en-US", storage: { local: { "checklist-lang": "en" }, session: {} } });
+    eq([ja.KC.i18n.lang, ja.KC.i18n.pageLang, ja.d.documentElement.lang], ["ja", "ja", "ja"], "/ja/ with a saved EN choice and an EN browser: Japanese");
+    eq([ja.d.title, ja.d.querySelector('link[rel="canonical"]').href], [tr.ja["seo.title"], SITE + "ja/"], "/ja/: title and canonical stay as written in the file");
+    ok(!ja.d.querySelector("#list .seo-list") && ja.d.querySelectorAll("#list .item").length === ja.KC.CATS.reduce((n, c) => n + c.items.length, 0), "/ja/: the hidden text list is replaced by the real list");
+    eq([ja.d.getElementById("compareBtn").getAttribute("href"), ja.KC.form.homeUrl()], ["../compare.html?lang=ja", "../ja/"], "/ja/: Compare and “Start a new list” go to the right pages");
+    ok(ja.KC.form.shareLink().indexOf(require("./harness").BASE + "#") === 0, "/ja/: a shared link opens the root page (the language travels in lg=)");
+    let went = null; ja.KC.i18n.navigate = u => { went = u; };
+    click(ja.w, ja.d.querySelector('#langSw button[data-lang="en"]'));
+    eq([went, ja.w.localStorage.getItem("checklist-lang"), ja.KC.i18n.lang], ["../en/", "en", "ja"], "/ja/ → EN: opens the English page and remembers the choice");
+    ok(!ja.errors.length, "/ja/: no script errors");
+    // the root page works as before: in-place switch, ?lang=xx points search engines to /xx/
+    const rt = open("form", { navLang: "ru" }); let rwent = null; rt.KC.i18n.navigate = u => { rwent = u; };
+    click(rt.w, rt.d.querySelector('#langSw button[data-lang="es"]'));
+    eq([rt.KC.i18n.lang, rwent, rt.KC.i18n.pageLang, rt.d.getElementById("compareBtn").getAttribute("href")], ["es", null, null, "compare.html?lang=es"], "root page: the switcher translates in place, links as before");
+    eq(open("form", { search: "?lang=th" }).d.querySelector('link[rel="canonical"]').href, SITE + "th/", "old index.html?lang=th address: canonical → /th/");
+    eq(open("compare", { search: "?lang=pt" }).d.getElementById("backLink").getAttribute("href"), "pt/", "compare → back to the Portuguese page");
+    // every language page opens in its language, without errors
+    eq(LANGS.map(l => { const pg = open("form", { file: l + "/index.html", navLang: "de" }); return pg.KC.i18n.lang + (pg.errors.length ? "!" : ""); }), LANGS, "all seven pages open in their own language, no script errors");
     _sc.end();
   }
 

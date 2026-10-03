@@ -20,7 +20,7 @@
       + '<button class="help-tab" type="button" role="tab" data-tab="news" id="helpNewsTab"><span></span><i class="new-dot" aria-hidden="true"></i></button></div>'
       + '<div id="helpPane"><nav class="help-toc" id="helpToc"></nav><div class="help-body" id="helpBody"></div></div>'
       + '<div class="help-body" id="helpNews" hidden></div>'
-      + '<button class="btn ghost" id="helpClose" type="button" style="margin-top:14px;width:100%"></button></div>';
+      + '<div class="modal-foot"><button class="btn ghost" id="helpClose" type="button" style="width:100%"></button></div></div>';
     document.body.appendChild(ov);
     modal = KC.modal("helpOverlay", "helpClose");
     KC.$("helpToc").addEventListener("click", e => {

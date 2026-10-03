@@ -55,7 +55,7 @@
       }
     }
     try { sessionStorage.setItem("kcNotice", JSON.stringify(notice)); } catch (e) {}
-    location.href = location.pathname + "?lang=" + KC.i18n.lang;
+    location.href = KC.i18n.homeUrl(KC.i18n.lang);
   };
 
   /* ---- favourites (♥): own list -> state.fav; someone's list -> KC.store.favs under F.favKey. Never in links. ---- */
@@ -116,7 +116,7 @@
   };
   /* my own list, reloaded in the language shown now (v600: without ?lang= a visitor who never picked a language
      got the phone's language after "Start a new list") */
-  F.homeUrl = () => location.pathname + "?lang=" + KC.i18n.lang;
+  F.homeUrl = () => KC.i18n.homeUrl(KC.i18n.lang);
 
   /* profile: role block at the top + "About me" */
   F.renderProfile = function () {
@@ -292,7 +292,7 @@
   F.renderAll = function () {
     KC.i18n.apply(document);
     if (F.viewingShared) F.renderBanner();
-    KC.$("compareBtn").href = "compare.html?lang=" + KC.i18n.lang;
+    KC.$("compareBtn").href = KC.i18n.root() + "compare.html?lang=" + KC.i18n.lang;
     F.renderProfile(); F.renderList(); F.hydrate(); F.renderTplUI(); F.applySearch();
   };
 })(window.KC);

@@ -416,6 +416,7 @@ KC.addLang("ja", "ui", {
   "rl.leadGroup_html": "グループを<b>ランダムなペア</b>に分けます。各ペアに二人とも好きなものから{n}つのアイデア。場所と気分に合うものを選んでください。",
   "tpl.nebula": "テンプレートの星雲",
   "seo.desc": "匿名のBDSMプレイ・チェックリスト。好きなものに印をつけ、リンクで共有してパートナーと回答を比べられます。登録不要、データはサーバーに送られません。18歳以上。",
+  "seo.title": "Kinkosmos — BDSMプレイ・チェックリスト｜パートナーと回答を比べる",   /* v608: search / tab title, starts with the brand */
   /* v589: the other order of every pair; the pair's constellations on the compare page */
   "sign.bow": "リボン",
   "sign.slipper": "ハイヒール",

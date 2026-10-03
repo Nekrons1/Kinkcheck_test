@@ -415,6 +415,7 @@ KC.addLang("es", "ui", {
   "rl.leadGroup_html": "El grupo se divide en <b>parejas al azar</b>. Cada pareja recibe {n} ideas de lo que les gusta a los dos: elijan la que encaje con el lugar y el ánimo.",
   "tpl.nebula": "Nebulosa de la plantilla",
   "seo.desc": "Checklist anónimo de prácticas BDSM: marca lo que te gusta, comparte un enlace y compara respuestas con tu pareja. Sin registro, nada se envía a un servidor. +18.",
+  "seo.title": "Kinkosmos — Checklist de prácticas BDSM: compara respuestas con tu pareja",   /* v608: search / tab title, starts with the brand */
   /* v589: the other order of every pair; the pair's constellations on the compare page */
   "sign.bow": "Lazo",
   "sign.slipper": "Zapatilla",

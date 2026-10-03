@@ -444,6 +444,7 @@ KC.addLang("zh", "ui", {
   "rl.leadGroup_html": "把群組分成<b>隨機配對</b>。每一對從兩人都喜歡的項目中得到 {n} 個點子，選一個適合場地和心情的。",
   "tpl.nebula": "範本星雲",
   "seo.desc": "匿名的 BDSM 性癖清單：標記你喜歡的項目，用連結分享，並和伴侶比較答案。不需註冊，資料不會傳到伺服器。18 歲以上。",
+  "seo.title": "Kinkosmos — BDSM 性癖清單：和伴侶比較答案",   /* v608: search / tab title, starts with the brand */
   /* v589: the other order of every pair; the pair's constellations on the compare page */
   "sign.bow": "蝴蝶結",
   "sign.slipper": "高跟鞋",

@@ -417,6 +417,7 @@ KC.addLang("ru", "ui", {
   "rl.leadGroup_html": "Компания делится на <b>случайные пары</b>. Каждой паре — по {n} идеи из того, что нравится обоим: выберите ту, что подходит к месту и настроению.",
   "tpl.nebula": "Туманность шаблона",
   "seo.desc": "Анонимный чек-лист BDSM-практик: отметьте, что нравится, поделитесь ссылкой и сравните ответы с партнёром. Без регистрации, данные не уходят на сервер. 18+.",
+  "seo.title": "Kinkosmos — чек-лист BDSM-практик: сравните ответы с партнёром",   /* v608: search / tab title, starts with the brand */
   /* v589: the other order of every pair; the pair's constellations on the compare page */
   "sign.bow": "Бант",
   "sign.slipper": "Туфелька",

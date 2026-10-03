@@ -22,8 +22,9 @@ function release() {}
 let SCOPE = null;
 const RECENT = [], MAX_OPEN = 22;
 function scope() { SCOPE = []; return { end() { const s = SCOPE || []; SCOPE = null; s.forEach(w => { try { w.close(); } catch (e) {} }); } }; }
-function open(page, { hash = "", search = "", storage = { local: {}, session: {} }, navLang = "ru", answers = {}, patch = {}, base = BASE, keep = false } = {}) {
-  const file = page === "compare" ? "compare.html" : "index.html";
+/* file: another form page, e.g. "ja/index.html" (v608 language pages) */
+function open(page, { hash = "", search = "", storage = { local: {}, session: {} }, navLang = "ru", answers = {}, patch = {}, base = BASE, keep = false, file = null } = {}) {
+  file = file || (page === "compare" ? "compare.html" : "index.html");
   const html = fs.readFileSync(path.join(ROOT, file), "utf8").replace(/<script[\s\S]*?<\/script>/g, "");
   const dom = new JSDOM(html, { url: base + file + search + (hash ? "#" + hash : ""), runScripts: "outside-only", pretendToBeVisual: false, virtualConsole: vc });
   const w = dom.window;
@@ -40,6 +41,7 @@ function open(page, { hash = "", search = "", storage = { local: {}, session: {}
   w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
   w.nav = null; // capture navigations
   const m = manifest();
+  w.KC_MANIFEST = m;   /* as boot.js leaves it on a real page (the fallback language rule lives there) */
   /* v600: pages load one language (boot.js "@lang"); the tests load all of them, in the old order */
   const ALL = ["ru", "en", "pt", "es", "ja", "th", "zh"].map(l => "lang/" + l + ".ui.js").concat(["ru", "en", "pt", "es", "ja", "th", "zh"].map(l => "lang/" + l + ".practices.js"));
   const files = [].concat(...m.common.concat(m[page === "compare" ? "compare" : "form"]).map(f => f === "@lang" ? ALL : [f]));

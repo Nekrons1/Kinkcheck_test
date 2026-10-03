@@ -404,6 +404,7 @@ KC.addLang("th", "ui", {
   "rl.leadGroup_html": "แบ่งกลุ่มเป็น<b>คู่แบบสุ่ม</b> แต่ละคู่ได้ {n} ไอเดียจากสิ่งที่ทั้งสองคนชอบ เลือกข้อที่เหมาะกับสถานที่และอารมณ์",
   "tpl.nebula": "เนบิวลาของเทมเพลต",
   "seo.desc": "เช็กลิสต์รสนิยม BDSM แบบไม่ระบุตัวตน เลือกสิ่งที่ชอบ แชร์ลิงก์ และเปรียบเทียบคำตอบกับคู่ ไม่ต้องสมัคร ไม่มีข้อมูลส่งไปยังเซิร์ฟเวอร์ 18+",
+  "seo.title": "Kinkosmos — เช็กลิสต์รสนิยม BDSM: เปรียบเทียบคำตอบกับคู่",   /* v608: search / tab title, starts with the brand */
   /* v589: the other order of every pair; the pair's constellations on the compare page */
   "sign.bow": "โบว์",
   "sign.slipper": "รองเท้าส้นสูง",
