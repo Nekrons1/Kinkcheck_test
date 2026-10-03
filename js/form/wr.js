@@ -124,7 +124,7 @@
     rat: (st, set) => (KC.clusters.z(st, "machines", set) + KC.clusters.z(st, "filth", set)) / 2,
   };
   const mutations = (st, god, set) => Math.max(0, Math.min(MUT.MAX, Math.round(MUT.BASE + MUT.K * measure[god](st, set || null))));
-  /* the line under the name: "Mutations: N of 10", at 10 "Chaos spawn" */
+  /* the line under the name: "Mutations: N" (no "of 10", owner Oct 3), at 10 "Chaos spawn — mutations: 10" */
   const mutLine = (n, t) => n >= MUT.MAX ? t("wr.spawn") : t("wr.mut", { n });
   /* how close two patrons are: the same god; a main group in common; different gods */
   function closeness(a, b) {

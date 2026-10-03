@@ -821,8 +821,8 @@ KC.addLang("en", "ui", {
   "help.wr_html": "<p><b>⚔ Wr — Servant of the Chaos gods</b> is the fourth joke mode of the portrait. Your patron is one of five: Khorne, Nurgle, Tzeentch, Slaanesh or the Horned Rat. Each has its own constellation.</p><p>Every god's score adds up four equal parts: your sections (as for the World of Darkness clans), that god's own items, “how” you play (the same axes as the DnD races) and your favourite themes: blood, filth, machines, the stage and others. Slaanesh also gets a bonus when you answer “Yes” and “Love” clearly more often than usual.</p><p>This is a fan mode, not connected with Games Workshop: names only, none of their texts or pictures; the signs are drawn anew. The names are trademarks of Games Workshop Ltd.</p>",
   "help.compareWr_html": "<p><b>⚔ Wr</b> in the comparison is the same switch; the pair and the company each remember their own choice. For two people you see whether you share a god or at least a main section. In “The group's star map” you see the whole cult: who serves whom.</p>",
   /* v610: Warhammer factions (KC.wh), legions (KC.leg), mutations of the Chaos servants */
-  "wr.mut": "Mutations: {n} of 10",
-  "wr.spawn": "Chaos spawn — 10 mutations of 10",
+  "wr.mut": "Mutations: {n}",
+  "wr.spawn": "Chaos spawn — mutations: 10",
   "wh.toWh": "🌌 40K",
   "wh.mine": "Your faction",
   "wh.their": "Faction",

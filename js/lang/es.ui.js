@@ -820,8 +820,8 @@ KC.addLang("es", "ui", {
   "help.wr_html": "<p><b>⚔ Wr — Siervo de los dioses del Caos</b> es el cuarto modo de broma del retrato. Tu patrón es uno de cinco: Khorne, Nurgle, Tzeentch, Slaanesh o la Rata Cornuda. Cada uno tiene su propia constelación.</p><p>La puntuación de cada dios suma cuatro partes iguales: tus secciones (como los clanes del Mundo de Tinieblas), los puntos propios de ese dios, el «cómo» juegas (los mismos ejes que las razas de DnD) y tus temas favoritos: sangre, suciedad, máquinas, el escenario y otros. Slaanesh suma además un extra si respondes «Sí» y «Me encanta» bastante más de lo habitual.</p><p>Es un modo de fans, sin relación con Games Workshop: solo los nombres, sin sus textos ni imágenes; los signos están dibujados desde cero. Los nombres son marcas registradas de Games Workshop Ltd.</p>",
   "help.compareWr_html": "<p><b>⚔ Wr</b> en la comparación es el mismo selector; la pareja y el grupo recuerdan cada uno su elección. Para dos personas se ve si tienen el mismo dios o al menos una sección principal en común. En «Mapa estelar del grupo» aparece todo el culto: quién sirve a quién.</p>",
   /* v610: Warhammer factions (KC.wh), legions (KC.leg), mutations of the Chaos servants */
-  "wr.mut": "Mutaciones: {n} de 10",
-  "wr.spawn": "Engendro del Caos: 10 mutaciones de 10",
+  "wr.mut": "Mutaciones: {n}",
+  "wr.spawn": "Engendro del Caos — mutaciones: 10",
   "wh.toWh": "🌌 40K",
   "wh.mine": "Tu facción",
   "wh.their": "Facción",

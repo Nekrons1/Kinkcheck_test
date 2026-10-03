@@ -822,8 +822,8 @@ KC.addLang("pt", "ui", {
   "help.wr_html": "<p><b>⚔ Wr — Servo dos deuses do Caos</b> é o quarto modo de brincadeira do retrato. Seu patrono é um de cinco: Khorne, Nurgle, Tzeentch, Slaanesh ou o Rato Chifrudo. Cada um tem sua própria constelação.</p><p>A pontuação de cada deus soma quatro partes iguais: suas seções (como os clãs do Mundo das Trevas), os itens próprios desse deus, o “como” você joga (os mesmos eixos das raças de DnD) e seus temas favoritos: sangue, sujeira, máquinas, o palco e outros. Slaanesh ganha ainda um bônus quando você responde “Sim” e “Adoro” bem mais do que o normal.</p><p>É um modo de fãs, sem ligação com a Games Workshop: só os nomes, sem os textos nem as imagens deles; os símbolos foram desenhados do zero. Os nomes são marcas registradas da Games Workshop Ltd.</p>",
   "help.compareWr_html": "<p><b>⚔ Wr</b> na comparação é o mesmo seletor; o casal e o grupo guardam cada um a própria escolha. Para duas pessoas dá para ver se vocês têm o mesmo deus ou pelo menos uma seção principal em comum. No “Mapa estelar do grupo” aparece o culto inteiro: quem serve a quem.</p>",
   /* v610: Warhammer factions (KC.wh), legions (KC.leg), mutations of the Chaos servants */
-  "wr.mut": "Mutações: {n} de 10",
-  "wr.spawn": "Cria do Caos — 10 mutações de 10",
+  "wr.mut": "Mutações: {n}",
+  "wr.spawn": "Cria do Caos — mutações: 10",
   "wh.toWh": "🌌 40K",
   "wh.mine": "Sua facção",
   "wh.their": "Facção",

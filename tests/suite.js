@@ -449,8 +449,8 @@ const S = (title) => console.log("\n## " + title);
 
   /* damaged links (chat apps eat "__") */
   S("Link integrity");
-  const USER_BAD = ["a=BJ0D7___H-qQWuRSqsEBpalpWgYAUIaUhUBVAVGpEhAFvWjoSIBAAABBAgYGqYGqiVQAUiqpohgoClYVAQAABQwQAAUEopgADOqY-pAAAAKoh4qqApkv-qqqrerWr6lAEAigKQQgoUBAAIhlCVY&n=Lavinial%2FPetrovich&m=AgMAAxY&i=38AxC7&lg=ru",
-    "a=BJ0D____________3_H5WRuqxhJatOZ7UkBWGoIQAAAgKSAAglQ0EEatQfEVAAAgAQAAAA_7T-sxIAPYq-QEJLulqVQAQAAUMcBFAEKCEEA286I8qpGhf_-wAPv5tqUIpWmmWqqqgAXwMQQhRQhAASo-EGg&n=%D0%A5%D0%B0%D0%B2%D0%BA%D0%BE&m=AQMAAw&i=gyJOV2&lg=ru"];
+  const USER_BAD = ["a=BJ0D7___H-qQWuRSqsEBpalpWgYAUIaUhUBVAVGpEhAFvWjoSIBAAABBAgYGqYGqiVQAUiqpohgoClYVAQAABQwQAAUEopgADOqY-pAAAAKoh4qqApkv-qqqrerWr6lAEAigKQQgoUBAAIhlCVY&n=Tester%2FOne&m=AgMAAxY&i=38AxC7&lg=ru",
+    "a=BJ0D____________3_H5WRuqxhJatOZ7UkBWGoIQAAAgKSAAglQ0EEatQfEVAAAgAQAAAA_7T-sxIAPYq-QEJLulqVQAQAAUMcBFAEKCEEA286I8qpGhf_-wAPv5tqUIpWmmWqqqgAXwMQQhRQhAASo-EGg&n=Tester2&m=AQMAAw&i=gyJOV2&lg=ru"];
   eq(USER_BAD.map(l => KCn.codec.decode(l).damaged), [true, true], "the two reported links are recognised as damaged");
   let fp = 0, caught = 0, tries = 0, noUnd = true, oldCaught = 0, oldTries = 0;
   for (let t = 0; t < 150; t++) {
@@ -2649,7 +2649,7 @@ const S = (title) => console.log("\n## " + title);
     click(g.w, g.d.querySelector('.pt-mode .pt-wrb'));
     const pv = g.d.querySelector(".pt-wr");
     ok(!!pv && pv.dataset.god === "tzeentch" && /Ваш покровитель/.test(pv.querySelector(".sg-over").textContent) && /Служитель Тзинча/.test(pv.querySelector(".sg-name").textContent)
-      && /^(Мутации: \d+ из 10|Порождение Хаоса.*)$/.test(pv.querySelector(".sg-rl").textContent) && +pv.dataset.mut >= 0 && +pv.dataset.mut <= 10 && !pv.querySelector(".sg-al")
+      && /^(Мутации: \d+|Порождение Хаоса — мутации: 10)$/.test(pv.querySelector(".sg-rl").textContent) && +pv.dataset.mut >= 0 && +pv.dataset.mut <= 10 && !pv.querySelector(".sg-al")
       && pv.querySelector(".wod-note").textContent === "Фанатский неофициальный материал." && g.w.localStorage.getItem("checklist-dnd") === "wr",
       "portrait: “Your patron · Servant of Tzeentch”, mutations 0–10, the groups, the fan line; remembered as “wr”");
     const tabs = g.d.querySelector(".pt-wr-sub");
@@ -2715,7 +2715,7 @@ const S = (title) => console.log("\n## " + title);
     eq([H.waaagh(quiet, null), H.waaagh(loud, null), H.waaaghText(1), H.waaaghText(4)], [1, 12, "WAGH!", "WAAAAGH!"], "WAAAGH: 1 A without Love, 12 at most; the text");
     // mutations
     eq(R.GODS.map(g => R.mutations(loud, g, null)).every(n => n >= 0 && n <= 10) && R.GODS.map(g => R.mutations(quiet, g, null)).every(n => n >= 0 && n <= 10), true, "mutations always 0–10");
-    eq([R.mutLine(10, K.i18n.t), R.mutLine(3, K.i18n.t)], ["Порождение Хаоса — 10 мутаций из 10", "Мутации: 3 из 10"].map(x => K.i18n.lang === "ru" ? x : K.i18n.t(x === "Мутации: 3 из 10" ? "wr.mut" : "wr.spawn", { n: 3 })), "10 = a Chaos spawn");
+    eq([R.mutLine(10, K.i18n.t), R.mutLine(3, K.i18n.t)], ["Порождение Хаоса — мутации: 10", "Мутации: 3"].map(x => K.i18n.lang === "ru" ? x : K.i18n.t(x === "Мутации: 3" ? "wr.mut" : "wr.spawn", { n: 3 })), "10 = a Chaos spawn; no “of 10” (owner, Oct 3)");
     // texts
     const need = ["wh.toWh", "wh.mine", "wh.their", "wh.waaagh", "card.o.wh", "sp.wh.h", "sp.wh.grp", "sp.wh.same", "sp.wh.near", "sp.wh.far", "help.compareWh_html", "wr.gods", "wr.switch",
       "leg.toLeg", "leg.mine", "leg.their", "leg.lost", "leg.expunged", "card.o.leg", "sp.leg.h", "sp.leg.grp", "sp.leg.same", "sp.leg.near", "sp.leg.far", "help.leg_html", "help.compareLeg_html"]
