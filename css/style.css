@@ -740,6 +740,9 @@ details.sp-fold>summary{font-size:17px}
 /* v608: the practice list written into the /<lang>/ pages for search engines; hidden (not display:none),
    replaced by the real list as soon as the scripts run */
 .seo-list{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-/* v611: ⚔ Wr is on the left of the mode row (the other modes stay on the right); its tabs (gods, 40K, legion) open under it, on the left */
+/* v611: ⚔ Wr is on the left of the mode row (the other modes stay on the right); its tabs (gods, 40K, legion) open under the row,
+   centred like the World of Darkness tabs (owner, Oct 4). The ⚔ sign is coloured so the button catches the eye (owner: "brighter"). */
 .pt-mode .pt-wrb{margin-right:auto}
-.pt-wr-sub,.sp-signs .pt-wr-sub,.sp-fold-body>.pt-wr-sub{justify-content:flex-start;margin:-2px 0 6px}
+.pt-mode .pt-wrb::first-letter{color:#a8323a;font-size:1.2em;line-height:1}
+.pt-wr-sub,.sp-signs .pt-wr-sub,.sp-fold-body>.pt-wr-sub{justify-content:center;margin:-2px 0 6px}
+.pt-wr-sub .btn{padding-left:8px;padding-right:8px}

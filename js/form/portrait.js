@@ -29,11 +29,11 @@
   /* the figure shown: the DnD class or the World of Darkness subtype when that mode is on, else the sign */
   const mode = () => KC.dnd ? KC.dnd.mode() : "sign";
   const dndOn = () => mode() === "dnd";
-  const NEWM = ["wr", "wh", "leg"];   /* v610: the modes that need the list itself, not only the portrait */
-  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : NEWM.indexOf(mode()) >= 0 ? KC[mode()].pick(d, F.shown(), F.tplSet()) : KC.signs.pick(d);
+  /* v610: the modes that need the list itself, not only the portrait (KC.dnd.WR) */
+  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, F.shown(), F.tplSet()) : KC.signs.pick(d);
   /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
   function headOf(sg) {
-    if (sg.wr || sg.wh || sg.leg) { const h = (sg.wr ? KC.wr : sg.wh ? KC.wh : KC.leg).head(sg, F.viewingShared, t);
+    if (KC.dnd.wrOf(sg)) { const h = KC.dnd.wrOf(sg).head(sg, F.viewingShared, t);
       return { over: h.over, name: h.name, rl: h.rl, sub: signSub(sg), al: null }; }
     if (sg.wod) {
       const dt = KC.wod.details(F.shown(), data(), F.tplSet(), sg.line, sg.id), ln = KC.wod.lines(dt, t);
@@ -85,10 +85,10 @@
     });
     const attrs = sg.dnd ? ' data-cls="' + sg.cls + '" data-al="' + hd.alKey + '" data-race="' + hd.race + '" data-lv="' + hd.lv + '"'
       : sg.wod ? ' data-line="' + sg.line + '" data-id="' + sg.id + '" data-lv="' + hd.dt.lv + '"' : sg.wr ? ' data-god="' + sg.id + '" data-mut="' + sg.mut + '"'
-      : sg.wh ? ' data-faction="' + sg.id + '"' : sg.leg ? ' data-legion="' + sg.id + '"' : "";
-    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : sg.wr ? " pt-wr" : sg.wh ? " pt-wh" : sg.leg ? " pt-leg" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
+      : sg.wh ? ' data-faction="' + sg.id + '"' : sg.leg ? ' data-legion="' + sg.id + '"' : sg.ow ? ' data-race="' + sg.id + '"' : sg.wi ? ' data-school="' + sg.id + '" data-wsign="' + sg.wsign + '"' : "";
+    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : sg.wr ? " pt-wr" : sg.wh ? " pt-wh" : sg.leg ? " pt-leg" : sg.ow ? " pt-ow" : sg.wi ? " pt-wi" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
       + (hd.rl ? '<div class="sg-rl">' + esc(hd.rl) + "</div>" : "") + '<div class="sg-sub">' + esc(hd.sub) + "</div>"
-      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg>" + (sg.wod ? KC.wod.noticeHTML() : sg.wr || sg.wh || sg.leg ? KC.wr.noticeHTML() : "") + "</div>";
+      + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg>" + (sg.wod ? KC.wod.noticeHTML() : KC.dnd.wrOf(sg) ? KC.wr.noticeHTML() : "") + "</div>";
   }
   F.signOf = () => KC.signs.pick(data());
 
@@ -233,7 +233,7 @@
     let bottom = H - 150;
     /* the sign and the percentages can be switched on and off separately (v587, owner) */
     const sg = o.sign ? figOf(d) : null;   /* the mode shown on the page: sign, DnD class or World of Darkness */
-    if (sg && (sg.wod || sg.wr || sg.wh || sg.leg)) bottom -= 40;   /* room for the "not official" line */
+    if (sg && (sg.wod || KC.dnd.wrOf(sg))) bottom -= 40;   /* room for the "not official" line */
     if (sg) y = cardSign(ctx, sg, C, y, W, M, SANS, SERIF, !o.bars);
     if (o.bars) {
       const rows = d.sections, rh = sg ? 44 : 52, nameW = 470, barX = M + nameW + 20, barW = IW - nameW - 20 - 110;
@@ -279,7 +279,7 @@
       });
       y += 24;
     });
-    if (sg && (sg.wod || sg.wr || sg.wh || sg.leg)) {   /* "not official … material", small, above the footer */
+    if (sg && (sg.wod || KC.dnd.wrOf(sg))) {   /* "not official … material", small, above the footer */
       ctx.fillStyle = C.muted; ctx.font = "500 22px " + SANS; ctx.textAlign = "center";
       ctx.fillText(fit(ctx, t(sg.wod ? "wod.notOfficial" : "wr.notOfficial"), IW), W / 2, H - 130); ctx.textAlign = "left";
     }

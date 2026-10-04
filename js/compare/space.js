@@ -156,7 +156,7 @@
   /* sg = a sign or (v591) a DnD figure (KC.dnd.pick: grey stars only shape the drawing); st = the list (for the alignment) */
   function signMini(sg, who, shared, st0) {
     const W = 170, H = 170, box = 120, o = 25, X = st => o + st.x * box / 100, Y = st => o + st.y * box / 100;
-    const nm = sg.wr || sg.wh || sg.leg ? (sg.wr ? KC.wr : sg.wh ? KC.wh : KC.leg).head(sg, true, t) : null;   /* v610 */
+    const nm = KC.dnd.wrOf(sg) ? KC.dnd.wrOf(sg).head(sg, true, t) : null;   /* v610 */
     const name = sg.dnd ? t("dnd.c." + sg.cls) : sg.wod ? t("wod." + sg.line + "." + sg.id) : nm ? nm.name : t("sign." + sg.id);
     let h = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(name) + '">' + dust(W, H, 30, 3);
     h += '<g fill="none" stroke="var(--ink-line)" stroke-width="1.1" stroke-linejoin="round">' + sg.lines.map(l => { const q = l[0] === "d" ? l.slice(1) : l;
@@ -179,7 +179,7 @@
     const sub = sg.kind === "even" ? t("sign.even") : sg.main.map(m => short(m.id)).join(" + ");
     const al = sg.dnd ? KC.dnd.alignment(st0, KC.portrait.compute(st0), null) : null;
     const wl = sg.wod ? KC.wod.lines(KC.wod.details(st0, KC.portrait.compute(st0), null, sg.line, sg.id), t) : null;
-    return '<div class="sg-mini' + (sg.dnd ? " sg-dnd" : sg.wod ? " sg-wod" : sg.wr ? " sg-wr" : sg.wh ? " sg-wh" : sg.leg ? " sg-leg" : "") + '"' + (sg.wod || nm ? ' data-id="' + sg.id + '"' : "") + '><div class="who">' + esc(who) + '</div><div class="nm">' + esc(name) + "</div>"
+    return '<div class="sg-mini' + (sg.dnd ? " sg-dnd" : sg.wod ? " sg-wod" : sg.wr ? " sg-wr" : sg.wh ? " sg-wh" : sg.leg ? " sg-leg" : sg.ow ? " sg-ow" : sg.wi ? " sg-wi" : "") + '"' + (sg.wod || nm ? ' data-id="' + sg.id + '"' : "") + '><div class="who">' + esc(who) + '</div><div class="nm">' + esc(name) + "</div>"
       + (wl ? '<div class="rl">' + esc(wl.rl) + '</div><div class="grp">' + esc(wl.sub) + '</div><div class="grp">' + esc(sub) + "</div>" : sg.dnd ? '<div class="rl">' + esc(t("dnd.r." + KC.dnd.race(st0, null)) + " · " + t("dnd.lvlShort", { n: KC.dnd.level(st0, null) })) + '</div><div class="grp">' + esc(t("dnd.s." + sg.cls + "." + sg.sub)) + '</div><div class="grp">' + esc(sub) + '</div><div class="al">' + esc(t("dnd.al." + al)) + "</div>" : (nm && nm.rl ? '<div class="rl">' + esc(nm.rl) + "</div>" : "") + '<div class="grp">' + esc(sub) + "</div>")
       + h + labels + "</svg></div>";
   }
@@ -229,7 +229,7 @@
   }
   function pairSigns(A, B, nA, nB) {
     if (!KC.signs) return "";
-    const md = KC.dnd && KC.wod ? KC.dnd.mode("pair") : "sign", dn = md === "dnd", wd = md === "wod", wr = ["wr", "wh", "leg"].indexOf(md) >= 0, line = wd ? KC.wod.sub("pair") : "";
+    const md = KC.dnd && KC.wod ? KC.dnd.mode("pair") : "sign", dn = md === "dnd", wd = md === "wod", wr = KC.dnd.isWr(md), line = wd ? KC.wod.sub("pair") : "";
     const pick = dn ? KC.dnd.pick : wd ? d => KC.wod.pick(d, line) : KC.signs.pick;
     const a = wr ? KC[md].pick(KC.portrait.compute(A), A, null) : pick(KC.portrait.compute(A)), b = wr ? KC[md].pick(KC.portrait.compute(B), B, null) : pick(KC.portrait.compute(B));
     if (!a || !b) return "";

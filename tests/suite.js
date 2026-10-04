@@ -1150,7 +1150,7 @@ const S = (title) => console.log("\n## " + title);
   /* v591: the "🎲 DnD" button reads the same everywhere */
   Object.keys(SAME_OK).forEach(l => { SAME_OK[l].push("dnd.toDnd", "wr.toWr"); });   /* v610: "⚔ Wr" is the same in every language */
   /* v597: World of Darkness proper names (clans, auspices, ranks, the Babylonian house names…) stay as in English */
-  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$|wh\.f\.|leg\.l\.|wh\.toWh$)/;   /* v610: faction and legion names are proper names (often the same as English) */
+  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$|wh\.f\.|leg\.l\.|wh\.toWh$|ow\.r\.|ow\.toOw$|wi\.g\.)/;   /* v610: faction and legion names are proper names (often the same as English) */
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0 && !WOD_SAME.test(k)), [], l + ": no interface string left in English"));
   ok(!/TEMPORARY/.test(["pt", "es", "ja", "th", "zh"].map(l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8")).join("")), "no TEMPORARY markers left");
@@ -2653,9 +2653,9 @@ const S = (title) => console.log("\n## " + title);
       && pv.querySelector(".wod-note").textContent === "Фанатский неофициальный материал." && g.w.localStorage.getItem("checklist-dnd") === "wr",
       "portrait: “Your patron · Servant of Tzeentch”, mutations 0–10, the groups, the fan line; remembered as “wr”");
     const tabs = g.d.querySelector(".pt-wr-sub");
-    ok(!g.d.querySelector(".pt-wod-sub") && !!tabs && [...tabs.querySelectorAll("[data-mode]")].map(b => b.dataset.mode + ":" + b.textContent).join("|") === "wr:Боги Хаоса|wh:🌌 40K|leg:🛡 Легион"
+    ok(!g.d.querySelector(".pt-wod-sub") && !!tabs && [...tabs.querySelectorAll("[data-mode]")].map(b => b.dataset.mode + ":" + b.textContent).join("|") === "wr:Боги Хаоса|wh:🌌 40K|leg:🛡 Легион|ow:🏰 Old World|wi:🗡 Ведьмак"
       && tabs.querySelector('[data-mode="wr"]').getAttribute("aria-pressed") === "true" && g.d.querySelector(".pt-mode .pt-wrb").getAttribute("aria-pressed") === "true",
-      "⚔ Wr opens its tabs under it: Chaos gods (open by default) | 🌌 40K | 🛡 Legion; ⚔ Wr is pressed");
+      "⚔ Wr opens its tabs under it: Chaos gods (open by default) | 🌌 40K | 🛡 Legion | (v612) 🏰 Old World | 🗡 Witcher; ⚔ Wr is pressed");
     g.KC.form.drawCard({ sign: true, bars: true, love: true, limits: false, name: true, role: true, exp: true });
     ok(!g.errors.length, "the picture card is drawn in the Chaos mode without errors");
     g.KC.help.open("portrait"); ok(/Служитель богов Хаоса/.test(g.d.getElementById("help-portrait").textContent) && /Games Workshop/.test(g.d.getElementById("help-portrait").textContent), "help (portrait) explains the mode and that it is a fan mode");
@@ -2757,15 +2757,80 @@ const S = (title) => console.log("\n## " + title);
     ok(!!gf.querySelector(".sp-leggrp") && /Легионы компании/.test(gf.textContent) && gf.querySelectorAll(".sp-leggrp li").length === 3, "group: everyone's legion");
     // switches: a mode switched off disappears everywhere and a device that chose it sees the constellation
     const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "wh", "practices-checklist-v1": JSON.stringify(ork) }, session: {} },
-      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true };", "KC.FEATURES = { wr: true, wh: false, leg: false };") } });
+      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };", "KC.FEATURES = { wr: true, wh: false, leg: false, ow: false, wi: false };") } });
     const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
     ok(off.KC.dnd.mode() === "sign" && !off.d.querySelector('.pt-mode [data-mode="wh"], .pt-mode [data-mode="leg"]') && off.d.querySelector('.pt-mode .pt-wrb').dataset.mode === "wr" && !off.d.querySelector(".pt-wr-sub") && !off.d.querySelector(".pt-wh"),
       "factions + legions switched off: no tabs (one tab left → ⚔ Wr opens the gods directly), a device that chose factions sees the constellation");
     off.KC.help.open("portrait"); ok(!/18 легионов/.test(off.d.getElementById("help-portrait").textContent) && /Служитель богов Хаоса/.test(off.d.getElementById("help-portrait").textContent), "…and their help paragraphs are hidden");
-    const none = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} }, patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true };", "KC.FEATURES = { wr: false, wh: false, leg: false };") } });
+    const none = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} }, patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };", "KC.FEATURES = { wr: false, wh: false, leg: false, ow: false, wi: false };") } });
     none.KC.dnd.setMode("wr"); eq(none.KC.dnd.mode(), "sign", "all new modes off: choosing one stores nothing (the constellation stays)");
     const ns = none.d.getElementById("portraitSection"); ns.open = true; ns.dispatchEvent(new none.w.Event("toggle")); ok(!!none.d.querySelector("#portraitBody .pt-mode") && !none.d.querySelector(".pt-wrb"), "…and there is no ⚔ Wr button");
     ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length && !none.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v612: Warhammer: The Old World races (🏰) and Witcher schools (🗡) — two more tabs under ⚔ Wr");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, O = K.ow, V = K.wi, C = K.clusters;
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    eq([O.RACES.length, V.SCHOOLS.length, V.SIGNS.length], [17, 6, 5], "17 races (with Kislev, Cathay and the Warriors of Chaos), 6 schools, 5 signs");
+    const bad = [];
+    [[O, O.RACES], [V, V.SCHOOLS]].forEach(([M, keys]) => keys.forEach(k => { const F = M.FIG[k]; if (!F) { bad.push(k + ": no sign"); return; } const [P, E, Ln, B] = F, n = P.length + E.length;
+      if (P.length !== 9 || new Set(B).size !== 3 || B.some(i => i < 0 || i > 8)) bad.push(k + ": stars");
+      Ln.forEach(l => (l[0] === "d" ? l.slice(1) : l).forEach(i => { if (!(i >= 0 && i < n)) bad.push(k + ": line " + i); })); }));
+    eq(bad, [], "every race and school has a sign: 9 group stars, 3 bright slots, lines only to existing stars");
+    const parseK = s2 => s2.split(" ").map(t => t.match(/^([a-z]+)/)[1]);
+    eq(O.RACES.filter(r => parseK(O.PROF[r]).some(k => !C.USUAL[k])).concat(V.SIGNS.filter(g => parseK(V.SPROF[g]).some(k => !C.USUAL[k]))), [], "races and signs use only known clusters (owner: races by clusters, not by groups)");
+    eq(V.SCHOOLS.filter(x => parseK(V.PROF[x]).some(k => !K.signs.KEY[k])), [], "schools use only the groups (as the World of Darkness clans)");
+    const all = []; K.CATS.forEach(c => c.items.forEach(([, id]) => all.push(id)));
+    const mk = (fn, meta) => { const it = {}; all.forEach((id, i) => { const v = fn(id, i); if (v) it[id] = { interest: v }; }); return { items: it, meta: meta || {} }; };
+    const lover = prof => { const w = {}; prof.split(" ").forEach(t => { const m = t.match(/^([a-z]+)(-?[\d.]+)$/); w[m[1]] = +m[2]; });
+      const top = Object.keys(w).filter(k => w[k] >= .5), off = Object.keys(w).filter(k => w[k] < 0);
+      const like = new Set(), hate = new Set(); top.forEach(k => C.ids()[k].forEach(id => like.add(id))); off.forEach(k => C.ids()[k].forEach(id => hate.add(id)));
+      return mk((id, i) => like.has(id) ? "love" : hate.has(id) ? "limit" : i % 3 === 0 ? "maybe" : i % 3 === 1 ? "limit" : null); };
+    const wins = O.RACES.filter(r => { const st = lover(O.PROF[r]); return O.choose(st, K.portrait.compute(st, null), null) === r; });
+    ok(wins.length >= 14, "most races win on a list that loves their themes (" + wins.length + " / 17)");
+    eq(V.SIGNS.filter(g => V.chooseSign(lover(V.SPROF[g]), null) === g), V.SIGNS, "each sign wins on a list that loves its themes");
+    eq(O.grudges(mk((id, i) => i % 4 === 0 ? "limit" : i % 4 === 1 ? "yes" : null), null), Math.ceil(all.length / 4), "the Dwarfs' Book of Grudges: one page per “No”");
+    const need = ["ow.toOw", "ow.mine", "ow.their", "ow.grudges", "card.o.ow", "sp.ow.h", "sp.ow.grp", "sp.ow.same", "sp.ow.near", "sp.ow.far",
+      "wi.toWi", "wi.mine", "wi.their", "wi.sign", "card.o.wi", "sp.wi.h", "sp.wi.grp", "sp.wi.same", "sp.wi.near", "sp.wi.far"]
+      .concat(O.RACES.map(x => "ow.r." + x), V.SCHOOLS.map(x => "wi.s." + x), V.SIGNS.map(x => "wi.g." + x));
+    const miss = []; LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); }));
+    eq(miss, [], "every Old World / Witcher text exists in all 7 languages (" + need.length + " keys)");
+    // the portrait: the Dwarfs with their Book of Grudges; a school with its sign
+    const dw = lover(O.PROF.dwarf); dw.name = "Ann";
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(dw) }, session: {} } });
+    const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+    click(g.w, g.d.querySelector(".pt-mode .pt-wrb")); click(g.w, g.d.querySelector('.pt-wr-sub [data-mode="ow"]'));
+    const po = g.d.querySelector(".pt-ow");
+    ok(!!po && po.dataset.race === "dwarf" && /Ваша раса/.test(po.querySelector(".sg-over").textContent) && po.querySelector(".sg-name").textContent === "Гномы"
+      && /^Страниц в книге обид: \d+$/.test(po.querySelector(".sg-rl").textContent) && !!po.querySelector(".wod-note") && g.w.localStorage.getItem("checklist-dnd") === "ow",
+      "Old World: “Your race · Dwarfs · Pages in the Book of Grudges: N”, remembered as “ow”");
+    click(g.w, g.d.querySelector('.pt-wr-sub [data-mode="wi"]'));
+    const pw = g.d.querySelector(".pt-wi");
+    ok(!!pw && V.SCHOOLS.indexOf(pw.dataset.school) >= 0 && V.SIGNS.indexOf(pw.dataset.wsign) >= 0 && /Ваша школа/.test(pw.querySelector(".sg-over").textContent)
+      && /^Школа /.test(pw.querySelector(".sg-name").textContent) && /^Знак: (Аард|Игни|Ирден|Квен|Аксий)$/.test(pw.querySelector(".sg-rl").textContent),
+      "Witcher: “Your school · School of the … · Sign: …”");
+    g.KC.form.drawCard({ sign: true, bars: true, love: true, limits: false, name: true, role: true, exp: true });
+    // the compare page
+    const code = (n, u, st) => K.codec.encode(Object.assign({ name: n, uid: u }, st), "ru");
+    const codes = [code("Ann", "ANN612", lover(O.PROF.dwarf)), code("Bob", "BOB612", lover(O.PROF.dwarf)), code("Cid", "CID612", lover(O.PROF.vamp))];
+    const run = (n, local) => { const cp = open("compare", { storage: { local: Object.assign({ "checklist-lang": "ru" }, local), session: {} } });
+      for (let i = 2; i < n; i++) click(cp.w, cp.d.getElementById("addPart"));
+      cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i]; }); click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
+    const c2 = run(2, { "checklist-dnd-pair": "ow", "checklist-folds": '{"pair":true}' });
+    const box = c2.d.querySelector(".sp-signs.sp-ow");
+    ok(!!box && /Расы пары/.test(box.textContent) && /Одна раса/.test(box.textContent) && box.querySelectorAll(".sg-ow").length === 2 && /книге обид/.test(box.textContent), "pair: “The pair's races”, one race (both Dwarfs), their Book of Grudges");
+    const c3 = run(3, { "checklist-dnd-group": "wi", "checklist-folds": '{"group":true}' });
+    const gf = c3.d.querySelector('details.sp-fold[data-fold="group"]');
+    ok(!!gf.querySelector(".sp-wigrp") && /Школы компании/.test(gf.textContent) && gf.querySelectorAll(".sp-wigrp li").length === 3 && /Знак:/.test(gf.textContent), "group: everyone's school and sign");
+    // switches
+    const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "ow", "practices-checklist-v1": JSON.stringify(dw) }, session: {} },
+      patch: { "core/kc.js": src => src.replace("ow: true, wi: true", "ow: false, wi: false") } });
+    const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
+    ok(off.KC.dnd.mode() === "sign" && !off.d.querySelector('.pt-mode [data-mode="ow"], .pt-mode [data-mode="wi"]') && !off.d.querySelector(".pt-ow"), "Old World + Witcher switched off: no tabs, a device that chose Old World sees the constellation");
+    ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length, "no script errors");
     _sc.end();
   }
 

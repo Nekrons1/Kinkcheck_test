@@ -248,7 +248,7 @@
     return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">'
       + (tabs.length ? b("data-mode", wrOn ? m : KC.dnd.wrLast(scope), "wr.toWr", wrOn, "pt-wrb") : "")
       + b("data-mode", "sign", "dnd.toSign", m === "sign") + b("data-mode", "dnd", "dnd.toDnd", m === "dnd") + b("data-mode", "wod", "wod.toWod", m === "wod") + "</div>"
-      + (wrOn && tabs.length > 1 ? '<div class="pt-mode pt-wr-sub" role="group" aria-label="' + esc(t("wr.switch")) + '">' + tabs.map(x => b("data-mode", x, { wr: "wr.gods", wh: "wh.toWh", leg: "leg.toLeg" }[x], m === x)).join("") + "</div>" : "")
+      + (wrOn && tabs.length > 1 ? '<div class="pt-mode pt-wr-sub" role="group" aria-label="' + esc(t("wr.switch")) + '">' + tabs.map(x => b("data-mode", x, { wr: "wr.gods", wh: "wh.toWh", leg: "leg.toLeg", ow: "ow.toOw", wi: "wi.toWi" }[x], m === x)).join("") + "</div>" : "")
       + (m === "wod" ? '<div class="pt-mode pt-wod-sub" role="group" aria-label="' + esc(t("wod.switch")) + '">' + LINES.map(l => b("data-wod", l, "wod.l." + l, l === cur)).join("") + "</div>" : "");
   }
   /* under the mode: only "not official World of Darkness material" (owner, v597); the full Dark Pack notice

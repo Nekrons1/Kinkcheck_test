@@ -9,7 +9,7 @@ window.KC = window.KC || {};
      true = the button is shown (portrait, picture card, compare page) and its help paragraph too; false = hidden as if
      it did not exist (a device that had chosen it falls back to the constellation). wr = ⚔ Servant of the Chaos gods,
      wh = Warhammer factions, leg = Space Marine legions. */
-  KC.FEATURES = { wr: true, wh: true, leg: true };
+  KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };
 
   KC.el = function (tag, cls, text) {
     const e = document.createElement(tag);
