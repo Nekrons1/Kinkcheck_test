@@ -63,16 +63,26 @@
   function signSVG(d) {
     const sg = figOf(d); if (!sg) return "";
     const hd = headOf(sg);
-    const W = 320, H = 320, box = 196, ox = (W - box) / 2, oy = (H - box) / 2, k = box / 100, rnd = seeded(9);
-    const X = st => ox + st.x * k, Y = st => oy + st.y * k;
+    const W = 320, H = 320, rnd = seeded(9);
     /* label width: CJK characters are about twice as wide as Latin, Cyrillic or Thai ones */
     const textW = s2 => Array.from(s2).reduce((a, ch) => a + (/[⺀-鿿가-힯＀-￯]/.test(ch) ? 13 : /[ัิ-ฺ็-๎]/.test(ch) ? 0 : 7.3), 0);
-    const pts = sg.stars.map(st => ({ x: X(st), y: Y(st), r: starR(st, 10), bright: st.bright }));
     const sizes = sg.stars.map(st => st.s ? { w: Math.max(textW(short(st.s.id)), 30) + 2, h: 30 } : { w: 1, h: 1 });
-    const L = KC.signs.placeLabels(pts, segsOf(sg, X, Y), sizes, W, H);
-    /* only the part of the sky the figure uses: no empty band above and below */
-    const bb = KC.signs.bbox(pts.map(p => ({ x: p.x, y: p.y, r: p.bright ? 15 : p.r })), L, 10);
-    let g = '<svg viewBox="' + bb.x.toFixed(1) + " " + bb.y.toFixed(1) + " " + bb.w.toFixed(1) + " " + bb.h.toFixed(1) + '" style="width:' + Math.min(100, bb.w / W * 118).toFixed(1) + '%" role="img" aria-label="' + esc(hd.name) + '">';
+    /* v617 (owner): the labels are always the same size; when the figure with its labels is too wide for the box, the
+       FIGURE is drawn smaller and the labels placed again (before, the whole picture shrank, labels included, so some
+       modes had smaller text than others). The picture's width = its share of the widest allowed figure (W / 1.18) of
+       min(100 %, 420 px), so one unit of the drawing is the same number of pixels in every mode. */
+    let box = 196, ox, oy, k, X, Y, pts, L, bb;
+    for (let pass = 0; pass < 4; pass++) {
+      ox = (W - box) / 2; oy = (H - box) / 2; k = box / 100;
+      X = st => ox + st.x * k; Y = st => oy + st.y * k;
+      pts = sg.stars.map(st => ({ x: X(st), y: Y(st), r: starR(st, 10), bright: st.bright }));
+      L = KC.signs.placeLabels(pts, segsOf(sg, X, Y), sizes, W, H);
+      /* only the part of the sky the figure uses: no empty band above and below */
+      bb = KC.signs.bbox(pts.map(p => ({ x: p.x, y: p.y, r: p.bright ? 15 : p.r })), L, 10);
+      const over = bb.w / W * 118 / 100; if (over <= 1.001) break;
+      box = Math.max(110, box - (bb.w - W / 1.18) - 2);
+    }
+    let g = '<svg viewBox="' + bb.x.toFixed(1) + " " + bb.y.toFixed(1) + " " + bb.w.toFixed(1) + " " + bb.h.toFixed(1) + '" style="width:calc(min(100%, 420px) * ' + Math.min(1, bb.w / (W / 1.18)).toFixed(3) + ')" role="img" aria-label="' + esc(hd.name) + '">';
     let dust = ""; for (let i = 0; i < 50; i++) dust += '<circle cx="' + (bb.x + rnd() * bb.w).toFixed(1) + '" cy="' + (bb.y + rnd() * bb.h).toFixed(1) + '" r="' + (rnd() * .9 + .3).toFixed(2) + '"/>';
     g += '<g fill="var(--dust)">' + dust + "</g>";
     g += '<g fill="none" stroke="var(--ink-line)" stroke-width="1.1" stroke-linejoin="round">' + sg.lines.map(l => { const dash = l[0] === "d", q = dash ? l.slice(1) : l;

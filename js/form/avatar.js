@@ -22,7 +22,7 @@
   const CW = 5;   /* a cluster z of 1 weighs like a group 5 points above the list's mean (clusters ≈ half the element) */
   const BIAS = { water: 2.73, earth: -2.89, fire: -1.44, air: 1.6 };
   /* type thresholds: cluster z (rare / special / common), the electricity items' liked share (0–100) */
-  const T = { blood: 1.1, healing: 1.0, vines: 0, lava: 1.4, metal: 1.2, sand: 0, combustion: 1.55, lightning: 66 };
+  const T = { blood: .8, healing: .5, vines: 0, lava: 1.05, metal: .75, sand: 0, combustion: 1.3, lightning: 55 };
   const ELEC = "electricity-tens electricity-violet-wand shock-collar electricity-internal electricity-genitals-external electricity-anal electricity-genital-internal vaginal-electrostimulation cbt-electrical".split(" ");
   const SPIRIT = "personality-modification mindbreak depersonalisation dronification total-power-exchange name-change mantra-meditation rituals tantric-yoni".split(" ");
   const SPIRIT_MIN = 7, SPIRIT_SHARE = .85, AVATAR = .9;

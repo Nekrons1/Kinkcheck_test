@@ -17,9 +17,9 @@
   /* acts: array, or function(item) -> array; label: function(item) -> name; extra: function(item) -> text before the date */
   function rows(list, acts, label, badge, extra, cls) {
     return list.map(x => '<div class="saved-row' + (cls ? " " + cls : "") + (badge && badge(x) ? " current" : "") + '" data-id="' + KC.esc(x.id) + '"><div class="meta">'
-      + (cls === "tpl-row" ? '<button class="nb-thumb" type="button" data-act="nebula" title="' + KC.esc(t("tpl.nebula")) + '" aria-label="' + KC.esc(t("tpl.nebula")) + '">' + KC.nebula.svg(x.ids, 60, 60, KC.nebula.seedOf(x.id)) + "</button>" : "") + '<b>' + KC.esc(label(x) || t("unnamed")) + "</b>"
+      + (cls && cls.indexOf("tpl-row") === 0 ? '<button class="nb-thumb" type="button" data-act="nebula" title="' + KC.esc(t("tpl.nebula")) + '" aria-label="' + KC.esc(t("tpl.nebula")) + '">' + KC.nebula.svg(x.ids, 60, 60, KC.nebula.seedOf(x.id)) + "</button>" : "") + '<b>' + KC.esc(label(x) || t("unnamed")) + "</b>"
       + (badge && badge(x) ? '<span class="cur-badge">' + KC.esc(t("mine.current")) + "</span>" : "")
-      + "<span>" + (extra && extra(x) ? KC.esc(extra(x)) + " · " : "") + fmtDate(x.ts) + "</span></div>"
+      + "<span>" + (extra && extra(x) ? KC.esc(extra(x)) + (x.starter ? "" : " · ") : "") + (x.starter ? "" : fmtDate(x.ts)) + "</span></div>"
       + '<div class="acts">' + (typeof acts === "function" ? acts(x) : acts).map(a => '<button class="btn ghost mini" data-act="' + a + '"' + (a === "del" ? ' title="' + KC.esc(t("act.delete")) + '">✕' : ">" + KC.esc(t("act." + a))) + "</button>").join("") + "</div></div>").join("");
   }
   const empty = key => '<div style="color:var(--muted);font-size:13px;padding:8px 0">' + KC.esc(t(key)) + "</div>";
@@ -39,7 +39,8 @@
      Lists created by a deleted template keep saying so, but open with all items. */
   function tplClick(e, own, redraw, closeModal) {
     const btn = e.target.closest("button[data-act]"); if (!btn) return;
-    const id = btn.closest(".saved-row").dataset.id, a = T.list(), item = a.find(x => x.id === id); if (!item) return;
+    const id = btn.closest(".saved-row").dataset.id, a = T.list(), item = a.find(x => x.id === id) || T.starters().find(x => x.id === id); if (!item) return;
+    if (item.starter && (btn.dataset.act === "rename" || btn.dataset.act === "del")) return;   /* v617: starters stay */
     switch (btn.dataset.act) {
       case "nebula": {   /* the thumbnail opens / closes the big nebula card under the row */
         const row = btn.closest(".saved-row"), open = row.nextElementSibling && row.nextElementSibling.classList.contains("nb-open");
@@ -47,7 +48,7 @@
         else row.insertAdjacentHTML("afterend", '<div class="nb-open">' + KC.nebula.card(item.ids, T.label(item) || t("unnamed"), KC.nebula.seedOf(item.id)) + "</div>");
         btn.classList.toggle("on", !open); break;
       }
-      case "share": closeModal(); F.shareTemplate(item); break;
+      case "share": closeModal(); F.shareTemplate(item.starter ? Object.assign({}, item, { name: item.linkName, label: item.name }) : item); break;
       case "use": closeModal(); F.openByTemplate(T.use(item), { fillOnly: 1 }); break;
       case "rename": {
         /* my template's name travels in links: Latin only; a received one keeps its link name, the label is mine */
@@ -90,7 +91,9 @@
   function drawMine() {
     const a = M.list();
     KC.$("mineList").innerHTML = a.length ? rows(a, x => isCurrent(x) ? ["rename", "del"] : ["load", "rename", "del"], M.label, isCurrent, mineTpl) : empty("mine.empty");
-    const tl = T.own(); KC.$("mineTplList").innerHTML = tl.length ? rows(tl, TPL_ACTS, T.label, null, tplCount, "tpl-row") : empty("mine.tplEmpty");
+    /* v617: the starter templates first (use / share only), then mine */
+    const tl = T.own(), sl = T.starters();
+    KC.$("mineTplList").innerHTML = rows(sl, ["share", "use"], T.label, null, x => t("tpl.starter") + " · " + tplCount(x), "tpl-row tpl-starter") + (tl.length ? rows(tl, TPL_ACTS, T.label, null, tplCount, "tpl-row") : empty("mine.tplEmpty"));
     KC.$("mineTplSave").hidden = F.viewingShared; /* templates are made from my own list */
     const cl = KC.store.cmp.list();
     KC.$("mineCmpList").innerHTML = cl.length ? rows(cl, ["open", "rename", "del"], KC.store.cmp.label, null, x => t("cmp.nPeople", { n: x.parts.length }), "cmp-row") : empty("mine.cmpEmpty");

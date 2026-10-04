@@ -806,7 +806,7 @@ const S = (title) => console.log("\n## " + title);
   eq([LS(p, TK).length, LS(p, MK).length], [1, 2], "saving again: template updated, no second copy");
   // My lists: templates section
   click(p.w, p.d.getElementById("mineBtn"));
-  eq([...p.d.querySelectorAll('#mineTplList .tpl-row button[data-act]')].map(b => b.dataset.act), ["nebula", "share", "use", "rename", "del"], "template row: nebula, Share, Fill in, Rename, ✕");
+  eq([...p.d.querySelectorAll('#mineTplList .tpl-row:not(.tpl-starter) button[data-act]')].map(b => b.dataset.act), ["nebula", "share", "use", "rename", "del"], "template row: nebula, Share, Fill in, Rename, ✕ (v617: after the starter templates)");
   ok(/по шаблону «Evening»/.test(p.d.getElementById("mineList").textContent), "the copy is marked in My lists");
   ok(!p.d.getElementById("mineTplSave").hidden, "“Save the current list as a template” button");
   let asked = ["Мини", "Mini"]; p.w.prompt = () => asked.length ? asked.shift() : null; let alerts = 0; p.w.alert = () => { alerts++; };
@@ -1008,7 +1008,7 @@ const S = (title) => console.log("\n## " + title);
   S("Header: search row, ♥ toggle, PDF window");
   let hp = open("form", { storage: own5 });
   eq([...hp.d.querySelector(".subbar").children].map(x => x.id || x.className), ["search", "jump", "tplSel", "view", "fav-toggle", "extToggleBox"], "row: search, Section, Template…, All items, ♥, (v615) ⇅ — the role filter moved to the button row");
-  ok(hp.d.getElementById("tplSel").hidden, "no templates yet: the Template list is hidden");
+  ok(!hp.d.getElementById("tplSel").hidden && hp.d.querySelectorAll("#tplSel optgroup").length === 1, "no own templates yet: the Template list still offers the starter templates (v617)");
   eq(hp.d.querySelector(".fav-toggle").textContent.trim(), "♥", "favourites toggle is just a heart");
   eq(hp.d.querySelector(".fav-toggle").title, "Только избранное ♥", "…with a title");
   setView(hp, "unanswered"); ok(hp.d.getElementById("view").classList.contains("on"), "“Show” list highlighted while it filters");
@@ -1131,7 +1131,7 @@ const S = (title) => console.log("\n## " + title);
   eq(cpick.value, "", "…and the picker shows its label again once closed");
 
   S("v560: interface fully translated");
-  const SAME_OK = { pt: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "ext.onlyT", "ext.onlyB", "av.toAv"], es: ["av.toAv", "ext.onlyT", "ext.onlyB", "rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "scale.limit"], ja: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], th: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], zh: ["rl.pair", "card.file", "help.pdf.h", "pdf.file"] };
+  const SAME_OK = { pt: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "ext.onlyT", "ext.onlyB", "av.toAv", "tpl.st.extra"], es: ["tpl.st.extra", "av.toAv", "ext.onlyT", "ext.onlyB", "rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "scale.limit"], ja: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], th: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], zh: ["rl.pair", "card.file", "help.pdf.h", "pdf.file"] };
   /* v586: words that are the same as in English on purpose (D/s, S/M, Bondage, names of creatures) */
   const SAME586 = { pt: ["sign.caracal", "pt.s.bondage", "sign.flamingo", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa", "sign.wyvern"],
     es: ["sign.caracal", "sign.cobra", "pt.s.bondage", "sign.collar", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa"], ja: [], th: [], zh: [] };
@@ -1842,7 +1842,7 @@ const S = (title) => console.log("\n## " + title);
     const tpl = [{ id: "t1", tid: "AAAAAA", name: "Evening", ids: ids.bondage.slice(0, 6).concat(ids.intimacy.slice(0, 2)), own: true, ts: 1 }];
     const n = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-templates-v1": JSON.stringify(tpl) }, session: {} } });
     click(n.w, n.d.getElementById("mineBtn"));
-    const th = n.d.querySelector("#mineTplList .nb-thumb");
+    const th = n.d.querySelector("#mineTplList .tpl-row:not(.tpl-starter) .nb-thumb");
     ok(!!th && !!th.querySelector("svg"), "template rows: a nebula thumbnail");
     click(n.w, th);
     const card = n.d.querySelector("#mineTplList .nb-open .nb-card");
@@ -3124,6 +3124,51 @@ const S = (title) => console.log("\n## " + title);
     ok(off.KC.dnd.mode() === "sign" && !off.d.querySelector(".pt-avb") && !off.d.querySelector(".pt-av"), "switched off: no button, a device that chose it sees the constellation");
     off.KC.help.open("portrait"); ok(!/🌀/.test(off.d.getElementById("help-portrait").textContent), "…and no help paragraph");
     ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length, "no script errors: " + [f, g, c2, c3, off].map(p => p.errors.join()).join(" | "));
+    _sc.end();
+  }
+
+  S("v617: starter templates; labels of every figure the same size; Avatar types more often");
+  {
+    const _sc = scope();
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const f = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } }), K = f.KC, T = K.store.tpl;
+    const ids = new Set(); K.CATS.forEach(c => c.items.forEach(([, id]) => ids.add(id)));
+    eq(K.STARTERS.map(x => x.key), ["vanilla", "rough", "light", "smnosex", "humil", "extra"], "six starter templates (owner's five + Extra)");
+    eq(K.STARTERS.filter(x => x.ids.length < 30 || x.ids.length > 150 || x.ids.some(id => !ids.has(id)) || new Set(x.ids).size !== x.ids.length || !/^[A-Za-z0-9]{6}$/.test(x.tid)).map(x => x.key), [], "each: 30–150 real items, no repeats, a 6-character id");
+    ok(K.STARTERS.find(x => x.key === "rough").ids.indexOf("anal-sex") >= 0, "Rough sex includes anal sex (owner)");
+    ok(["outdoor-sex", "sex-in-snow", "abandoned-building-sex"].every(id => K.STARTERS.find(x => x.key === "extra").ids.indexOf(id) >= 0), "Extra includes sex outdoors (owner: «секс в лесу»)");
+    const need = ["filt.tplStart", "tpl.starter", "help.tplStart_html"].concat(...K.STARTERS.map(x => ["tpl.st." + x.key, "tpl.stDesc." + x.key]));
+    const miss = []; LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); })); eq(miss, [], "names and descriptions in 7 languages");
+    // the header list: starters first, even with no own templates; nothing stored
+    const sel = f.d.getElementById("tplSel");
+    ok(!sel.hidden && sel.querySelector("optgroup").label === "Стартовые шаблоны" && sel.querySelectorAll("optgroup")[0].querySelectorAll("option").length === 6 && T.list().length === 0, "«Шаблон…» shows the 6 starters first; they are not stored");
+    sel.value = "Srough"; sel.dispatchEvent(new f.w.Event("change"));
+    const vis = () => [...f.d.querySelectorAll("#list .item")].filter(x => x.style.display !== "none" && !x.hidden && !x.closest(".cat[hidden]")).length;
+    const desc = f.d.getElementById("tplDesc");
+    ok(K.form.tpl() && K.form.tpl().id === "Srough" && !desc.hidden && /^Грубый секс — страстный/.test(desc.textContent), "choosing one applies it and shows its description under the intro");
+    sel.value = ""; sel.dispatchEvent(new f.w.Event("change")); ok(desc.hidden && !K.form.tpl(), "«✕ Без шаблона» hides the description");
+    // My lists: starters first, only Share / Use; never deleted
+    click(f.w, f.d.getElementById("mineBtn"));
+    const rows = [...f.d.querySelectorAll("#mineTplList .tpl-starter")];
+    ok(rows.length === 6 && rows.every(r => !r.querySelector('[data-act="del"]') && !r.querySelector('[data-act="rename"]') && r.querySelector('[data-act="use"]') && r.querySelector('[data-act="share"]')), "My lists: the six starters with Use and Share only");
+    ok(/Стартовый/.test(rows[0].textContent) && !/1970/.test(rows[0].textContent), "…marked «Стартовый», no date");
+    click(f.w, rows[1].querySelector('[data-act="share"]'));
+    const link = f.d.getElementById("shareLink").value || f.d.getElementById("shareLink").textContent, dec = K.codec.decode(link.split("#")[1] || link);
+    ok(dec.tpl && dec.tpl.id === "Srough" && dec.tpl.name === "Rough sex" && dec.tpl.ids.length === 67, "sharing a starter: an empty template link with its id and the Latin name");
+    const r2 = open("form", { hash: link.split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    const r3 = open("form", { storage: r2.storage() });
+    ok(r3.KC.store.tpl.list().length === 0 && r3.KC.form.tpl() && r3.KC.form.tpl().id === "Srough" && /Грубый секс/.test(r3.d.getElementById("tplDesc").textContent), "the recipient's list opens by it (with its description), without a stored copy — the starter is already there");
+    // labels: one size in every mode (the figure shrinks, not the text)
+    const st = K.store.blank(); [...ids].slice(0, 330).forEach((id, i) => { st.items[id] = { interest: ["limit", "maybe", "yes", "love"][(i * 7 + 3) % 4] }; }); st.name = "Ann";
+    const fsz = {}; ["wi", "av", "1", "wh", "wod"].forEach(m => {
+      const g = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": m, "practices-checklist-v1": JSON.stringify(st) }, session: {} } });
+      const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+      const sv = g.d.querySelector(".pt-sign svg"), vb = sv.getAttribute("viewBox").split(" ").map(Number), mm = (sv.getAttribute("style") || "").match(/\* ([\d.]+)\)/);
+      fsz[m] = mm ? +(+mm[1] / vb[2]).toFixed(5) : null; });
+    ok(Object.values(fsz).every(v => v && Math.abs(v - fsz.wi) < 1e-4), "the same pixels per unit (so the same label size) in every mode: " + JSON.stringify(fsz));
+    // Avatar: special ≈ 35 %, rare ≈ 7–8 % (thresholds)
+    eq([K.av.T.healing, K.av.T.metal, K.av.T.lightning, K.av.T.blood, K.av.T.lava, K.av.T.combustion], [.5, .75, 55, .8, 1.05, 1.3], "Avatar type thresholds (special ~35 %, rare ~7–8 %)");
+    ok(!f.errors.length && !r2.errors.length && !r3.errors.length, "no script errors: " + f.errors.concat(r2.errors, r3.errors).join(" | "));
     _sc.end();
   }
 

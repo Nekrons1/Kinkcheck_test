@@ -291,9 +291,12 @@
     const opt = (v, label) => '<option value="' + esc(v) + '">' + esc(label) + "</option>";
     const group = (key, a) => a.length ? '<optgroup label="' + esc(t(key)) + '">' + a.map(x => opt(x.tid, T.label(x) || t("unnamed"))).join("") + "</optgroup>" : "";
     /* the header list: "Template…" when none is applied; with one applied it shows its name and offers "✕ No template" */
-    sel.innerHTML = opt("", t(tp ? "filt.tplOff" : "filt.tplPh")) + group("filt.tplMine", T.own()) + group("filt.tplRec", T.received());
+    sel.innerHTML = opt("", t(tp ? "filt.tplOff" : "filt.tplPh")) + group("filt.tplStart", T.starters()) + group("filt.tplMine", T.own()) + group("filt.tplRec", T.received());
     sel.value = tp ? tp.id : "";
-    sel.hidden = !tp && !T.list().length; /* nothing to pick yet */
+    sel.hidden = !tp && !T.list().length && !T.starters().length; /* nothing to pick yet */
+    /* v617: a starter template applied -> its short description under the intro */
+    const st = tp && T.starter(tp.id), dsc = KC.$("tplDesc");
+    if (dsc) { dsc.hidden = !st; dsc.innerHTML = st ? "<b>" + esc(st.name) + "</b> — " + esc(t("tpl.stDesc." + st.key)) : ""; }
     /* the note above the list: what the list was created by, what is shown now, one button to switch */
     const b = F.bound(), lib = b && T.resolve(b), note = KC.$("tplNote"), btn = KC.$("tplAct");
     const known = {}; KC.CATS.forEach(c => c.items.forEach(([, id]) => { known[id] = 1; }));

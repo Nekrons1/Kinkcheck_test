@@ -253,7 +253,13 @@
       own()      { return this.list().filter(x => x.own); },
       received() { return this.list().filter(x => !x.own); },
       label(x)   { return (x && (x.label || x.name)) || ""; },
-      byTid(tid) { const a = this.list(); return a.find(x => x.own && x.tid === tid) || a.find(x => x.tid === tid) || null; },
+      byTid(tid) { const a = this.list(); return a.find(x => x.own && x.tid === tid) || a.find(x => x.tid === tid) || this.starter(tid); },
+      /* v617: the starter templates (data/starters.js) — never stored, never renamed or deleted; the name in the page's
+         language (tpl.st.<key>), the Latin name for links (linkName), the note under the intro (tpl.stDesc.<key>) */
+      starters() {
+        return (KC.STARTERS || []).map(x => ({ id: "st-" + x.key, tid: x.tid, key: x.key, name: KC.i18n.t("tpl.st." + x.key), linkName: x.link, ids: x.ids.slice(), starter: true, own: false, ts: 0 }));
+      },
+      starter(tid) { return this.starters().find(x => x.tid === tid) || null; },
       /* the template to apply for a reference {id, name} (a list's template): {id, name, ids} or null when
          it is not among the device's templates (deleted, or never received here) */
       resolve(ref) { const x = ref && this.byTid(ref.id); return x ? this.use(x) : null; },
@@ -276,6 +282,7 @@
       /* template opened from a link -> {status: added | exists | updated | own | none, item} */
       addReceived(tid, name, ids) {
         if (!TID.test(tid || "") || !ids.length) return { status: "none" };
+        const st = this.starter(tid); if (st) return { status: "exists", item: st };   /* v617: a starter template is always here */
         const a = this.list(), mine = a.find(x => x.own && x.tid === tid);
         if (mine) return { status: "own", item: mine };
         const i = a.findIndex(x => !x.own && x.tid === tid);

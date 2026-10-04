@@ -804,3 +804,7 @@ details.sp-fold>summary{font-size:17px}
 .lore-sw{margin:6px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line2)}
 .lore-sw .pt-mode{display:flex;gap:6px}
 .lore-sw .pt-mode + .pt-mode{margin-top:6px}
+/* v617: the note of a starter template under the intro */
+.tpl-desc{margin:10px 0 0;padding:9px 12px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--line);font-size:13px;line-height:1.5;color:var(--ink)}
+.tpl-desc[hidden]{display:none}
+.tpl-starter .meta span{color:var(--muted)}

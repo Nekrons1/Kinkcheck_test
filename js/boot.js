@@ -16,7 +16,7 @@
     /* shared by both pages, in dependency order */
     common: [
       "core/kc.js", "core/i18n.js",
-      "data/practices.js", "data/profile.js",
+      "data/practices.js", "data/profile.js", "data/starters.js",
       "@lang",
       "core/ext.js", "core/lore.js", "core/codec.js", "core/store.js", "core/match.js", "core/help.js", "core/stats.js", "core/migrate.js", "core/portrait.js",
     ],
