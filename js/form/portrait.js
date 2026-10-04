@@ -34,7 +34,11 @@
   const mode = () => KC.dnd ? KC.dnd.mode() : "sign";
   const dndOn = () => mode() === "dnd";
   /* v610: the modes that need the list itself, not only the portrait (KC.dnd.WR) */
-  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, shownR(), F.tplSet()) : KC.signs.pick(d);
+  /* v616 fix: the ⚔ Wr / Witcher / Avatar modules (clusters) read the applied template as a Set (F.tplSet() is a map) —
+     with a template applied they used to throw "set.has is not a function" and the portrait stayed empty */
+  let tsSrc = null, tsSet = null;
+  const tplSetOf = () => { const m = F.tplSet(); if (!m) return null; if (m !== tsSrc) { tsSrc = m; tsSet = new Set(Object.keys(m)); } return tsSet; };
+  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, shownR(), tplSetOf()) : KC.signs.pick(d);
   /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
   function headOf(sg) {
     if (KC.dnd.wrOf(sg)) { const h = KC.dnd.wrOf(sg).head(sg, F.viewingShared, t);
@@ -75,6 +79,7 @@
       return '<polyline points="' + q.map(i => X(sg.stars[i]).toFixed(1) + "," + Y(sg.stars[i]).toFixed(1)).join(" ") + '"' + (dash ? ' stroke-dasharray="3 4"' : "") + "/>"; }).join("") + "</g>";
     sg.stars.forEach((st, i) => {
       const x = pts[i].x, y = pts[i].y, v = st.s ? st.s.pct : null;
+      if (st.hid) return;   /* v616: a hidden vertex (only shapes a line) */
       if (st.grey) g += '<circle class="sg-grey" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2" fill="var(--muted)" opacity=".55"/>';
       else if (st.bright) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="15" fill="var(--star)" opacity=".16"/><path d="' + spark(x, y, 10) + '" fill="var(--star)"/>';
       else if (v === null) g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="none" stroke="var(--muted)" stroke-width="1"/>';
@@ -89,8 +94,9 @@
     });
     const attrs = sg.dnd ? ' data-cls="' + sg.cls + '" data-al="' + hd.alKey + '" data-race="' + hd.race + '" data-lv="' + hd.lv + '"'
       : sg.wod ? ' data-line="' + sg.line + '" data-id="' + sg.id + '" data-lv="' + hd.dt.lv + '"' : sg.wr ? ' data-god="' + sg.id + '" data-mut="' + sg.mut + '"'
-      : sg.wh ? ' data-faction="' + sg.id + '"' : sg.leg ? ' data-legion="' + sg.id + '"' : sg.ow ? ' data-race="' + sg.id + '"' : sg.wi ? ' data-school="' + sg.id + '" data-wsign="' + sg.wsign + '"' : "";
-    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : sg.wr ? " pt-wr" : sg.wh ? " pt-wh" : sg.leg ? " pt-leg" : sg.ow ? " pt-ow" : sg.wi ? " pt-wi" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
+      : sg.wh ? ' data-faction="' + sg.id + '"' : sg.leg ? ' data-legion="' + sg.id + '"' : sg.ow ? ' data-race="' + sg.id + '"' : sg.wi ? ' data-school="' + sg.id + '" data-wsign="' + sg.wsign + '"'
+      : sg.av ? ' data-el="' + sg.id + '" data-type="' + (sg.type || "") + '"' + (sg.avatar ? ' data-avatar="1"' : "") : "";
+    return '<div class="pt-sign' + (sg.dnd ? " pt-dnd" : sg.wod ? " pt-wod" : sg.wr ? " pt-wr" : sg.wh ? " pt-wh" : sg.leg ? " pt-leg" : sg.ow ? " pt-ow" : sg.wi ? " pt-wi" : sg.av ? " pt-av" : "") + '"' + attrs + '><div class="sg-over">' + esc(hd.over) + '</div><div class="sg-name">' + esc(hd.name) + "</div>"
       + (hd.rl ? '<div class="sg-rl">' + esc(hd.rl) + "</div>" : "") + '<div class="sg-sub">' + esc(hd.sub) + "</div>"
       + (hd.al ? '<div class="sg-al"><b>' + esc(hd.al.name) + "</b> — " + esc(hd.al.quip) + "</div>" : "") + g + "</svg>" + (sg.wod ? KC.wod.noticeHTML() : KC.dnd.wrOf(sg) ? KC.wr.noticeHTML() : "") + "</div>";
   }
@@ -114,6 +120,7 @@
     if (sg.leg) return KC.leg.LEGIONS.indexOf(sg.id) >= 0 ? [k("leg.l." + sg.id)] : [{ key: "leg.lost", vars: { n: KC.leg.NUM[sg.id] } }];
     if (sg.ow) return [k("ow.r." + sg.id)].concat(sg.grudges !== null && sg.grudges !== undefined ? [kv("ow.grudges", sg.grudges)] : []);
     if (sg.wi) return [k("wi.s." + sg.id), k("wi.g." + sg.wsign)];
+    if (sg.av) return sg.avatar ? [k("av.avatar"), k("av.e." + sg.id)] : [k("av.e." + sg.id)].concat(sg.type ? [k("av.t." + sg.type)] : []);
     return [];   /* the constellation itself: our own signs, nothing to look up */
   }
   KC.lore.provider = function () {
@@ -249,6 +256,7 @@
     const spk = (x, yy, r) => { ctx.beginPath(); ctx.moveTo(x, yy - r); ctx.quadraticCurveTo(x, yy, x + r, yy); ctx.quadraticCurveTo(x, yy, x, yy + r); ctx.quadraticCurveTo(x, yy, x - r, yy); ctx.quadraticCurveTo(x, yy, x, yy - r); ctx.fill(); };
     sg.stars.forEach((st, i) => {
       const x = X(st), yy = Y(st), v = st.s ? st.s.pct : null;
+      if (st.hid) return;
       if (st.grey) { ctx.globalAlpha = .55; ctx.fillStyle = C.muted; ctx.beginPath(); ctx.arc(x, yy, 6, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
       else if (st.bright) { ctx.globalAlpha = .18; ctx.fillStyle = C.star; ctx.beginPath(); ctx.arc(x, yy, 44, 0, 7); ctx.fill(); ctx.globalAlpha = 1; spk(x, yy, 30); }
       else if (v === null) { ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, yy, 8, 0, 7); ctx.stroke(); }

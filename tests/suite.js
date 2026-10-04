@@ -1131,7 +1131,7 @@ const S = (title) => console.log("\n## " + title);
   eq(cpick.value, "", "…and the picker shows its label again once closed");
 
   S("v560: interface fully translated");
-  const SAME_OK = { pt: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "ext.onlyT", "ext.onlyB"], es: ["ext.onlyT", "ext.onlyB", "rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "scale.limit"], ja: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], th: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], zh: ["rl.pair", "card.file", "help.pdf.h", "pdf.file"] };
+  const SAME_OK = { pt: ["rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "ext.onlyT", "ext.onlyB", "av.toAv"], es: ["av.toAv", "ext.onlyT", "ext.onlyB", "rl.pair", "profile.orient.bi", "pdf.file", "role.short.dom", "role.short.sub", "help.pdf.h", "scale.limit"], ja: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], th: ["rl.pair", "card.file", "profile.orient.bi", "help.pdf.h", "pdf.file"], zh: ["rl.pair", "card.file", "help.pdf.h", "pdf.file"] };
   /* v586: words that are the same as in English on purpose (D/s, S/M, Bondage, names of creatures) */
   const SAME586 = { pt: ["sign.caracal", "pt.s.bondage", "sign.flamingo", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa", "sign.wyvern"],
     es: ["sign.caracal", "sign.cobra", "pt.s.bondage", "sign.collar", "sign.kraken", "sign.naga", "sign.kitsune", "sign.kappa"], ja: [], th: [], zh: [] };
@@ -2220,7 +2220,7 @@ const S = (title) => console.log("\n## " + title);
     const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
     const pv = g.d.querySelector(".pt-wod");
     ok(!!pv && pv.dataset.line === "fey" && /Ваш род/i.test(pv.querySelector(".sg-over").textContent) && !pv.querySelector(".sg-al") && pv.querySelector(".wod-note").textContent === "Не официальный материал World of Darkness." , "portrait: the fey kith, no alignment line, only “not official” under it (the full notice is in the help)");
-    ok(g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wod-sub):not(.pt-wr-sub) [data-mode]").length === 3 + (g.KC.dnd.wrTabs().length ? 1 : 0) + (g.KC.dnd.usable("wi") ? 1 : 0) && g.d.querySelector('.pt-wod-sub [data-wod="fey"]').getAttribute("aria-pressed") === "true", "three modes + ⚔ Wr when one of its tabs is switched on (v611); the fey button is pressed");
+    ok(g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wod-sub):not(.pt-wr-sub) [data-mode]").length === 3 + (g.KC.dnd.wrTabs().length ? 1 : 0) + (g.KC.dnd.usable("wi") ? 1 : 0) + (g.KC.dnd.usable("av") ? 1 : 0) && g.d.querySelector('.pt-wod-sub [data-wod="fey"]').getAttribute("aria-pressed") === "true", "three modes + ⚔ Wr when one of its tabs is switched on (v611); the fey button is pressed");
     click(g.w, g.d.querySelector('.pt-wod-sub [data-wod="vamp"]'));
     ok(g.d.querySelector(".pt-wod").dataset.line === "vamp" && g.w.localStorage.getItem("checklist-wod") === "vamp" && /поколение/.test(g.d.querySelector(".pt-wod .sg-rl").textContent), "→ vampire: sect · generation; the line is remembered");
     click(g.w, g.d.querySelector('.pt-mode [data-mode="dnd"]'));
@@ -2637,7 +2637,7 @@ const S = (title) => console.log("\n## " + title);
     const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(own) }, session: {} } });
     const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
     const row = g.d.querySelector("#portraitBody .pt-mode");
-    eq([...row.querySelectorAll("[data-mode]")].map(b => b.textContent), ["⚔ Wr", "🗡 Ведьмак", "✦ Созвездие", "🎲 DnD", "🦇 Мир Тьмы"], "v611/v615: one row — ⚔ Wr and 🗡 Witcher on the left, then ✦ 🎲 🦇");
+    eq([...row.querySelectorAll("[data-mode]")].map(b => b.textContent), ["⚔ Wr", "🗡 Ведьмак", "🌀 Аватар", "✦ Созвездие", "🎲 DnD", "🦇 Мир Тьмы"], "v611/v615/v616: one row — ⚔ Wr, 🗡 Witcher and 🌀 Avatar on the left, then ✦ 🎲 🦇");
     ok(!g.d.querySelector(".pt-wr-sub"), "no ⚔ Wr tabs before ⚔ Wr is chosen");
     click(g.w, g.d.querySelector('.pt-mode .pt-wrb'));
     const pv = g.d.querySelector(".pt-wr");
@@ -2719,7 +2719,7 @@ const S = (title) => console.log("\n## " + title);
     const ork = lover(H.PROF.orks); ork.name = "Ann";
     const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} } });
     const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
-    eq(g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wr-sub) [data-mode]").length, 5, "five buttons in the mode row while every switch is on (⚔ Wr + 🗡 Witcher + three)");
+    eq(g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wr-sub) [data-mode]").length, 6, "six buttons in the mode row while every switch is on (⚔ Wr + 🗡 Witcher + 🌀 Avatar + three)");
     click(g.w, g.d.querySelector('.pt-mode .pt-wrb')); click(g.w, g.d.querySelector('.pt-wr-sub [data-mode="wh"]'));
     const pw = g.d.querySelector(".pt-wh");
     ok(!!pw && pw.dataset.faction === "orks" && /Ваша фракция/.test(pw.querySelector(".sg-over").textContent) && pw.querySelector(".sg-name").textContent === "Орки"
@@ -2750,12 +2750,12 @@ const S = (title) => console.log("\n## " + title);
     ok(!!gf.querySelector(".sp-leggrp") && /Легионы компании/.test(gf.textContent) && gf.querySelectorAll(".sp-leggrp li").length === 3, "group: everyone's legion");
     // switches: a mode switched off disappears everywhere and a device that chose it sees the constellation
     const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "wh", "practices-checklist-v1": JSON.stringify(ork) }, session: {} },
-      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };", "KC.FEATURES = { wr: true, wh: false, leg: false, ow: false, wi: false };") } });
+      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true, av: true };", "KC.FEATURES = { wr: true, wh: false, leg: false, ow: false, wi: false, av: false };") } });
     const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
     ok(off.KC.dnd.mode() === "sign" && !off.d.querySelector('.pt-mode [data-mode="wh"], .pt-mode [data-mode="leg"]') && off.d.querySelector('.pt-mode .pt-wrb').dataset.mode === "wr" && !off.d.querySelector(".pt-wr-sub") && !off.d.querySelector(".pt-wh"),
       "factions + legions switched off: no tabs (one tab left → ⚔ Wr opens the gods directly), a device that chose factions sees the constellation");
     off.KC.help.open("portrait"); ok(!/18 легионов/.test(off.d.getElementById("help-portrait").textContent) && /Служитель богов Хаоса/.test(off.d.getElementById("help-portrait").textContent), "…and their help paragraphs are hidden");
-    const none = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} }, patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };", "KC.FEATURES = { wr: false, wh: false, leg: false, ow: false, wi: false };") } });
+    const none = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(ork) }, session: {} }, patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true, av: true };", "KC.FEATURES = { wr: false, wh: false, leg: false, ow: false, wi: false, av: false };") } });
     none.KC.dnd.setMode("wr"); eq(none.KC.dnd.mode(), "sign", "all new modes off: choosing one stores nothing (the constellation stays)");
     const ns = none.d.getElementById("portraitSection"); ns.open = true; ns.dispatchEvent(new none.w.Event("toggle")); ok(!!none.d.querySelector("#portraitBody .pt-mode") && !none.d.querySelector(".pt-wrb"), "…and there is no ⚔ Wr button");
     ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length && !none.errors.length, "no script errors");
@@ -2997,7 +2997,7 @@ const S = (title) => console.log("\n## " + title);
     const xg = xp.KC.lore.provider(); ok(xg.length === 2 && xg[0].title && xg[0].title !== xg[1].title, "an extended list: a group for each role");
     // switches: hidden modes are never described
     const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "wh", "practices-checklist-v1": rawSt }, session: {} },
-      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };", "KC.FEATURES = { wr: true, wh: false, leg: false, ow: false, wi: false };") } });
+      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true, av: true };", "KC.FEATURES = { wr: true, wh: false, leg: false, ow: false, wi: false, av: false };") } });
     const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
     ok(off.KC.dnd.mode() === "sign" && off.KC.lore.provider().every(gx => !gx.items.some(it => /^(wh|leg|ow|wi)\./.test(it.key))), "factions switched off: nothing of Warhammer is described");
     ok(!g.errors.length && !wod.errors.length && !xp.errors.length && !off.errors.length && !f.errors.length, "no script errors: " + [g, wod, xp, off, f].map(x => x.errors.join()).join(" | "));
@@ -3044,6 +3044,86 @@ const S = (title) => console.log("\n## " + title);
     const W = g.KC.wod, low = Object.assign(K.store.blank(), { items: {} }); ids.forEach(id => { low.items[id] = { interest: "limit" }; });
     eq(W.details(low, K.portrait.compute(low, null), null, "fey", "boggan").seem, "wilder", "the lowest level fey is a Wilder, never a Childling");
     ok(!f.errors.length && !x.errors.length && !g.errors.length, "no script errors: " + [f, x, g].map(p => p.errors.join()).join(" | "));
+    _sc.end();
+  }
+
+  S("v616: 🌀 Avatar — elements, types, spirit energy, the Avatar; fix: ⚔ Wr modes with a template");
+  {
+    const _sc = scope();
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const f = open("form"), K = f.KC, A = K.av;
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    // figures: 9 group stars, valid lines, bright slots among the 9; the Avatar: the centre + two in the native symbol
+    const bad = []; Object.keys(A.FIG).forEach(k => { const [P, E, L, B] = A.FIG[k], n = P.length + E.length;
+      if (P.length !== 9 || B.length !== 3 || B.some(b => b < 0 || b > 8) || new Set(B).size !== 3) bad.push(k + ":slots");
+      L.forEach(l => (l[0] === "d" ? l.slice(1) : l).forEach(i => { if (!(i >= 0 && i < n)) bad.push(k + ":line"); })); });
+    eq(bad, [], "8 figures (4 elements + 4 Avatars by native element): 9 group stars, 3 bright slots, lines to existing stars");
+    eq(["water", "earth", "fire", "air"].map(e => A.FIG["avatar_" + e][3][0]), [0, 0, 0, 0], "the Avatar's first bright star is the centre");
+    // types: ranks, Air has none
+    eq(Object.keys(A.RANK).sort().join(), "blood,combustion,healing,lava,lightning,metal,sand,spirit,vines", "nine types");
+    const V = ["limit", "maybe", "yes", "love"];
+    const mk = fn => { const st = K.store.blank(); ids.forEach((id, i) => { const v = fn(id, i); if (v) st.items[id] = { interest: v }; }); return st; };
+    const varied = mk((id, i) => V[(i * 7 + 3) % 4]);
+    const dv = K.portrait.compute(varied, null), el = A.choose(dv, varied, null);
+    ok(A.ELEMENTS.indexOf(el) >= 0, "a varied list gets an element");
+    eq(A.typeOf("air", dv, varied, null), A.spirit(varied, null) ? "spirit" : null, "Air has no types (only the very rare spirit energy)");
+    // spirit energy: the spirit items Yes / Love
+    const sp = mk((id, i) => A.SPIRIT.indexOf(id) >= 0 ? "love" : V[(i * 7 + 3) % 4]);
+    ok(A.spirit(sp, null) && A.typeOf("earth", K.portrait.compute(sp, null), sp, null) === "spirit", "spirit energy beats the element's types");
+    const sp2 = mk((id, i) => A.SPIRIT.indexOf(id) >= 0 ? (A.SPIRIT.indexOf(id) < 4 ? "love" : "limit") : V[(i * 7 + 3) % 4]);
+    ok(!A.spirit(sp2, null), "…not when many of them are “No”");
+    // the Avatar: 90 % of ALL practices Yes / Love
+    const n90 = Math.ceil(ids.length * .9), av = mk((id, i) => i < n90 ? (i % 2 ? "yes" : "love") : null), av2 = mk((id, i) => i < n90 - 2 ? "love" : null);
+    eq([A.avatar(av, null), A.avatar(av2, null)], [true, false], "the Avatar: Yes or Love on ≥ 90 % of all practices (unanswered do not count)");
+    const pa = A.pick(K.portrait.compute(av, null), av, null);
+    ok(pa && pa.avatar && pa.type === null && pa.stars[0].bright, "the Avatar's figure: the four symbols, the centre bright, no type");
+    K.i18n.set("ru");
+    eq(A.head(pa, false, K.i18n.t).name, "Аватар", "…named «Аватар»");
+    ok(/^Все четыре стихии · родная: (Вода|Земля|Огонь|Воздух)$/.test(A.head(pa, false, K.i18n.t).rl), "…with the native element");
+    eq([A.head({ id: "earth", type: "metal" }, false, K.i18n.t).rl, A.head({ id: "fire", type: "combustion" }, false, K.i18n.t).rl, A.head({ id: "water", type: "vines" }, false, K.i18n.t).rl, A.head({ id: "air", type: null }, false, K.i18n.t).rl],
+      ["Особый тип: Металл", "Редкий тип: Взрыв", "Обычный тип: Лозы", "Без особого типа"], "the type line");
+    // texts in 7 languages
+    const need = ["av.toAv", "av.mine", "av.their", "av.avMine", "av.avTheir", "av.avatar", "av.native", "av.none", "av.rank.common", "av.rank.special", "av.rank.rare", "card.o.av", "sp.av.h", "sp.av.grp", "sp.av.same", "sp.av.near", "sp.av.far", "help.av_html", "help.compareAv_html"]
+      .concat(A.ELEMENTS.map(e => "av.e." + e), Object.keys(A.RANK).map(t2 => "av.t." + t2));
+    const miss = []; LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); }));
+    eq(miss, [], "every Avatar text exists in all 7 languages (" + need.length + " keys)");
+    const fsx = require("fs"), L = {}; new Function("KC", fsx.readFileSync(__dirname + "/../js/lore/ru.lore.js", "utf8"))({ addLore: (lg, d) => Object.assign(L, d) });
+    eq(A.ELEMENTS.map(e => "av.e." + e).concat(Object.keys(A.RANK).map(t2 => "av.t." + t2), ["av.avatar"]).filter(k => !L[k]), [], "the constellation guide describes every element, type and the Avatar");
+    // the portrait: 🌀 Avatar is its own button next to 🗡 Witcher
+    const st = mk((id, i) => i < 320 ? V[(i * 7 + 3) % 4] : null); st.name = "Ann";
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(st) }, session: {} } });
+    const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+    eq([...g.d.querySelectorAll("#portraitBody .pt-mode:not(.pt-wr-sub):not(.pt-wod-sub) [data-mode]")].map(b => b.textContent), ["⚔ Wr", "🗡 Ведьмак", "🌀 Аватар", "✦ Созвездие", "🎲 DnD", "🦇 Мир Тьмы"], "mode row: ⚔ Wr, 🗡 Witcher, 🌀 Avatar on the left");
+    click(g.w, g.d.querySelector(".pt-mode .pt-avb"));
+    const pv = g.d.querySelector(".pt-av");
+    ok(!!pv && A.ELEMENTS.indexOf(pv.dataset.el) >= 0 && /Ваша стихия/.test(pv.querySelector(".sg-over").textContent) && /^(Обычный тип|Особый тип|Редкий тип|Без особого типа)/.test(pv.querySelector(".sg-rl").textContent)
+      && pv.querySelector(".wod-note").textContent === "Фанатский неофициальный материал." && g.w.localStorage.getItem("checklist-dnd") === "av", "portrait: «Ваша стихия · element · type line», the fan line; remembered as “av”");
+    g.KC.form.drawCard({ sign: true, bars: true, love: true, limits: false, name: true, role: true, exp: true });
+    // the lore tab follows
+    g.w.eval(fsx.readFileSync(__dirname + "/../js/lore/ru.lore.js", "utf8")); g.KC.help.open("lore");
+    ok([...g.d.querySelectorAll("#helpLore .lore-item")].some(it => it.dataset.key === "av.e." + pv.dataset.el), "the constellation guide describes the element");
+    // fix: a ⚔ Wr-family mode with a template applied used to throw (set.has)
+    g.KC.form.setTpl({ id: "tt1616", tid: "tt1616", name: "T", ids: ids.slice(0, 250) });
+    g.KC.form.renderPortrait();
+    ok(!!g.d.querySelector(".pt-av") && !g.errors.length, "with a template applied the Avatar (and ⚔ Wr) portrait still draws: " + g.errors.join());
+    // compare: the pair's elements, Team Avatar
+    const code = (n, u, s2) => K.codec.encode(Object.assign({ name: n, uid: u }, s2), "ru");
+    const codes = [code("Ann", "ANN616", st), code("Bob", "BOB616", varied), code("Cid", "CID616", sp)];
+    const run = (n, local) => { const cp = open("compare", { storage: { local: Object.assign({ "checklist-lang": "ru" }, local), session: {} } });
+      for (let i = 2; i < n; i++) click(cp.w, cp.d.getElementById("addPart"));
+      cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i]; }); click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
+    const c2 = run(2, { "checklist-dnd-pair": "av", "checklist-folds": '{"pair":true}' });
+    ok(/Стихии пары/.test(c2.d.getElementById("resHead").textContent) && c2.d.querySelectorAll(".sg-mini.sg-av").length === 2, "pair: «Стихии пары», two element figures");
+    const c3 = run(3, { "checklist-dnd-group": "av", "checklist-folds": '{"group":true}' });
+    const gf = c3.d.querySelector('details.sp-fold[data-fold="group"]');
+    ok(!!gf.querySelector(".sp-avgrp") && /Команда Аватара/.test(gf.textContent) && gf.querySelectorAll(".sp-avgrp li").length === 3, "group: «Команда Аватара», everyone's element");
+    // switched off
+    const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "av", "practices-checklist-v1": JSON.stringify(st) }, session: {} },
+      patch: { "core/kc.js": src => src.replace("wi: true, av: true };", "wi: true, av: false };") } });
+    const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
+    ok(off.KC.dnd.mode() === "sign" && !off.d.querySelector(".pt-avb") && !off.d.querySelector(".pt-av"), "switched off: no button, a device that chose it sees the constellation");
+    off.KC.help.open("portrait"); ok(!/🌀/.test(off.d.getElementById("help-portrait").textContent), "…and no help paragraph");
+    ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length, "no script errors: " + [f, g, c2, c3, off].map(p => p.errors.join()).join(" | "));
     _sc.end();
   }
 

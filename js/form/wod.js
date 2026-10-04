@@ -247,10 +247,11 @@
   function switchHTML(scope) {
     const t = k => KC.i18n.t(k), esc = KC.esc, m = KC.dnd.mode(scope), cur = sub(scope), tabs = KC.dnd.wrTabs(), wrOn = KC.dnd.inWrg(m);
     const b = (attr, v, key, pressed, cls) => '<button type="button" class="btn ghost mini' + (cls ? " " + cls : "") + '" ' + attr + '="' + v + '" aria-pressed="' + pressed + '">' + esc(t(key)) + "</button>";
-    const wi = KC.dnd.usable("wi");   /* v615: 🗡 Witcher — its own button on the left, after ⚔ Wr */
+    const wi = KC.dnd.usable("wi"), av = KC.dnd.usable("av");   /* v615: 🗡 Witcher, v616: 🌀 Avatar — own buttons on the left, after ⚔ Wr */
     return '<div class="pt-mode" role="group" aria-label="' + esc(t("dnd.switch")) + '">'
-      + (tabs.length ? b("data-mode", wrOn ? m : KC.dnd.wrLast(scope), "wr.toWr", wrOn, "pt-wrb" + (wi ? "" : " pt-left-end")) : "")
-      + (wi ? b("data-mode", "wi", "wi.toWi", m === "wi", "pt-wib pt-left-end") : "")
+      + (tabs.length ? b("data-mode", wrOn ? m : KC.dnd.wrLast(scope), "wr.toWr", wrOn, "pt-wrb" + (wi || av ? "" : " pt-left-end")) : "")
+      + (wi ? b("data-mode", "wi", "wi.toWi", m === "wi", "pt-wib" + (av ? "" : " pt-left-end")) : "")
+      + (av ? b("data-mode", "av", "av.toAv", m === "av", "pt-avb pt-left-end") : "")
       + b("data-mode", "sign", "dnd.toSign", m === "sign") + b("data-mode", "dnd", "dnd.toDnd", m === "dnd") + b("data-mode", "wod", "wod.toWod", m === "wod") + "</div>"
       + (wrOn && tabs.length > 1 ? '<div class="pt-mode pt-wr-sub" role="group" aria-label="' + esc(t("wr.switch")) + '">' + tabs.map(x => b("data-mode", x, { wr: "wr.gods", wh: "wh.toWh", leg: "leg.toLeg", ow: "ow.toOw" }[x], m === x)).join("") + "</div>" : "")
       + (m === "wod" ? '<div class="pt-mode pt-wod-sub" role="group" aria-label="' + esc(t("wod.switch")) + '">' + LINES.map(l => b("data-wod", l, "wod.l." + l, l === cur)).join("") + "</div>" : "");

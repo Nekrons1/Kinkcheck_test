@@ -168,6 +168,7 @@
     let labels = "";
     sg.stars.forEach((st, i) => {
       const x = pts[i].x, y = pts[i].y;
+      if (st.hid) return;
       if (st.grey) { h += '<circle class="sg-grey" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="1.4" fill="var(--muted)" opacity=".55"/>'; return; }
       if (!st.bright) { h += '<path d="' + spark(x, y, 3) + '" fill="var(--muted)" opacity=".7"/>'; return; }
       const sh = shared.indexOf(st.s.id) >= 0;
@@ -179,7 +180,7 @@
     const sub = sg.kind === "even" ? KC.signs.evenText(sg) : sg.main.map(m => short(m.id)).join(" + ");
     const al = sg.dnd ? KC.dnd.alignment(st0, KC.portrait.compute(st0), null) : null;
     const wl = sg.wod ? KC.wod.lines(KC.wod.details(st0, KC.portrait.compute(st0), null, sg.line, sg.id), t) : null;
-    return '<div class="sg-mini' + (sg.dnd ? " sg-dnd" : sg.wod ? " sg-wod" : sg.wr ? " sg-wr" : sg.wh ? " sg-wh" : sg.leg ? " sg-leg" : sg.ow ? " sg-ow" : sg.wi ? " sg-wi" : "") + '"' + (sg.wod || nm ? ' data-id="' + sg.id + '"' : "") + '><div class="who">' + esc(who) + '</div><div class="nm">' + esc(name) + "</div>"
+    return '<div class="sg-mini' + (sg.dnd ? " sg-dnd" : sg.wod ? " sg-wod" : sg.wr ? " sg-wr" : sg.wh ? " sg-wh" : sg.leg ? " sg-leg" : sg.ow ? " sg-ow" : sg.wi ? " sg-wi" : sg.av ? " sg-av" : "") + '"' + (sg.wod || nm ? ' data-id="' + sg.id + '"' : "") + '><div class="who">' + esc(who) + '</div><div class="nm">' + esc(name) + "</div>"
       + (wl ? '<div class="rl">' + esc(wl.rl) + '</div><div class="grp">' + esc(wl.sub) + '</div><div class="grp">' + esc(sub) + "</div>" : sg.dnd ? '<div class="rl">' + esc(t("dnd.r." + KC.dnd.race(st0, null)) + " · " + t("dnd.lvlShort", { n: KC.dnd.level(st0, null) })) + '</div><div class="grp">' + esc(t("dnd.s." + sg.cls + "." + sg.sub)) + '</div><div class="grp">' + esc(sub) + '</div><div class="al">' + esc(t("dnd.al." + al)) + "</div>" : (nm && nm.rl ? '<div class="rl">' + esc(nm.rl) + "</div>" : "") + '<div class="grp">' + esc(sub) + "</div>")
       + h + labels + "</svg></div>";
   }
