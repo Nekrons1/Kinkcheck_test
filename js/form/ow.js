@@ -61,7 +61,7 @@
     sg.main.forEach((m, k) => { stars[B[k]].bright = true; stars[B[k]].s = m; });
     let r = 0; stars.forEach(s2 => { if (!s2.s) s2.s = rest[r++] || null; });
     E.forEach(p => stars.push({ x: p[0], y: p[1], grey: true, bright: false, s: null }));
-    return { ow: true, id, stars, lines: L, main: sg.main, kind: sg.kind, grudges: id === "dwarf" ? grudges(st, set || null) : null };
+    return { ow: true, id, stars, lines: L, main: sg.main, kind: sg.kind, many: sg.many, grudges: id === "dwarf" ? grudges(st, set || null) : null };
   }
   /* the title lines: over-title, name, one line (only the Dwarfs: the pages of their Book of Grudges) */
   const head = (sg, shared, t) => ({ over: t(shared ? "ow.their" : "ow.mine"), name: t("ow.r." + sg.id), rl: sg.grudges !== null && sg.grudges !== undefined ? t("ow.grudges", { n: sg.grudges }) : null });

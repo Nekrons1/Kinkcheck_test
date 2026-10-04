@@ -29,7 +29,9 @@
   const byTpl = (ref, gone) => t(gone, { name: (T.byTid(ref.id) ? T.label(T.byTid(ref.id)) : ref.name) || t("unnamed") });
   const markOf = (ref, goneKey) => ref ? byTpl(ref, T.byTid(ref.id) ? "list.byTpl" : goneKey) : "";
   const recTpl = x => { try { const d = KC.codec.decode(x.code); return markOf(d.by || d.tpl, "list.byTplMissing"); } catch (e) { return ""; } };
-  const mineTpl = x => markOf(x.data && x.data.template, "list.byTplGone");
+  /* v613 (owner): which list is plain (and for which role, or "not set") and which is extended */
+  const kindOf = d => { if (!d) return ""; if (d.ext) return t("ext.kindExt"); const r = KC.ext.roleOf(d); return t("ext.kindPlain", { role: r ? t("role.short." + r) : t("ext.noRole") }); };
+  const mineTpl = x => [kindOf(x.data), markOf(x.data && x.data.template, "list.byTplGone")].filter(Boolean).join(" · ");
   const tplCount = x => t("tpl.count", { n: x.ids.length });
   const TPL_ACTS = ["share", "use", "rename", "del"];
 

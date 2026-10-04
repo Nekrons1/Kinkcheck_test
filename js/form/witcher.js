@@ -49,7 +49,7 @@
     sg.main.forEach((m, k) => { stars[B[k]].bright = true; stars[B[k]].s = m; });
     let r = 0; stars.forEach(s2 => { if (!s2.s) s2.s = rest[r++] || null; });
     E.forEach(p => stars.push({ x: p[0], y: p[1], grey: true, bright: false, s: null }));
-    return { wi: true, id, stars, lines: L, main: sg.main, kind: sg.kind, wsign: chooseSign(st, set || null) };
+    return { wi: true, id, stars, lines: L, main: sg.main, kind: sg.kind, many: sg.many, wsign: chooseSign(st, set || null) };
   }
   /* the title lines: over-title, name ("School of the Cat"), one line ("Sign: Igni") */
   const head = (sg, shared, t) => ({ over: t(shared ? "wi.their" : "wi.mine"), name: t("wi.s." + sg.id), rl: t("wi.sign", { s: t("wi.g." + sg.wsign) }) });

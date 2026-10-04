@@ -69,7 +69,7 @@
     sg.main.forEach((m, k) => { stars[B[k]].bright = true; stars[B[k]].s = m; });
     let r = 0; stars.forEach(s2 => { if (!s2.s) s2.s = rest[r++] || null; });
     E.forEach(p => stars.push({ x: p[0], y: p[1], grey: true, bright: false, s: null }));
-    return { wh: true, id, stars, lines: L, main: sg.main, kind: sg.kind, waaagh: id === "orks" ? waaagh(st, set || null) : null };
+    return { wh: true, id, stars, lines: L, main: sg.main, kind: sg.kind, many: sg.many, waaagh: id === "orks" ? waaagh(st, set || null) : null };
   }
   /* the title lines: over-title, name, one line (only the Orks: their WAAAGH) */
   const head = (sg, shared, t) => ({ over: t(shared ? "wh.their" : "wh.mine"), name: t("wh.f." + sg.id), rl: sg.waaagh ? t("wh.waaagh", { w: waaaghText(sg.waaagh) }) : null });

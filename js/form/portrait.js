@@ -16,7 +16,11 @@
   const sec = KC.$("portraitSection"), body = KC.$("portraitBody");
   let ptLang = null;   /* the language the open portrait was drawn in */
 
-  const data = () => KC.portrait.compute(F.shown(), F.tplSet());
+  /* v613: an extended list has a portrait per role — PTR is the role being drawn ("t" | "b"); everything below reads
+     the list through shownR(), the plain list of that role (core/ext.js). A plain list: PTR is ignored. */
+  let PTR = null, CARD_R = "t";
+  const shownR = () => { const s = F.shown(); return KC.ext.isExt(s) ? KC.ext.view(s, PTR || "t") : s; };
+  const data = () => KC.portrait.compute(shownR(), F.tplSet());
   const pctText = p => (p === null ? "—" : p + "%");
   const metaBits = st => ["role", "exp"].map(f => st.meta[f] ? KC.i18n.optLabel(f, st.meta[f]) : "").filter(Boolean);
 
@@ -25,22 +29,22 @@
   const short = id => t("pt.s." + id);
   const spark = (x, y, r) => "M" + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + "Z";
   const seeded = n => { let x = n; return () => (x = (x * 16807) % 2147483647) / 2147483647; };
-  const signSub = sg => sg.kind === "even" ? t("sign.even") : sg.main.map(m => short(m.id)).join(" + ");
+  const signSub = sg => sg.kind === "even" ? KC.signs.evenText(sg) : sg.main.map(m => short(m.id)).join(" + ");
   /* the figure shown: the DnD class or the World of Darkness subtype when that mode is on, else the sign */
   const mode = () => KC.dnd ? KC.dnd.mode() : "sign";
   const dndOn = () => mode() === "dnd";
   /* v610: the modes that need the list itself, not only the portrait (KC.dnd.WR) */
-  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, F.shown(), F.tplSet()) : KC.signs.pick(d);
+  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, shownR(), F.tplSet()) : KC.signs.pick(d);
   /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
   function headOf(sg) {
     if (KC.dnd.wrOf(sg)) { const h = KC.dnd.wrOf(sg).head(sg, F.viewingShared, t);
       return { over: h.over, name: h.name, rl: h.rl, sub: signSub(sg), al: null }; }
     if (sg.wod) {
-      const dt = KC.wod.details(F.shown(), data(), F.tplSet(), sg.line, sg.id), ln = KC.wod.lines(dt, t);
+      const dt = KC.wod.details(shownR(), data(), F.tplSet(), sg.line, sg.id), ln = KC.wod.lines(dt, t);
       return { over: t((F.viewingShared ? "wod.of." : "wod.mine.") + sg.line), name: t("wod." + sg.line + "." + sg.id), sub: ln.sub + " · " + signSub(sg), rl: ln.rl, al: null, dt };
     }
     if (!sg.dnd) return { over: t(F.viewingShared ? "sign.of" : "sign.mine"), name: t("sign." + sg.id), sub: signSub(sg), al: null };
-    const st = F.shown(), set = F.tplSet(), al = KC.dnd.alignment(st, data(), set), race = KC.dnd.race(st, set), lv = KC.dnd.level(st, set);
+    const st = shownR(), set = F.tplSet(), al = KC.dnd.alignment(st, data(), set), race = KC.dnd.race(st, set), lv = KC.dnd.level(st, set);
     return { over: t(F.viewingShared ? "dnd.of" : "dnd.mine"), name: t("dnd.c." + sg.cls), sub: t("dnd.s." + sg.cls + "." + sg.sub) + " · " + signSub(sg),
       rl: t("dnd.r." + race) + " · " + t("dnd.lvl", { n: lv }), race, lv,
       al: { name: t("dnd.al." + al), quip: t("dnd.aq." + al) }, alKey: al };
@@ -92,6 +96,35 @@
   }
   F.signOf = () => KC.signs.pick(data());
 
+  /* v613: what the "Описание созвездий" tab describes (core/lore.js) — the items of the figure on the portrait now,
+     in the mode on now; an extended list: one group per role. Keys = the interface keys of the names. */
+  const AL9 = { LG: 1, NG: 1, CG: 1, LN: 1, NN: 1, CN: 1, LE: 1, NE: 1, CE: 1 };
+  function loreOf(sg) {
+    const hd = headOf(sg), k = key => ({ key }), kv = (key, n) => ({ key, vars: { n } });
+    if (sg.dnd) return [k("dnd.c." + sg.cls), k("dnd.s." + sg.cls + "." + sg.sub), k("dnd.r." + hd.race)].concat(AL9[hd.alKey] ? [k("dnd.al." + hd.alKey)] : []);
+    if (sg.wod) {
+      const d = hd.dt, out = [k("wod." + sg.line + "." + sg.id)];
+      if (sg.line === "vamp") return out.concat(d.sect ? [k("wod.sect." + d.sect)] : [], [kv("wod.gen", d.gen), k("wod.path." + (d.hum !== undefined ? "humanity" : d.path))]);
+      if (sg.line === "wolf") return out.concat([k("wod.breed." + d.breed), k("wod.aus." + d.aus), k("wod.rank." + d.rank), kv("wod.rage", d.rage), kv("wod.gnosis", d.gnosis)]);
+      if (sg.line === "fey") return out.concat(d.court ? [k("wod.court." + d.court), k("wod.house." + d.house)] : [], [k("wod.seem." + d.seem), kv("wod.glamour", d.glamour), kv("wod.banality", d.banality)]);
+      return out.concat([k("wod.demon.a." + sg.id)], d.fac ? [k("wod.fac." + d.fac)] : [], [k("wod.lore." + d.lore), kv("wod.faith", d.faith)]);
+    }
+    if (sg.wr) return [k("wr.of." + sg.id), kv("wr.mut", sg.mut)];
+    if (sg.wh) return [k("wh.f." + sg.id)].concat(sg.waaagh ? [{ key: "wh.waaagh", vars: { w: KC.wh.waaaghText(sg.waaagh) } }] : []);
+    if (sg.leg) return KC.leg.LEGIONS.indexOf(sg.id) >= 0 ? [k("leg.l." + sg.id)] : [{ key: "leg.lost", vars: { n: KC.leg.NUM[sg.id] } }];
+    if (sg.ow) return [k("ow.r." + sg.id)].concat(sg.grudges !== null && sg.grudges !== undefined ? [kv("ow.grudges", sg.grudges)] : []);
+    if (sg.wi) return [k("wi.s." + sg.id), k("wi.g." + sg.wsign)];
+    return [];   /* the constellation itself: our own signs, nothing to look up */
+  }
+  KC.lore.provider = function () {
+    const s = F.shown(), out = [];
+    (KC.ext.isExt(s) ? KC.ext.R : [null]).forEach(r => {
+      PTR = r; const d = data(); const sg = d.answered ? figOf(d) : null;
+      if (sg) out.push({ title: r ? t("ext.row." + r) : "", items: loreOf(sg) });
+    });
+    PTR = null; return out;
+  };
+
   /* the "✦ Constellation | 🎲 DnD | 🦇 World of Darkness" switch above the picture (only when there is a picture) */
   function modeSwitch(d) {
     if (!KC.dnd || !KC.wod || !KC.signs.pick(d)) return "";
@@ -106,23 +139,41 @@
   F.renderPortrait = function () {
     title(); ptLang = KC.i18n.lang;
     if (!sec.open) return;                      /* drawn when opened: nothing to compute while folded */
+    if (KC.ext.isExt(F.shown())) { renderExt(); return; }
     const d = data(), st = F.shown();
     if (!d.answered) { body.innerHTML = '<p class="pt-empty">' + esc(t("pt.empty")) + "</p>"; return; }
     const meta = metaBits(st);
-    let h = (meta.length ? '<div class="pt-meta">' + esc(meta.join(" · ")) + "</div>" : "")
-      + modeSwitch(d)
-      + signSVG(d)
+    body.innerHTML = (meta.length ? '<div class="pt-meta">' + esc(meta.join(" · ")) + "</div>" : "") + modeSwitch(d) + one(d, st, "")
+      + '<button class="btn ghost" id="ptCard" type="button">' + esc(t("pt.card")) + "</button>";
+  };
+  /* v613: an extended list — the mode switch once, then "↑ Верх" and "↓ Низ", each with its own sign, bars and
+     favourites, and its own picture card */
+  function renderExt() {
+    let h = "", sw = "";
+    KC.ext.R.forEach(r => {
+      PTR = r; const d = data(), st = shownR();
+      if (!sw && d.answered) sw = modeSwitch(d);
+      h += '<div class="pt-role" data-r="' + r + '"><h4 class="pt-role-h">' + esc(t("ext.row." + r)) + "</h4>"
+        + (d.answered ? one(d, st, r) + '<button class="btn ghost pt-card-r" type="button" data-card="' + r + '">' + esc(t("ext.card." + r)) + "</button>"
+          : '<p class="pt-empty">' + esc(t("ext.ptEmpty")) + "</p>") + "</div>";
+    });
+    PTR = null;
+    body.innerHTML = sw + h;
+  }
+  /* the sign, the bars and the favourites of one portrait */
+  function one(d, st, r) {
+    let h = signSVG(d)
       + '<div class="pt-bars">' + d.sections.map(s => '<div class="pt-row"><span class="pt-name">' + esc(KC.portrait.label(s.id)) + "</span>"
         + '<span class="pt-bar"><i style="width:' + (s.pct || 0) + '%"></i></span><span class="pt-pct">' + pctText(s.pct) + "</span></div>").join("") + "</div>"
       + '<p class="pt-how">' + esc(t("pt.how")) + "</p>";
     if (d.love.length) h += '<h4 class="pt-h">' + esc(t("pt.love", { n: d.love.length })) + '</h4><div class="pt-chips">'
       + d.love.map(id => "<span>" + esc(KC.i18n.item(id).name) + "</span>").join("") + "</div>";
-    h += '<button class="btn ghost" id="ptCard" type="button">' + esc(t("pt.card")) + "</button>";
-    body.innerHTML = h;
-  };
+    return h;
+  }
   sec.addEventListener("toggle", () => { if (sec.open) { KC.stats.event("portrait"); F.renderPortrait(); } });
   body.addEventListener("click", e => {
-    if (e.target.closest("#ptCard")) { openCard(); return; }
+    if (e.target.closest("#ptCard")) { CARD_R = "t"; openCard(); return; }
+    const cr = e.target.closest("[data-card]"); if (cr) { CARD_R = cr.dataset.card; openCard(); return; }
     const m = e.target.closest(".pt-mode [data-mode]");
     if (m) { const want = m.dataset.mode; if (want !== mode()) { KC.dnd.setMode(want); if (want !== "sign") KC.stats.event(want); F.renderPortrait(); } return; }
     const w = e.target.closest(".pt-mode [data-wod]");
@@ -209,7 +260,7 @@
     const W = 1080, H = 1920, M = 70, IW = W - M * 2;
     const c = document.createElement("canvas"); c.width = W; c.height = H;
     const ctx = c.getContext("2d"); if (!ctx) return c;
-    const d = data(), st = F.shown();
+    const d = data(), st = shownR();
     const SANS = 'Inter, "PingFang TC", "Hiragino Sans", "Noto Sans CJK JP", "Noto Sans Thai", system-ui, sans-serif';
     const SERIF = 'Fraunces, Georgia, "Noto Serif CJK JP", serif';
     const root = document.documentElement.dataset.theme;
@@ -286,6 +337,8 @@
     ctx.fillStyle = C.muted; ctx.font = "500 32px " + SANS; ctx.textAlign = "center"; ctx.fillText("✦ " + KC.BRAND + (SITE ? " · " + SITE : ""), W / 2, H - 70); ctx.textAlign = "left";
     return c;
   };
+  /* v613: the card of an extended list is drawn for the role whose button was pressed */
+  { const draw = F.drawCard; F.drawCard = function (o) { const keep = PTR; PTR = CARD_R; try { return draw(o); } finally { PTR = keep; } }; }
 
   let previewUrl = null;
   function preview() {
@@ -321,8 +374,14 @@
   });
 
   /* ---------- the PDF page (first page when "Add the portrait" is ticked) ---------- */
+  /* v613: an extended list gives two pages, one per role */
   F.buildPortraitSheet = function () {
-    const d = data(), st = F.shown(), meta = metaBits(st);
+    if (!KC.ext.isExt(F.shown())) return sheet("");
+    const out = KC.ext.R.map(r => { PTR = r; const s2 = data().answered ? sheet(r) : null; return s2; }).filter(Boolean);
+    PTR = null; return out;
+  };
+  function sheet(r) {
+    const d = data(), st = shownR(), meta = r ? [t("ext.row." + r)] : metaBits(st);
     const w = document.createElement("div");
     w.style.cssText = "position:fixed;left:-10000px;top:0;width:760px;padding:30px;background:#f5f1ec;color:#241c22;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.5;";
     const card = "background:#fffdfb;border:1px solid #e6ddd6;border-radius:12px;padding:18px 20px;margin-bottom:14px;";
@@ -336,5 +395,5 @@
     if (d.love.length) h += '<div style="' + card + '"><div style="' + serif + 'font-size:16px;color:#9d2f68;margin-bottom:6px;">' + esc(t("pt.love", { n: d.love.length })) + "</div>"
       + '<div style="font-size:13px;line-height:1.7;">' + d.love.map(id => esc(KC.i18n.item(id).name)).join("&nbsp;·&nbsp;") + "</div></div>";
     w.innerHTML = h; return w;
-  };
+  }
 })(window.KC);

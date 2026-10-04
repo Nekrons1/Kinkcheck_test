@@ -18,7 +18,7 @@
       "core/kc.js", "core/i18n.js",
       "data/practices.js", "data/profile.js",
       "@lang",
-      "core/codec.js", "core/store.js", "core/match.js", "core/help.js", "core/stats.js", "core/migrate.js", "core/portrait.js",
+      "core/ext.js", "core/lore.js", "core/codec.js", "core/store.js", "core/match.js", "core/help.js", "core/stats.js", "core/migrate.js", "core/portrait.js",
     ],
     form:    ["form/render.js", "form/events.js", "form/pdf.js", "form/share.js", "form/library.js", "form/signs.js", "form/dnd.js", "form/wod.js", "form/clusters.js", "form/wr.js", "form/wh.js", "form/legion.js", "form/ow.js", "form/witcher.js", "form/portrait.js", "form/nebula.js", "form/migrate.js", "form/main.js"],
     compare: ["form/signs.js", "form/dnd.js", "form/wod.js", "form/clusters.js", "form/wr.js", "form/wh.js", "form/legion.js", "form/ow.js", "form/witcher.js", "compare/space.js", "compare/main.js", "compare/roulette.js"],

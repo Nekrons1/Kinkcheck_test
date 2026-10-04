@@ -20,11 +20,11 @@ const S = (title) => console.log("\n## " + title);
   ok(!p.errors.length, "no script errors on load: " + p.errors.join(" | "));
   const ids = [], codes = [];
   KC.CATS.forEach(c => c.items.forEach(([code, id]) => { ids.push(id); codes.push(code); }));
-  eq(ids.length, 500, "item count");
+  eq(ids.length, 506, "item count");
   eq(new Set(ids).size, ids.length, "unique ids"); eq(new Set(codes).size, codes.length, "unique codes");
   const byCode = {}; KC.CATS.forEach(c => c.items.forEach(([code, id]) => byCode[code] = id));
   eq(OLD.ORDER.map((id, i) => byCode[i]), OLD.ORDER, "codes 0..370 still mean the same items as in old versions");
-  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(500).keys()], "codes are 0..499 with no gaps or reuse");
+  eq(Object.keys(byCode).map(Number).sort((a, b) => a - b), [...Array(506).keys()], "codes are 0..505 with no gaps or reuse");
   eq(["furry","xenophilia-tentacles","trampling-barefoot","trampling-shoes","rubber-band-snapping","forced-drinking-beer-cider","irrumatio-to-vomiting","bukkake","cum-in-eyes","nerd-hikikomori","humiliating-body-writing","wax-burns","spitting-in-mouth","snowballing","used-as-toy-for-other-sub","bondage-bag"].map(id => ids.indexOf(id) >= 0), Array(16).fill(true), "16 added items present");
   eq(["sleep-sacks", "bondage-bag", "scarification", "electricity-violet-wand"].map(id => KC.i18n.item(id, "ru").name), ["Спальный мешок", "Бондажный мешок", "Шрамирование", "Электро — вайолет-ванд"], "RU names as requested");
   eq(KC.CATS.find(c => c.id === "marking").items.some(([, id]) => id === "wax-burns"), true, "wax burns under marking");
@@ -65,7 +65,7 @@ const S = (title) => console.log("\n## " + title);
     eq(miss.length, 0, l + ": every item has name+hint (" + miss.slice(0, 3) + ")");
     const mc = KC.CATS.filter(c => !KC.i18n._pick("cats", c.id, l)); eq(mc.length, 0, l + ": every category named");
   });
-  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 500, "EN names unique");
+  const enNames = ids.map(id => KC.i18n.item(id, "en").name); eq(new Set(enNames).size, 506, "EN names unique");
   const enCyr = ids.filter(id => /[а-яё]/i.test(KC.i18n.item(id, "en").desc)); eq(enCyr, [], "EN hints contain no Cyrillic");
   // ui key parity
   const src = l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8").match(/"([a-zA-Z0-9_.]+)":/g).map(s => s.slice(1, -2));
@@ -121,7 +121,7 @@ const S = (title) => console.log("\n## " + title);
   p = open("form", { navLang: "ru" });
   let { w, d } = p;
   eq(p.KC.i18n.lang, "ru", "RU browser -> RU page");
-  eq(d.querySelectorAll(".item").length, 500, "500 rows rendered");
+  eq(d.querySelectorAll(".item").length, 506, "506 rows rendered");
   ok(d.querySelector(".brand-row #langSw"), "language switcher sits in the title row");
   const dotted = [...d.querySelectorAll(".item .new-dot")].map(x => x.closest(".item").dataset.id).sort();
   const newer = []; p.KC.CATS.forEach(c => c.items.forEach(([code, id]) => { if (code >= 418) newer.push(id); }));
@@ -150,7 +150,7 @@ const S = (title) => console.log("\n## " + title);
   let saved = JSON.parse(w.localStorage.getItem("practices-checklist-v1"));
   eq(saved.items, { hugging: { interest: "love" }, "spanking-hand": { interest: "maybe" }, "fisting-anal": { interest: "limit" }, "impact-bruising": { interest: "yes" } }, "answers saved (toggle-off removed)");
   eq(saved.meta, { role: "sub", exp: "medium", rel: "poly", attire: ["lace", "leather"] }, "profile saved as keys");
-  eq(d.getElementById("progress").textContent, "Отмечено 4 из 500 практик", "progress text");
+  eq(d.getElementById("progress").textContent, "Отмечено 4 из 506 практик", "progress text");
   const link = p.KC.form.shareLink();
   ok(/[#&]lg=ru(&|$)/.test(link), "share link carries lg=ru");
   ok(/[#&]m=/.test(link), "share link carries profile (m=)");
@@ -172,7 +172,7 @@ const S = (title) => console.log("\n## " + title);
   ok(d.querySelector('#roleTop .opt[data-val="sub"]').getAttribute("aria-pressed") === "true", "role survived switch");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submissive / Bottom", "role label translated");
   eq(d.getElementById("metaName").value, "Борис", "name survived switch");
-  eq(d.getElementById("progress").textContent, "4 of 500 practices marked", "EN progress");
+  eq(d.getElementById("progress").textContent, "4 of 506 practices marked", "EN progress");
   eq(d.getElementById("shareBtn").textContent, "Share", "header translated");
   eq(d.documentElement.lang, "en", "<html lang> updated");
   ok(/lg=en/.test(p.KC.form.shareLink()), "link now carries lg=en");
@@ -185,7 +185,7 @@ const S = (title) => console.log("\n## " + title);
   ok(row("hugging").querySelector('.scale button[data-v="love"]').classList.contains("sel"), "answer survived switch to PT");
   eq(row("hugging").querySelector('.scale button[data-v="love"]').textContent, "Adoro", "PT scale");
   eq(d.querySelector('#roleTop .opt[data-val="sub"]').textContent, "Submisso(a) / Bottom", "PT role label");
-  eq(d.getElementById("progress").textContent, "4 de 500 práticas marcadas", "PT progress");
+  eq(d.getElementById("progress").textContent, "4 de 506 práticas marcadas", "PT progress");
   const ptHash = p.KC.form.shareLink().split("#")[1];
   ok(/lg=pt/.test(ptHash), "PT link carries lg=pt");
   eq(open("form", { hash: ptHash, storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "pt", "PT link opens in PT");
@@ -352,7 +352,7 @@ const S = (title) => console.log("\n## " + title);
   eq(Object.entries(gp.KC.form.state.items).filter(([id]) => ids.indexOf(id) >= 0).sort(), [["cbt", { interest: "limit" }], ["hugging", { interest: "love" }], ["knife-play", { interest: "maybe" }], ["orgy", { interest: "yes" }], ["puppy-play", { interest: "yes" }]], "old ids moved to current items; current answer wins");
   ok(gp.d.querySelector('.item[data-id="puppy-play"] .scale button[data-v="yes"]').classList.contains("sel"), "moved answer is visible on the page");
   const gShown = gp.d.querySelectorAll(".scale button.sel").length, gLink = Object.keys(KCn.codec.decode(gp.KC.form.shareLink()).items).length;
-  eq(gp.d.getElementById("progress").textContent, "Отмечено " + gShown + " из 500 практик", "counter = what is shown");
+  eq(gp.d.getElementById("progress").textContent, "Отмечено " + gShown + " из 506 практик", "counter = what is shown");
   eq(gLink, gShown, "link contains exactly what the counter says");
   Object.keys(KC.ID_ALIASES).forEach(k => { if (ids.indexOf(KC.ID_ALIASES[k]) < 0) ok(false, "alias target missing: " + k); });
 
@@ -382,7 +382,7 @@ const S = (title) => console.log("\n## " + title);
   const srt = o => Object.entries(o).sort();
   eq(srt(KCn.codec.decode(KCn.codec.encode(withNew)).items), srt(withNew.items), "link with new items round-trips");
   const allNew = {}; KCn.CATS.forEach(c => c.items.forEach(([, id], i) => allNew[id] = { interest: vals[i % 4] }));
-  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 500, "fully filled 500-item link round-trips");
+  eq(Object.keys(KCn.codec.decode(KCn.codec.encode({ items: allNew, meta: {} })).items).length, 506, "fully filled 506-item link round-trips");
 
   /* form: "Show" filter */
   S("Show filter");
@@ -391,7 +391,7 @@ const S = (title) => console.log("\n## " + title);
   const vsel = p.d.getElementById("view");
   eq([...vsel.options].map(o => o.textContent), ["Все пункты", "Только без ответа", "Только новые", "Отвеченные, по ответам", "Обожаю / Да / Может", "Только «Нет»"], "Show menu labels (v601: + only No)");
   vsel.value = "unanswered"; vsel.dispatchEvent(new p.w.Event("change"));
-  eq([vis().length, vis().indexOf("hugging"), vis().indexOf("furry")], [498, -1, -1], "unanswered: answered items hidden");
+  eq([vis().length, vis().indexOf("hugging"), vis().indexOf("furry")], [504, -1, -1], "unanswered: answered items hidden");
   click(p.w, p.d.querySelector('.item[data-id="chains"] .scale button[data-v="yes"]'));
   ok(vis().indexOf("chains") >= 0, "a row just answered stays visible until the filter is re-applied");
   vsel.dispatchEvent(new p.w.Event("change")); ok(vis().indexOf("chains") < 0, "re-applying hides it");
@@ -400,7 +400,7 @@ const S = (title) => console.log("\n## " + title);
   eq(vis().sort(), newIds.sort(), "new: exactly the green-dot items (" + newIds.length + ")");
   const sb = p.d.getElementById("search"); sb.value = "секс"; sb.dispatchEvent(new p.w.Event("input"));
   ok(vis().length > 0 && vis().every(id => newIds.indexOf(id) >= 0), "search combines with the filter");
-  sb.value = ""; vsel.value = "all"; vsel.dispatchEvent(new p.w.Event("change")); eq(vis().length, 500, "all items again");
+  sb.value = ""; vsel.value = "all"; vsel.dispatchEvent(new p.w.Event("change")); eq(vis().length, 506, "all items again");
 
   /* backup */
   S("Backup");
@@ -683,7 +683,7 @@ const S = (title) => console.log("\n## " + title);
   eq(tp.d.querySelector('.item[data-id="blindfolds"] .main').textContent, "ผ้าปิดตา", "TH name");
   eq(tp.d.querySelector('.item[data-id="blindfolds"] .sub').textContent, "Blindfolds", "TH page shows English subtitle");
   eq(tp.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "ชอบมาก", "TH scale + answer");
-  eq(tp.d.getElementById("progress").textContent, "เลือกแล้ว 4 จาก 500 รายการ", "TH progress");
+  eq(tp.d.getElementById("progress").textContent, "เลือกแล้ว 4 จาก 506 รายการ", "TH progress");
   ok(/lg=th/.test(tp.KC.form.shareLink()), "TH link carries lg=th");
   eq(open("form", { hash: tp.KC.form.shareLink().split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "th", "TH link opens in Thai");
   ok(/ลิมิตเด็ดขาด/.test(tp.KC.form.buildSheet().textContent), "TH PDF sheet");
@@ -695,7 +695,7 @@ const S = (title) => console.log("\n## " + title);
   eq(zp.d.querySelector('.item[data-id="blindfolds"] .main').textContent, "眼罩", "ZH name");
   eq(zp.d.querySelector('.item[data-id="blindfolds"] .sub').textContent, "Blindfolds", "ZH page shows English subtitle");
   eq(zp.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "超愛", "ZH scale + answer");
-  eq(zp.d.getElementById("progress").textContent, "已勾選 4／500 項", "ZH progress");
+  eq(zp.d.getElementById("progress").textContent, "已勾選 4／506 項", "ZH progress");
   ok(/lg=zh/.test(zp.KC.form.shareLink()), "ZH link carries lg=zh");
   eq(open("form", { hash: zp.KC.form.shareLink().split("#")[1], storage: { local: { "checklist-lang": "ru" }, session: {} } }).KC.i18n.lang, "zh", "ZH link opens in Chinese");
   ok(/硬限制/.test(zp.KC.form.buildSheet().textContent), "ZH PDF sheet");
@@ -707,7 +707,7 @@ const S = (title) => console.log("\n## " + title);
   eq(p.d.querySelector('.item[data-id="face-sitting"] .main').textContent, "顔面騎乗", "JA name");
   eq(p.d.querySelector('.item[data-id="face-sitting"] .sub').textContent, "Face-sitting", "JA page shows English subtitle");
   eq(p.d.querySelector('.item[data-id="hugging"] .scale button.sel').textContent, "大好き", "JA scale + answer");
-  eq(p.d.getElementById("progress").textContent, "500項目中 4項目にチェック済み", "JA progress");
+  eq(p.d.getElementById("progress").textContent, "506項目中 4項目にチェック済み", "JA progress");
   ok(/lg=ja/.test(p.KC.form.shareLink()), "JA link carries lg=ja");
   ok(/ハードリミット/.test(p.KC.form.buildSheet().textContent), "JA PDF sheet");
   const js = p.d.getElementById("search"); js.value = "鞭"; js.dispatchEvent(new p.w.Event("input"));
@@ -857,13 +857,13 @@ const S = (title) => console.log("\n## " + title);
   const tact = b3.d.getElementById("tplAct");
   eq(tact.textContent, "Показать все пункты", "note button: show all");
   click(b3.w, tact);
-  eq([visP(b3).length, tact.textContent, b3.d.getElementById("tplSel").value], [500, "Только пункты шаблона", ""], "show all: every item, button to go back");
+  eq([visP(b3).length, tact.textContent, b3.d.getElementById("tplSel").value], [506, "Только пункты шаблона", ""], "show all: every item, button to go back");
   ok(/создана по шаблону «Evening»\. Показаны все пункты\./.test(b3.d.getElementById("tplNoteText").textContent), "note still says what the list was created by");
   await sleep(300);
   eq(LS(b3, OK_).template.name, "Evening", "showing all does not unbind the list");
   click(b3.w, tact); eq(visP(b3).length, 5, "back to the template's items");
   const bsel = b3.d.getElementById("tplSel"); bsel.value = ""; bsel.dispatchEvent(new b3.w.Event("change"));
-  eq([visP(b3).length, b3.KC.form.state.template.name], [500, "Evening"], "“No template” in Filters: a view choice only");
+  eq([visP(b3).length, b3.KC.form.state.template.name], [506, "Evening"], "“No template” in Filters: a view choice only");
   bsel.value = td.tpl.id; bsel.dispatchEvent(new b3.w.Event("change"));
   const bl = b3.KC.form.shareLink(), bld = b3.KC.codec.decode(bl);
   eq([Object.keys(bld.items), bld.by && bld.by.id, bld.tpl], [["hugging"], td.tpl.id, undefined], "plain link of a list by a template: its answers + fi= mark");
@@ -885,7 +885,7 @@ const S = (title) => console.log("\n## " + title);
   const borisRow = [...b3.d.querySelectorAll("#mineList .saved-row")].find(r => !/по шаблону/.test(r.textContent));
   click(b3.w, borisRow.querySelector('[data-act="load"]'));
   b3 = open("form", { storage: b3.storage() });
-  eq([b3.KC.form.state.name, b3.KC.form.state.template, visP(b3).length], ["Boris", undefined, 500], "switched to my plain list");
+  eq([b3.KC.form.state.name, b3.KC.form.state.template, visP(b3).length], ["Boris", undefined, 506], "switched to my plain list");
   r3 = open("form", { hash: tplLink.split("#")[1], storage: b3.storage() });
   b3 = open("form", { storage: r3.storage() });
   eq([b3.KC.form.state.template.name, Object.keys(b3.KC.form.state.items).sort(), LS(b3, MK).length], ["Evening", ["chains", "hugging"], 2], "template link from another list: my list by it is reopened (not a new one)");
@@ -911,7 +911,7 @@ const S = (title) => console.log("\n## " + title);
   S("Templates: someone's list shown by my template");
   const bobPlain = KCn.codec.encode({ uid: "BOB002", name: "Bob", items: { hugging: { interest: "yes" }, "spanking-hand": { interest: "love" }, chains: { interest: "maybe" } }, meta: {} }, "ru");
   rv = open("form", { hash: bobPlain, storage: recStorage });
-  eq([rv.KC.form.sharedBy, rv.d.getElementById("tplNote").hidden, visP(rv).length], [null, true, 500], "plain list: no template, no note");
+  eq([rv.KC.form.sharedBy, rv.d.getElementById("tplNote").hidden, visP(rv).length], [null, true, 506], "plain list: no template, no note");
   click(rv.w, rv.d.getElementById("bannerTpl"));
   ok(!rv.d.getElementById("tplSel").hidden, "“Show by a template…” points at the template list in the header");
   const rsel = rv.d.getElementById("tplSel"); rsel.value = td.tpl.id; rsel.dispatchEvent(new rv.w.Event("change"));
@@ -927,7 +927,7 @@ const S = (title) => console.log("\n## " + title);
   click(dz.w, dz.d.querySelector('#savedTplList button[data-act="del"]'));
   eq([conf, LS(dz, TK).length], [1, 0], "deleting a template asks first");
   dz = open("form", { storage: dz.storage() });
-  eq([visP(dz).length, dz.d.getElementById("tplAct").hidden], [500, true], "list by a deleted template: opens with all items");
+  eq([visP(dz).length, dz.d.getElementById("tplAct").hidden], [506, true], "list by a deleted template: opens with all items");
   ok(/создана по шаблону «Evening», но этого шаблона больше нет среди сохранённых\. Показаны все пункты\./.test(dz.d.getElementById("tplNoteText").textContent), "…and still says what it was created by");
   click(dz.w, dz.d.getElementById("mineBtn"));
   ok(/по удалённому шаблону «Evening»/.test(dz.d.getElementById("mineList").textContent), "My lists: “by the deleted template”");
@@ -961,7 +961,7 @@ const S = (title) => console.log("\n## " + title);
   eq(KCn.codec.decode(emptyLink.replace(/&k=\w+/, "")).damaged, false, "…a link without checksum still opens");
   const bigSet = []; KCn.CATS.forEach(c => c.items.forEach(([, id]) => bigSet.push(id)));
   const bigL = KCn.codec.encode(Object.assign(KCn.store.blank(), { tpl: { id: "ABCDEF", name: "All", ids: bigSet } }), "ru"), bigD = KCn.codec.decode(bigL);
-  eq([bigD.tpl.ids.length, bigD.damaged], [500, false], "a template of every item round-trips (bitmap form)");
+  eq([bigD.tpl.ids.length, bigD.damaged], [506, false], "a template of every item round-trips (bitmap form)");
   ok(new URLSearchParams(bigL).get("t").length <= 90, "…in about 80 characters (grows 1 bit per item)");
 
   S("Templates: updates and own template");
@@ -1014,7 +1014,7 @@ const S = (title) => console.log("\n## " + title);
 
   S("Header: search row, ♥ toggle, PDF window");
   let hp = open("form", { storage: own5 });
-  eq([...hp.d.querySelector(".subbar").children].map(x => x.id || x.className), ["search", "jump", "tplSel", "view", "fav-toggle"], "row: search, Section, Template…, All items, ♥");
+  eq([...hp.d.querySelector(".subbar").children].map(x => x.id || x.className), ["search", "jump", "tplSel", "view", "roleView", "extToggleBox", "fav-toggle"], "row: search, Section, Template…, All items, (v613) role filter + «Расширенная», ♥");
   ok(hp.d.getElementById("tplSel").hidden, "no templates yet: the Template list is hidden");
   eq(hp.d.querySelector(".fav-toggle").textContent.trim(), "♥", "favourites toggle is just a heart");
   eq(hp.d.querySelector(".fav-toggle").title, "Только избранное ♥", "…with a title");
@@ -1089,7 +1089,7 @@ const S = (title) => console.log("\n## " + title);
   eq([ts.hidden, ts.value, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [false, td.tpl.id, "Evening", true], "list by a template: the header list shows its name, highlighted");
   eq(ts.options[0].textContent, "✕ Без шаблона", "first option removes it");
   ts.value = ""; ts.dispatchEvent(new hq.w.Event("change"));
-  eq([visP(hq).length, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [500, "Шаблон…", false], "one pick: no template, the list says “Template…”");
+  eq([visP(hq).length, ts.options[ts.selectedIndex].textContent, ts.classList.contains("on")], [506, "Шаблон…", false], "one pick: no template, the list says “Template…”");
 
   S("v557: share the current template");
   hq = open("form", { storage: recStorage });
@@ -1150,7 +1150,7 @@ const S = (title) => console.log("\n## " + title);
   /* v591: the "🎲 DnD" button reads the same everywhere */
   Object.keys(SAME_OK).forEach(l => { SAME_OK[l].push("dnd.toDnd", "wr.toWr"); });   /* v610: "⚔ Wr" is the same in every language */
   /* v597: World of Darkness proper names (clans, auspices, ranks, the Babylonian house names…) stay as in English */
-  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$|wh\.f\.|leg\.l\.|wh\.toWh$|ow\.r\.|ow\.toOw$|wi\.g\.)/;   /* v610: faction and legion names are proper names (often the same as English) */
+  const WOD_SAME = /^(wod\.(vamp|wolf|fey|demon\.a|aus|rank|sect|breed)\.|sp\.wod\.grp\.vamp$|wod\.of\.vamp$|wod\.(gnosis|glamour)$|wh\.f\.|leg\.l\.|wh\.toWh$|ow\.r\.|ow\.toOw$|wi\.g\.|ext\.(ask[TB]|row\.[tb]|arrow\.[tb])$)/;   /* v610: faction and legion names are proper names (often the same as English) */
   const packsUI = {}; ["en", "ru", "pt", "es", "ja", "th", "zh"].forEach(l => { const box = {}; new Function("KC", fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8"))({ addLang: (x, part, o) => Object.assign(box, o) }); packsUI[l] = box; });
   ["pt", "es", "ja", "th", "zh"].forEach(l => eq(Object.keys(packsUI.en).filter(k => packsUI[l][k] === packsUI.en[k] && SAME_OK[l].indexOf(k) < 0 && !WOD_SAME.test(k)), [], l + ": no interface string left in English"));
   ok(!/TEMPORARY/.test(["pt", "es", "ja", "th", "zh"].map(l => fs.readFileSync(require("./harness").ROOT + "/js/lang/" + l + ".ui.js", "utf8")).join("")), "no TEMPORARY markers left");
@@ -1513,7 +1513,7 @@ const S = (title) => console.log("\n## " + title);
 
     // heavy user stays within safe URL sizes
     const hv = { local: Object.assign({}, oldStore.local, {
-      "checklist-my-profiles-v1": JSON.stringify([...Array(8)].map((_, i) => ({ id: "h" + i, name: "L" + i, data: { name: "L" + i, uid: "HEAVY" + i, items: its(ids.length, 0), meta: { role: "sub" }, fav: ids.slice(0, 100), fantasies: "x".repeat(500) }, ts: i }))),
+      "checklist-my-profiles-v1": JSON.stringify([...Array(8)].map((_, i) => ({ id: "h" + i, name: "L" + i, data: { name: "L" + i, uid: "HEAVY" + i, items: its(ids.length, 0), meta: { role: "sub" }, fav: ids.slice(0, 100), fantasies: "x".repeat(506) }, ts: i }))),
       "checklist-saved-profiles-v1": JSON.stringify([...Array(30)].map((_, i) => ({ id: "r" + i, name: "R" + i, code: K0.codec.encode({ name: "R" + i, uid: "RR" + String(i).padStart(4, "0"), items: its(ids.length, 0), meta: {} }, "ru"), ts: i }))) }), session: {} };
     const hl = oldPage({ storage: hv }).KC.migrate.link();
     ok(hl.length < 120000, "heavy user (8 full lists, 30 received): " + hl.length + " characters — well under browser limits (Chrome/Firefox ≥ 1 MB)");
@@ -1702,7 +1702,7 @@ const S = (title) => console.log("\n## " + title);
     ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => {
       hp.KC.i18n.set(l); hp.KC.help.open("news");
       const s3 = hp.d.getElementById("helpNews");
-      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 4 && /29/.test(s3.querySelectorAll("h5")[0].textContent) && /29/.test(s3.querySelectorAll("h5")[1].textContent) && /DnD/.test(s3.querySelectorAll("h5")[1].textContent) && /29/.test(s3.querySelectorAll("h5")[2].textContent) && /27/.test(s3.querySelectorAll("h5")[3].textContent) && [0, 1, 2, 3].map(k => s3.querySelectorAll("ul")[k].querySelectorAll("li").length).join() === "6,8,8,3", l + ": “What's new” tab (v601): World of Darkness (6 points) on top, the DnD update (8) and Kinkosmos (8) dated 29 Sept, 27 Sept (3) below");
+      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 5 && /4/.test(s3.querySelectorAll("h5")[0].textContent) && s3.querySelectorAll("ul")[0].querySelectorAll("li").length === 7 && /29/.test(s3.querySelectorAll("h5")[1].textContent) && /29/.test(s3.querySelectorAll("h5")[2].textContent) && /DnD/.test(s3.querySelectorAll("h5")[2].textContent) && /29/.test(s3.querySelectorAll("h5")[3].textContent) && /27/.test(s3.querySelectorAll("h5")[4].textContent) && [1, 2, 3, 4].map(k => s3.querySelectorAll("ul")[k].querySelectorAll("li").length).join() === "6,8,8,3", l + ": “What's new” tab (v601): World of Darkness (6 points) on top, the DnD update (8) and Kinkosmos (8) dated 29 Sept, 27 Sept (3) below");
       ok(hp.d.getElementById("helpNewsTab").textContent === hp.KC.i18n.t("help.news.h") && !!hp.d.querySelector("#helpNewsTab .new-dot"), l + ": tab name with a green dot");
     });
     eq([hp.KC.help.SECTIONS.indexOf("news"), !!hp.d.getElementById("help-news"), hp.d.querySelectorAll('#helpToc button[data-go="news"]').length], [-1, false, 0], "“What's new” is not a section of “How to use”");
@@ -1921,8 +1921,8 @@ const S = (title) => console.log("\n## " + title);
     ok(/созвезд/i.test(h.d.getElementById("help-portrait").textContent) && /Что попробуем/.test(h.d.getElementById("help-roulette").textContent), "portrait (with the constellation) and roulette are explained");
     ok(/Система компании/.test(h.d.getElementById("help-compare").textContent) && /туманност/.test(h.d.getElementById("help-tpl").textContent), "compare pictures and template nebulas are explained");
     h.KC.help.open("news");
-    eq(h.d.querySelectorAll("#helpNews h5")[2].textContent, "29 сентября 2026", "what's new: the Kinkosmos entry (under the WoD and DnD updates; dated 29 Sept, owner v601)");
-    ok(!!h.d.querySelector('#portraitSection summary .help-q[data-help="portrait"]'), "“?” next to the portrait");
+    eq(h.d.querySelectorAll("#helpNews h5")[3].textContent, "29 сентября 2026", "what's new: the Kinkosmos entry (under the WoD and DnD updates; dated 29 Sept, owner v601)");
+    ok(!!h.d.querySelector('#portraitSection summary .help-q[data-help="lore"]'), "“?” next to the portrait opens the constellation guide");
     ok(!h.errors.length, "no script errors");
     _sc.end();
   }
@@ -2146,7 +2146,7 @@ const S = (title) => console.log("\n## " + title);
     g.KC.help.open("portrait"); ok(/Раса/.test(g.d.getElementById("help-portrait").textContent) && /Уровень/.test(g.d.getElementById("help-portrait").textContent), "help: race and level are explained");
     g.KC.help.open("news");
     const h5 = g.d.querySelectorAll("#helpNews h5"), uls = g.d.querySelectorAll("#helpNews ul");
-    ok(/DnD-обновление/.test(h5[1].textContent) && /Раса/.test(uls[1].textContent) && /Партия/.test(uls[1].textContent) && !/DnD/.test(uls[2].textContent), "what's new: the DnD update is its own entry (under World of Darkness); the Kinkosmos entry no longer lists DnD");
+    ok(/DnD-обновление/.test(h5[2].textContent) && /Раса/.test(uls[2].textContent) && /Партия/.test(uls[2].textContent) && !/DnD/.test(uls[3].textContent), "what's new: the DnD update is its own entry (under World of Darkness); the Kinkosmos entry no longer lists DnD");
     ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !c4.errors.length, "no script errors");
     _sc.end();
   }
@@ -2329,11 +2329,11 @@ const S = (title) => console.log("\n## " + title);
     const g = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
     g.KC.help.open("news");
     const h5 = [...g.d.querySelectorAll("#helpNews h5")].map(x => x.textContent);
-    eq(h5, ["29 сентября 2026 · Мир Тьмы", "29 сентября 2026 · DnD-обновление", "29 сентября 2026", "27 сентября 2026"], "what's new: World of Darkness on top, DnD and Kinkosmos dated 29 September (owner)");
-    ok(/Ярость и Гнозис/.test(g.d.querySelectorAll("#helpNews ul")[0].textContent) && /Не официальный материал World of Darkness/.test(g.d.querySelectorAll("#helpNews ul")[0].textContent), "…the WoD entry lists the lines and the notice");
+    eq(h5, ["4 октября 2026 · Расширенная анкета", "29 сентября 2026 · Мир Тьмы", "29 сентября 2026 · DnD-обновление", "29 сентября 2026", "27 сентября 2026"], "what's new: (v613) the extended list on top, then World of Darkness, DnD and Kinkosmos dated 29 September (owner)");
+    ok(/Ярость и Гнозис/.test(g.d.querySelectorAll("#helpNews ul")[1].textContent) && /Не официальный материал World of Darkness/.test(g.d.querySelectorAll("#helpNews ul")[1].textContent), "…the WoD entry lists the lines and the notice");
     const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"], nf = [];
-    LANGS.forEach(l => { g.KC.i18n.set(l); g.KC.help.open("news"); const n = g.d.querySelectorAll("#helpNews h5").length; if (n !== 4 || /28/.test(g.d.querySelectorAll("#helpNews h5")[1].textContent)) nf.push(l + ":" + n); });
-    eq(nf, [], "the same four entries and dates in all 7 languages");
+    LANGS.forEach(l => { g.KC.i18n.set(l); g.KC.help.open("news"); const n = g.d.querySelectorAll("#helpNews h5").length; if (n !== 5 || /28/.test(g.d.querySelectorAll("#helpNews h5")[2].textContent)) nf.push(l + ":" + n); });
+    eq(nf, [], "the same five entries and dates in all 7 languages");
     g.KC.i18n.set("ru");
     // portrait "new" dot, “Only No” filter
     ok(!!g.d.querySelector("#portraitSection summary .new-dot"), "a green “new” dot next to “My portrait”");
@@ -2833,6 +2833,183 @@ const S = (title) => console.log("\n## " + title);
     ok(!f.errors.length && !g.errors.length && !c2.errors.length && !c3.errors.length && !off.errors.length, "no script errors");
     _sc.end();
   }
+
+  S("v613: the extended list — two roles per practice, «✦ Хочу», links, My lists, portrait, compare");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, X = K.ext;
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const V = ["limit", "maybe", "yes", "love"];
+    // links: random extended lists survive a link exactly; plain links keep their old format
+    let seed = 13; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const so = o => JSON.stringify(Object.keys(o).sort().map(k => [k, o[k]]));
+    let badRt = 0;
+    for (let n = 0; n < 60; n++) {
+      const st = { ext: 1, items: {}, meta: {} }, pf = rnd(), pb = rnd();
+      ids.forEach(id => { const o = {}; if (rnd() < pf) { o.t = V[Math.floor(rnd() * 4)]; if (rnd() < .3) o.tw = 1; } if (rnd() < pb) { o.b = V[Math.floor(rnd() * 4)]; if (rnd() < .3) o.bw = 1; } if (o.t || o.b) st.items[id] = o; });
+      const norm = K.store.normalize(st), d = K.codec.decode(K.codec.encode(norm, "ru"));
+      if (so(norm.items) !== so(K.store.normalize(d).items) || d.damaged || !d.ext) badRt++;
+    }
+    eq(badRt, 0, "60 random extended lists come back from a link exactly (answers of both roles and «Хочу»)");
+    eq(X.cleanItem({ t: "limit", tw: 1, b: "yes", bw: 1 }), { t: "limit", b: "yes", bw: 1 }, "«Хочу» only next to Может / Да / Обожаю");
+    const plain = { items: {}, meta: { role: "dom" }, name: "P" }; ids.forEach((id, i) => { if (i % 3) plain.items[id] = { interest: V[i % 4] }; });
+    const pc = K.codec.encode(K.store.normalize(plain)), tag = K.codec.unpackAnswers ? atob(pc.split("&")[0].slice(2).replace(/-/g, "+").replace(/\./g, "/").padEnd(Math.ceil((pc.split("&")[0].length - 2) / 4) * 4, "=")).charCodeAt(0) : 0;
+    ok(tag === 2 || tag === 4, "a plain list still makes a link of the old format (tag " + tag + ")");
+    const one = X.fromPlain(K.store.normalize(plain), "dom");
+    ok(one.ext === 1 && one.items[ids[1]].t === plain.items[ids[1]].interest && !one.items[ids[1]].b && !one.meta.role, "an extended copy puts the answers into the role the list was filled for");
+    const L = s2 => K.codec.encode(s2).split("&")[0].length;
+    ok(L(one) <= L(K.store.normalize(plain)) * 1.35, "an extended list with one role filled: its link is about as short as a plain one (" + L(one) + " vs " + L(K.store.normalize(plain)) + ")");
+    const both = X.fromPlain(K.store.normalize(plain), "both");
+    ok(ids.filter(id => both.items[id]).every(id => both.items[id].t === both.items[id].b), "“Обе”: the answers go to both roles");
+    // the form: the switch makes the extended copy (asks the role when the list has none), both lists in My lists
+    const st0 = { name: "Ann", uid: "ANNUID", meta: {}, items: {} }; ids.forEach((id, i) => { if (i % 2) st0.items[id] = { interest: V[i % 4] }; });
+    st0.items.chains = { interest: "love" };
+    const g = open("form", { storage: { local: { "checklist-lang": "ru", "practices-checklist-v1": JSON.stringify(st0) }, session: {} } });
+    ok(!g.d.getElementById("extToggleBox").hidden && g.d.getElementById("roleView").hidden && !g.d.getElementById("extMake").hidden && !g.d.querySelector(".ext-row"), "a plain list: the switch «☐ Расширенная» and «Сделать расширенную», no role filter, plain rows");
+    const LS = (pg, k) => JSON.parse(pg.w.localStorage.getItem(k)), LSx = pg => LS(pg, "practices-checklist-v1") || {};
+    click(g.w, g.d.getElementById("extToggle"));
+    ok(g.d.getElementById("extOverlay").classList.contains("show") && !LSx(g).ext, "no role in the list → the window asks «Верх, Низ или Обе?» (nothing made yet)");
+    click(g.w, g.d.querySelector('[data-ext-role="sub"]'));
+    const ownX = LS(g, "practices-checklist-v1"), mine = LS(g, "checklist-my-profiles-v1");
+    ok(ownX.ext === 1 && ownX.items.chains.b === "love" && !ownX.items.chains.t && ownX.pair === "ANNUID" && mine.length === 2 && mine.some(x => x.data.uid === "ANNUID" && x.data.pair === ownX.uid),
+      "→ Bottom: an extended copy with the answers in «↓ Низ»; the plain list stays in My lists; they point at each other");
+    const store2 = { local: {}, session: {} }; for (let i = 0; i < g.w.localStorage.length; i++) store2.local[g.w.localStorage.key(i)] = g.w.localStorage.getItem(g.w.localStorage.key(i));
+    const h = open("form", { storage: store2 });
+    const row = h.d.querySelector('.item[data-id="chains"]');
+    ok(h.KC.form.isExt() && row.querySelectorAll(".ext-row").length === 2 && /Расширенная/.test(h.d.getElementById("progress").textContent) && h.d.getElementById("extToggle").checked && !h.d.getElementById("roleView").hidden && h.d.getElementById("roleTop").hidden,
+      "the extended list: two rows «↑ Верх / ↓ Низ», «Расширенная» next to the count, the switch ticked, the role filter, no role picker");
+    ok(row.querySelector('.ext-row[data-r="t"] .want').disabled && !row.querySelector('.ext-row[data-r="b"] .want').disabled, "«✦ Хочу» is off without an answer (or with «Нет»)");
+    click(h.w, row.querySelector('.ext-row[data-r="t"] [data-v="yes"]')); click(h.w, row.querySelector('.ext-row[data-r="t"] .want'));
+    eq(h.KC.form.state.items.chains, { b: "love", t: "yes", tw: 1 }, "an answer and «Хочу» in «↑ Верх»");
+    click(h.w, row.querySelector('.ext-row[data-r="t"] [data-v="limit"]'));
+    eq(h.KC.form.state.items.chains, { b: "love", t: "limit" }, "«Нет» takes «Хочу» away");
+    h.d.getElementById("roleView").value = "t"; h.d.getElementById("roleView").dispatchEvent(new h.w.Event("change"));
+    h.d.getElementById("view").value = "answered"; h.d.getElementById("view").dispatchEvent(new h.w.Event("change"));
+    const vis = [...h.d.querySelectorAll(".item:not(.filtered-out)")].map(r => r.dataset.id);
+    ok(vis.length === 1 && vis[0] === "chains" && row.querySelector('.ext-row[data-r="b"]').classList.contains("r-hidden"), "«↑ Только Верх» + «Отвеченные»: only the answers of that role, the other row hidden");
+    h.KC.form.saveNow();
+    click(h.w, h.d.querySelector("#mineBtn"));
+    const mt = h.d.getElementById("mineList").textContent;
+    ok(/Расширенная/.test(mt) && /Обычная · роль не указана/.test(mt), "My lists says which list is extended and which is plain (with its role or «роль не указана»)");
+    // the backup keeps the extended list (and the link between the two lists)
+    const bk = JSON.parse(JSON.stringify(h.KC.store.exportAll()));
+    const fresh = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
+    const imp = fresh.KC.store.importAll(bk), m2 = fresh.KC.store.mine.list(), xe = m2.find(x => x.data.ext), xp = m2.find(x => !x.data.ext);
+    ok(imp && imp.mine === 2 && !!xe && xe.data.items.chains.b === "love" && xe.data.items.chains.t === "limit" && xe.data.pair === xp.data.uid && xp.data.pair === xe.data.uid && bk.own.ext === 1,
+      "a backup carries the extended list with both roles; restoring it keeps both lists and their link");
+    fresh.KC.help.open("answer"); ok(/Расширенная анкета/.test(fresh.d.getElementById("help-answer").textContent) && /Новое вместе/.test(fresh.KC.i18n.t("help.news_html").slice(0, 900)), "help explains the extended list; «Что нового» has the entry of Oct 4");
+    // the portrait: one per role, a card per role; the PDF: both roles
+    const sec = h.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new h.w.Event("toggle"));
+    ok(h.d.querySelectorAll(".pt-role").length === 2 && !!h.d.querySelector('.pt-role[data-r="b"] .pt-sign') && /↑ Верх/.test(h.d.querySelector('.pt-role[data-r="t"] .pt-role-h').textContent) && !!h.d.querySelector('.pt-role[data-r="b"] [data-card="b"]'),
+      "the portrait: «↑ Верх» and «↓ Низ», each with its own sign and picture card");
+    h.KC.form.drawCard({ sign: true, bars: true, love: true, limits: false, name: true, role: true, exp: true });
+    const sh = h.KC.form.buildSheet(), ps = [].concat(h.KC.form.buildPortraitSheet());
+    ok(/↓/.test(sh.innerHTML) && ps.length >= 1 && !h.errors.length, "the PDF shows the roles; the portrait pages are made per role; no errors");
+    // the compare page
+    const extA = { ext: 1, name: "Ann", uid: "ANNEXT", meta: {}, items: {} }, extB = { ext: 1, name: "Bob", uid: "BOBEXT", meta: {}, items: {} };
+    ids.forEach((id, i) => { extA.items[id] = { t: V[1 + i % 3], b: V[1 + (i + 1) % 3] }; if (i % 4 === 0) { extA.items[id].tw = 1; } if (i % 6 === 0) extA.items[id].bw = 1;
+      extB.items[id] = { t: V[1 + (i + 2) % 3], b: V[1 + i % 3] }; if (i % 4 === 0) extB.items[id].bw = 1; if (i % 5 === 0) extB.items[id].tw = 1; });
+    const cid = { name: "Cid", uid: "CIDPLN", meta: {}, items: {} }; ids.forEach((id, i) => { cid.items[id] = { interest: V[(i * 7 + 1) % 4] }; });
+    const code = s2 => K.codec.encode(K.store.normalize(s2), "ru");
+    const run = (codes) => { const cp = open("compare", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
+      for (let i = 2; i < codes.length; i++) click(cp.w, cp.d.getElementById("addPart"));
+      cp.d.querySelectorAll("#parts textarea").forEach((ta, i) => { ta.value = codes[i] || ""; ta.dispatchEvent(new cp.w.Event("input", { bubbles: true })); });
+      click(cp.w, cp.d.getElementById("cmpBtn")); return cp; };
+    let c = run([code(extA), code(cid)]);
+    ok(!!c.d.querySelector(".cmp-role.role-need") && /противоположной ролью Ann/.test(c.d.querySelector(".role-hint:not(.ext-hint)").textContent) && !c.d.getElementById("resBody").textContent
+      && /Расширенная анкета/.test(c.d.querySelector(".ext-hint").textContent), "extended + plain without a role: the plain list's role picker asks, nothing is compared yet");
+    c.d.querySelectorAll(".cmp-role")[1].value = "sub"; click(c.w, c.d.getElementById("cmpBtn"));
+    const st = c.KC.cmpState().pair;
+    ok(!!st && st.A.meta.role === "dom" && /Ann ↑/.test(st.nA) && st.B.meta.role === "sub", "→ Bottom: Ann's Top role is compared with Cid (crosswise)");
+    ok(!!c.d.querySelector('[data-act="roulette-try"]') && !!c.d.querySelector('[data-f="try"]') && !c.d.querySelector(".cmp-dir"), "«✦ Попробуем новое?» and the filter «✦ Что попробуем?»; no direction switch with a plain list");
+    click(c.w, c.d.querySelector('[data-f="try"]'));
+    ok(/Что попробуем/.test(c.d.querySelector("#resBody h3").textContent) && /Хочу/.test(c.d.querySelector("#resBody .rrow .who").textContent), "the «Что попробуем» list: one marked «Хочу», the other likes it");
+    c = run([code(extA), code(extB)]);
+    const body = c.d.getElementById("resBody");
+    ok(!!c.d.querySelector(".cmp-dir") && /Новое вместе/.test(body.textContent), "two extended lists: «Сравниваем: Ann ↑ · Bob ↓ | Ann ↓ · Bob ↑» and «✦ Новое вместе»");
+    const nb = [...body.querySelectorAll(".result-group")].find(x => /Новое вместе/.test(x.textContent));
+    ok(!!nb && !nb.querySelector(".badge") && nb.querySelectorAll(".want-tag").length === 2 * nb.querySelectorAll(".rrow").length, "«Новое вместе» shows only «✦ Хочу», not the answers (owner)");
+    const a0 = c.KC.cmpState().pair.nA; click(c.w, c.d.querySelector('[data-dir="bt"]'));
+    ok(/Ann ↓/.test(c.KC.cmpState().pair.nA) && /Ann ↑/.test(a0) && c.d.querySelector('[data-dir="bt"]').classList.contains("on"), "the direction switch swaps the roles");
+    c.KC.roulette.open({ tryNew: true });
+    ok(c.d.getElementById("rlH").textContent === "✦ Попробуем новое?" && c.KC.roulette.pool(c.KC.cmpState().pair.A, c.KC.cmpState().pair.B, false).every(id => (c.KC.cmpState().pair.A.items[id] || {}).w || (c.KC.cmpState().pair.B.items[id] || {}).w), "the roulette «✦ Попробуем новое?» picks only from practices with «Хочу»");
+    c = run([code(extA), code(extB), code(cid)]);
+    ok(!!c.d.querySelector(".cmp-role.role-need") && !c.d.getElementById("resBody").textContent, "a company: an extended list needs a role picked");
+    c.d.querySelectorAll(".cmp-role")[0].value = "dom"; c.d.querySelectorAll(".cmp-role")[1].value = "sub"; click(c.w, c.d.getElementById("cmpBtn"));
+    ok(c.d.querySelectorAll(".cmp-profile").length >= 2 && !c.errors.length, "…then the company is compared by those roles");
+    const need = ["ext.roleView", "ext.both", "ext.onlyT", "ext.onlyB", "ext.toggle", "ext.toggleTitle", "ext.note", "ext.make", "ext.askH", "ext.ask", "ext.askT", "ext.askB", "ext.askBoth", "ext.row.t", "ext.row.b", "ext.want", "ext.badge",
+      "ext.kindExt", "ext.kindPlain", "ext.noRole", "ext.noPlain", "ext.arrow.t", "ext.arrow.b", "ext.card.t", "ext.card.b", "ext.ptEmpty", "ext.rlTry", "ext.rlLead_html", "ext.fTry", "ext.tryTitle", "ext.trySub", "ext.tryNone",
+      "ext.newTitle", "ext.newSub", "ext.dir", "ext.needRole", "ext.needRoleToast", "ext.needRoleGroup"];
+    const miss = []; LANGS.forEach(l => need.forEach(k => { if (!K.i18n.has("ui", k, l)) miss.push(l + ":" + k); }));
+    eq(miss, [], "every text of the extended list exists in all 7 languages (" + need.length + " keys)");
+    ok(!f.errors.length && !g.errors.length && !h.errors.length && !c.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v614: six new practices, «Всё и сразу», the «Описание созвездий» tab");
+  {
+    const _sc = scope();
+    const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"];
+    const f = open("form"), K = f.KC;
+    const ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    // 1. practices
+    const NEWP = { "forced-floor-eating": 500, "sucking-cum-from-vagina": 501, "foreign-language-talk": 502, "pet-food-eating": 503, "dressage-training": 504, "double-penetration-one-hole": 505 };
+    const code = {}; K.CATS.forEach(c => c.items.forEach(([cd, id]) => { code[id] = cd; }));
+    eq(Object.keys(NEWP).filter(id => code[id] !== NEWP[id]), [], "six new practices: codes 500–505");
+    eq(LANGS.map(l => Object.keys(NEWP).filter(id => { const it = K.i18n.item(id, l); return !it || !it.name || it.name === id || !it.desc; }).length), [0, 0, 0, 0, 0, 0, 0], "…named and described in all 7 languages");
+    const inCl = id => Object.keys(K.clusters.ids()).filter(k => K.clusters.ids()[k].indexOf(id) >= 0).sort();
+    eq([inCl("forced-floor-eating"), inCl("sucking-cum-from-vagina"), inCl("foreign-language-talk"), inCl("pet-food-eating"), inCl("dressage-training"), inCl("double-penetration-one-hole")],
+      [["feast", "filth"], ["cum", "devour"], ["words"], ["filth", "pet"], ["pet"], ["size"]], "…each is in the clusters it fits");
+    eq(Object.keys(K.clusters.ids()).every(k => K.clusters.ids()[k].every(id => code[id] !== undefined)), true, "every cluster item exists");
+    // 2. «Всё и сразу»: more than 70 % answered
+    const V = ["limit", "maybe", "yes", "love"], mk = n => { const o = { items: {}, meta: {} }; ids.slice(0, n).forEach((id, i) => { o.items[id] = { interest: V[i % 4] }; }); return o; };
+    const pd = n => K.portrait.compute(Object.assign(K.store.blank(), mk(n)), null);
+    eq([K.signs.manyOf(pd(Math.ceil(ids.length * .75))), K.signs.manyOf(pd(Math.floor(ids.length * .65)))], [true, false], "more than 70 % answered → many; fewer → not");
+    eq(LANGS.map(l => [K.i18n.has("ui", "sign.evenAll", l), K.i18n.has("ui", "sign.even", l)].join()), LANGS.map(() => "true,true"), "«Всё и сразу» exists in 7 languages");
+    K.i18n.set("ru"); eq([K.signs.evenText({ many: true }), K.signs.evenText({ many: false }), K.signs.evenText(null)], ["Всё и сразу", "Всё понемногу", "Всё понемногу"], "the words change, nothing else");
+    const full = mk(ids.length), sgA = K.signs.pick(K.portrait.compute(Object.assign(K.store.blank(), full), null)), sgB = K.signs.pick(K.portrait.compute(Object.assign(K.store.blank(), mk(120)), null));
+    ok(!sgA || sgA.many === true, "a full list's sign carries many"); ok(!sgB || sgB.many === false, "a short list's sign does not");
+    // 3. the lore files: the same keys in every language, every key is an interface key, nothing empty
+    const fsx = require("fs"), L = {};
+    LANGS.forEach(l => { const o = {}; new Function("KC", fsx.readFileSync(__dirname + "/../js/lore/" + l + ".lore.js", "utf8"))({ addLore: (lg, d) => Object.assign(o, d) }); L[l] = o; });
+    const rk = Object.keys(L.ru).sort();
+    eq(LANGS.map(l => Object.keys(L[l]).sort().join("|") === rk.join("|")), LANGS.map(() => true), "lore: the same " + rk.length + " keys in all 7 languages");
+    eq(LANGS.map(l => rk.filter(k => !L[l][k] || L[l][k].length < 40).length), [0, 0, 0, 0, 0, 0, 0], "lore: no empty or tiny text");
+    eq(rk.filter(k => !K.i18n.has("ui", k, "ru")).slice(0, 5), [], "lore: every key is an interface key");
+    ok(Object.keys(L.ru).every(k => (L.ru[k].match(/[.!?…]/g) || []).length >= 2), "lore: at least two sentences each");
+    const needL = ["lore.h", "lore.none", "lore.loading", "lore.offline", "lore.lead", "lore.note"], missL = [];
+    LANGS.forEach(l => needL.forEach(k => { if (!K.i18n.has("ui", k, l)) missL.push(l + ":" + k); })); eq(missL, [], "lore: interface texts in 7 languages");
+    // 4. the tab: only what the portrait shows, loaded when opened
+    const loreSrc = l => fsx.readFileSync(__dirname + "/../js/lore/" + l + ".lore.js", "utf8");
+    const st = Object.assign(K.store.blank(), mk(300)); st.name = "Ann";
+    const rawSt = JSON.stringify(st);
+    const mkp = (mode, extra) => open("form", Object.assign({ storage: { local: { "checklist-lang": "ru", "checklist-dnd": mode, "practices-checklist-v1": rawSt }, session: {} } }, extra || {}));
+    const g = mkp("1"); const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+    ok(!g.KC.lore.has("ru"), "the texts are not loaded with the page");
+    const gr = g.KC.lore.provider();
+    ok(gr.length === 1 && gr[0].items.length >= 3 && gr[0].items.every(it => L.ru[it.key] !== undefined), "DnD: the provider lists class, subclass, race, alignment — each has a text");
+    g.w.eval(loreSrc("ru")); g.KC.help.open("lore");
+    const box = g.d.getElementById("helpLore");
+    ok(!box.hidden && box.querySelectorAll(".lore-item").length === gr[0].items.length && g.d.getElementById("helpLoreTab").classList.contains("on") && g.d.getElementById("helpPane").hidden, "the tab shows exactly those items");
+    ok(/Не официальн|не официаль/i.test(box.querySelector(".lore-note").textContent), "…with the note that it is not official");
+    g.d.querySelector('.help-tab[data-tab="help"]').click(); ok(box.hidden && !g.d.getElementById("helpPane").hidden, "…and the other tabs still work");
+    const wod = mkp("wod"); wod.w.eval(loreSrc("ru")); const sw = wod.d.getElementById("portraitSection"); sw.open = true; sw.dispatchEvent(new wod.w.Event("toggle"));
+    const wp = wod.KC.lore.provider(); ok(wp.length === 1 && wp[0].items.every(it => L.ru[it.key] !== undefined) && wp[0].items.length >= 3, "World of Darkness: its own items only, each with a text");
+    wod.KC.help.open("lore"); ok(wod.d.querySelectorAll("#helpLore .lore-item").length === wp[0].items.length, "…shown in the tab");
+    // an extended list: one group per role
+    const ex = { ext: 1, items: {}, meta: {}, name: "Ann" }; ids.slice(0, 300).forEach((id, i) => { ex.items[id] = { t: V[i % 4], b: V[(i + 1) % 4] }; });
+    const xp = open("form", { storage: { local: { "checklist-lang": "en", "practices-checklist-v1": JSON.stringify(ex) }, session: {} } });
+    const xg = xp.KC.lore.provider(); ok(xg.length === 2 && xg[0].title && xg[0].title !== xg[1].title, "an extended list: a group for each role");
+    // switches: hidden modes are never described
+    const off = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": "wh", "practices-checklist-v1": rawSt }, session: {} },
+      patch: { "core/kc.js": src => src.replace("KC.FEATURES = { wr: true, wh: true, leg: true, ow: true, wi: true };", "KC.FEATURES = { wr: true, wh: false, leg: false, ow: false, wi: false };") } });
+    const so = off.d.getElementById("portraitSection"); so.open = true; so.dispatchEvent(new off.w.Event("toggle"));
+    ok(off.KC.dnd.mode() === "sign" && off.KC.lore.provider().every(gx => !gx.items.some(it => /^(wh|leg|ow|wi)\./.test(it.key))), "factions switched off: nothing of Warhammer is described");
+    ok(!g.errors.length && !wod.errors.length && !xp.errors.length && !off.errors.length && !f.errors.length, "no script errors: " + [g, wod, xp, off, f].map(x => x.errors.join()).join(" | "));
+    _sc.end();
+  }
+
 
   const R = report(); console.log("\nPASS", R.PASS, "FAIL", R.FAIL);
   process.exit(R.FAIL ? 1 : 0);

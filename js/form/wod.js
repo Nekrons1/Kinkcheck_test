@@ -132,7 +132,7 @@
     sg.main.forEach((m, k) => { stars[B[k]].bright = true; stars[B[k]].s = m; });
     let r = 0; stars.forEach(st => { if (!st.s) st.s = rest[r++] || null; });
     E.forEach(p => stars.push({ x: p[0], y: p[1], grey: true, bright: false, s: null }));
-    return { wod: true, line, id, stars, lines: L, main: sg.main, kind: sg.kind };
+    return { wod: true, line, id, stars, lines: L, main: sg.main, kind: sg.kind, many: sg.many };
   }
 
   /* ---------- the details ---------- */

@@ -109,7 +109,7 @@
     sg.main.forEach((m, k) => { stars[B[k]].bright = true; stars[B[k]].s = m; });
     let r = 0; stars.forEach(s2 => { if (!s2.s) s2.s = rest[r++] || null; });
     E.forEach(p => stars.push({ x: p[0], y: p[1], grey: true, bright: false, s: null }));
-    return { wr: true, id, stars, lines: L, main: sg.main, kind: sg.kind, mut: mutations(st, id, set || null) };
+    return { wr: true, id, stars, lines: L, main: sg.main, kind: sg.kind, many: sg.many, mut: mutations(st, id, set || null) };
   }
   /* mutations 0–10 (owner, Oct 3: 10 = a Chaos spawn): N = round(MUT.BASE + MUT.K × the god's own measure), within 0–10.
      The measures (in spreads of real lists): Khorne — the Blood and Hard clusters; Nurgle — Filth and Taboo; Tzeentch — how many

@@ -67,7 +67,7 @@
     sg.main.forEach((m, k) => { stars[B[k]].bright = true; stars[B[k]].s = m; });
     let r = 0; stars.forEach(s2 => { if (!s2.s) s2.s = rest[r++] || null; });
     E.forEach(p => stars.push({ x: p[0], y: p[1], grey: true, bright: false, s: null }));
-    return { leg: true, id, stars, lines: L, main: sg.main, kind: sg.kind, side: LOYAL.indexOf(id) >= 0 ? "loyal" : TRAITOR.indexOf(id) >= 0 ? "traitor" : "lost" };
+    return { leg: true, id, stars, lines: L, main: sg.main, kind: sg.kind, many: sg.many, side: LOYAL.indexOf(id) >= 0 ? "loyal" : TRAITOR.indexOf(id) >= 0 ? "traitor" : "lost" };
   }
   /* the title lines: over-title, "VI Space Wolves" (or "Legion II" / "Legion XI"), one line only for the lost ones */
   const nameOf = (id, t) => id === "ii" || id === "xi" ? t("leg.lost", { n: NUM[id] }) : NUM[id] + " " + t("leg.l." + id);
