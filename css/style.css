@@ -329,7 +329,7 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .top-actions .btn{padding:6px 5px;font-size:12px}
   .top-actions #compareBtn{flex:2 1 42%}
   .top-actions #savedBtn{flex:1 1 30%}
-  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #resetBtn{flex:1 1 20%}
+  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #roleView{flex:1 1 20%}
 }
 /* phones: fixed 8-column grid, always exactly two rows of buttons */
 @media (max-width:560px){
@@ -339,7 +339,7 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .top-actions #themeBtn{grid-column:span 1}
   .top-actions #compareBtn{grid-column:span 4}
   .top-actions #savedBtn{grid-column:span 3}
-  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #resetBtn{grid-column:span 2}
+  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #roleView{grid-column:span 2}
 }
 @media (max-width:560px){
   .top-actions{align-items:stretch}
@@ -353,7 +353,7 @@ input.bad{border-color:var(--limit)!important;background:var(--limit-bg)}
   .top-actions #themeBtn{flex:0 0 34px;padding:7px 0}
   .top-actions #compareBtn{flex:0 1 calc(58% - 40px)}
   .top-actions #savedBtn{flex:0 1 42%}
-  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #resetBtn{flex:1 1 auto}
+  .top-actions #mineBtn, .top-actions #shareBtn, .top-actions #pdfBtn, .top-actions #roleView{flex:1 1 auto}
 }
 @media (max-width:560px){
   .top-actions #savedBtn{flex:1 0 calc(42% - 12px)}
@@ -716,10 +716,10 @@ details.sp-fold>summary{font-size:17px}
 .sp-fold-body>.pt-mode{justify-content:center;margin:10px 0 0}
 /* v597: World of Darkness — the line switch under the mode switch, the Dark Pack notice */
 .pt-mode{flex-wrap:wrap}
-.pt-wod-sub{margin-top:-2px}
+.pt-wod-sub{margin-top:-2px;justify-content:center}   /* v615 (owner): centred like the ⚔ Wr tabs */
 .pt-wod-sub .btn{padding-left:8px;padding-right:8px}
 /* narrow screens: the four lines as a tidy 2 × 2 block instead of 3 + 1 */
-@media (max-width:520px){.pt-wod-sub{display:grid;grid-template-columns:repeat(2,auto);justify-content:end}.sp-signs .pt-wod-sub,.sp-fold-body>.pt-wod-sub{justify-content:center}}
+@media (max-width:520px){.pt-wod-sub{display:grid;grid-template-columns:repeat(2,auto);justify-content:center}.sp-signs .pt-wod-sub,.sp-fold-body>.pt-wod-sub{justify-content:center}}
 .sp-signs .pt-wod-sub{justify-content:center;margin:-2px 0 6px}
 .sp-fold-body>.pt-wod-sub{justify-content:center;margin:6px 0 0}
 .wod-note{font-size:10.5px;line-height:1.35;color:var(--muted);margin:8px 4px 0;text-align:center}
@@ -730,8 +730,6 @@ details.sp-fold>summary{font-size:17px}
 .share-count{font-size:13px;color:var(--muted);margin:0 2px;flex:1 1 auto}
 .share-count.zero{color:var(--limit);font-weight:600}
 .share-send{margin-left:auto;flex:0 0 auto}   /* v601 (owner): small, not a big colour block */
-/* v601: "new" dot next to "My portrait" */
-.pt-new{margin:0 2px}
 
 /* v607: the Close / Cancel button stays at the bottom of the window; only the text above it scrolls.
    -22px = the .modal padding, so the bar sits on the window's bottom edge (same trick as .help-tabs). */
@@ -742,7 +740,7 @@ details.sp-fold>summary{font-size:17px}
 .seo-list{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
 /* v611: ⚔ Wr is on the left of the mode row (the other modes stay on the right); its tabs (gods, 40K, legion) open under the row,
    centred like the World of Darkness tabs (owner, Oct 4). The ⚔ sign is coloured so the button catches the eye (owner: "brighter"). */
-.pt-mode .pt-wrb{margin-right:auto}
+.pt-mode .pt-left-end{margin-right:auto}   /* v615: ⚔ Wr and 🗡 Witcher on the left, the rest on the right */
 .pt-mode .pt-wrb::first-letter{color:#a8323a;font-size:1.2em;line-height:1}
 .pt-wr-sub,.sp-signs .pt-wr-sub,.sp-fold-body>.pt-wr-sub{justify-content:center;margin:-2px 0 6px}
 .pt-wr-sub .btn{padding-left:8px;padding-right:8px}
@@ -757,16 +755,20 @@ details.sp-fold>summary{font-size:17px}
 .want{font:inherit;font-size:11.5px;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:8px;padding:6px 8px;white-space:nowrap;cursor:pointer}
 .want.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);font-weight:600}
 .want[disabled]{opacity:.35;cursor:default}
-.type-tg{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--panel);white-space:nowrap;cursor:pointer}
-.type-tg input{accent-color:var(--accent);margin:0}
-.type-tg:has(input:checked){color:var(--ink)}
-.type-tg[hidden],.role-view[hidden]{display:none}
-.subbar select.role-view{flex:0 1 150px}
-@media (max-width:560px){   /* phones: "Все пункты" gets shorter, the switch (and in an extended list the role filter) share its row */
-  .subbar #view{order:5;flex:1 1 30%;min-width:0}
-  .subbar #roleView{order:5;flex:1 1 0;min-width:96px;max-width:none;padding:8px 6px;font-size:14px}
-  .is-ext .subbar #view{flex:1 1 0;min-width:96px}
-  .subbar .type-tg{order:5;flex:0 0 auto;font-size:12.5px;padding:8px 8px}
+/* v615 (owner): the plain ⇄ extended switch is a square icon button next to ♥ (one row with the lists, no extra row);
+   the role filter sits in the header row where "Clear" was (hidden for a plain list) */
+.ext-tg[hidden],.role-view[hidden]{display:none}
+.ext-tg{font-size:18px}
+.ext-tg:hover{border-color:var(--accent)}
+.ext-tg:has(input:checked){color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.top-actions select.role-view{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 8px;cursor:pointer}
+/* a list that filters something: the same small accent dot as "Все пункты" / "Шаблон…" (CODING_RULES: never a filled field) */
+.top-actions select.role-view.on{background:var(--panel) radial-gradient(circle, var(--accent) 0 3.5px, transparent 4px) no-repeat 10px 50% / 10px 10px;padding-left:26px;color:var(--ink);font-weight:400}
+@media (max-width:560px){
+  .subbar .ext-tg{order:3;width:38px}
+  .top-actions select.role-view{font-size:11.5px;padding:6px 2px;flex:0 1 auto !important;max-width:84px;min-width:0}
+  .top-actions select.role-view.on{padding-left:20px;background-position:6px 50%}
 }
 .ext-note{font-size:13px;color:var(--muted);margin:4px 0 0}
 .ext-make{margin-top:10px}
@@ -798,3 +800,7 @@ details.sp-fold>summary{font-size:17px}
 .lore-lead,.lore-none{color:var(--muted);font-size:13px}
 .lore-note{color:var(--muted);font-size:12px;margin-top:16px;border-top:1px solid var(--line2);padding-top:8px}
 @media (max-width:520px){.help-tabs{gap:18px}.help-tab{font-size:17px}.help-tab .new-dot{right:-11px}}
+/* v615: the mode buttons at the top of the constellation guide */
+.lore-sw{margin:6px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line2)}
+.lore-sw .pt-mode{display:flex;gap:6px}
+.lore-sw .pt-mode + .pt-mode{margin-top:6px}

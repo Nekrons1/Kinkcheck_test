@@ -5,7 +5,8 @@
    Two tabs: "How to use" (the sections below) and "What's new" (help.news_html, a green dot on the tab).
    "What's new" holds only entries the owner asks for, each under its date, the newest at the top.
    v613: a third tab "Описание созвездий" (core/lore.js) on the form page — what the open portrait shows, described
-   in its setting; its texts are fetched when the tab is opened. The "?" of "My portrait" opens it. */
+   in its setting; its texts are fetched when the tab is opened. The "?" of "My portrait" opens it.
+   v615: the same mode buttons as in "My portrait" at its top, so one can click through the modes without leaving. */
 (function (KC) {
   const SECTIONS = ["start", "answer", "filters", "portrait", "lists", "share", "received", "tpl", "pdf", "compare", "roulette", "privacy"];
   const NEWS = "news";   /* its own tab, not a section of "How to use" */
@@ -31,6 +32,8 @@
     KC.$("helpToc").addEventListener("click", e => {
       const a = e.target.closest("button[data-go]"); if (a) go(a.dataset.go);
     });
+    /* v615: the mode buttons inside the guide (same as in "My portrait") — a click switches the portrait and redraws the guide */
+    KC.$("helpLore").addEventListener("click", e => { if (KC.lore.click && KC.lore.click(e)) drawLore(); });
     ov.querySelector(".help-tabs").addEventListener("click", e => {
       const b = e.target.closest("button[data-tab]"); if (b) tab(b.dataset.tab);
     });
@@ -47,12 +50,13 @@
   function drawLore() {
     const box = KC.$("helpLore"), lang = KC.i18n.lang, esc = KC.esc;
     const groups = (KC.lore.provider ? KC.lore.provider() : []).filter(g => g.items.length);
-    if (!groups.length) { box.innerHTML = '<p class="lore-none">' + esc(t("lore.none")) + "</p>"; return; }
-    box.innerHTML = '<p class="lore-none">' + esc(t("lore.loading")) + "</p>";
+    const sw = KC.lore.switchHTML ? '<div class="lore-sw">' + KC.lore.switchHTML() + "</div>" : "";
+    if (!groups.length) { box.innerHTML = sw + '<p class="lore-none">' + esc(t("lore.none")) + "</p>"; return; }
+    box.innerHTML = sw + '<p class="lore-none">' + esc(t("lore.loading")) + "</p>";
     KC.lore.load(lang, ok => {
       if (KC.i18n.lang !== lang || box.hidden) return;
-      if (!ok) { box.innerHTML = '<p class="lore-none">' + esc(t("lore.offline")) + "</p>"; return; }
-      box.innerHTML = '<p class="lore-lead">' + esc(t("lore.lead")) + "</p>" + groups.map(g => (g.title ? "<h4>" + esc(g.title) + "</h4>" : "")
+      if (!ok) { box.innerHTML = sw + '<p class="lore-none">' + esc(t("lore.offline")) + "</p>"; return; }
+      box.innerHTML = sw + '<p class="lore-lead">' + esc(t("lore.lead")) + "</p>" + groups.map(g => (g.title ? "<h4>" + esc(g.title) + "</h4>" : "")
         + g.items.map(it => { const tx = KC.lore.text(lang, it.key); return tx ? '<div class="lore-item" data-key="' + esc(it.key) + '"><h5>' + esc(KC.i18n.t(it.key, it.vars || {})) + "</h5><p>" + esc(tx) + "</p></div>" : ""; }).join("")).join("")
         + '<p class="lore-note">' + esc(t("lore.note")) + "</p>";
     });

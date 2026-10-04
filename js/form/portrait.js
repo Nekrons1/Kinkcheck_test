@@ -124,6 +124,15 @@
     });
     PTR = null; return out;
   };
+  /* v615 (owner): the mode buttons inside the guide — the same switch, the same storage (the portrait's choice) */
+  KC.lore.switchHTML = () => (KC.dnd && KC.wod && Object.keys((F.shown() || {}).items || {}).length ? KC.wod.switchHTML() : "");
+  KC.lore.click = function (e) {
+    const m = e.target.closest(".pt-mode [data-mode]");
+    if (m) { const want = m.dataset.mode; if (want !== mode()) { KC.dnd.setMode(want); if (want !== "sign") KC.stats.event(want); F.renderPortrait(); } return true; }
+    const w = e.target.closest(".pt-mode [data-wod]");
+    if (w) { if (w.dataset.wod !== KC.wod.sub()) { KC.wod.setSub(w.dataset.wod); F.renderPortrait(); } return true; }
+    return false;
+  };
 
   /* the "✦ Constellation | 🎲 DnD | 🦇 World of Darkness" switch above the picture (only when there is a picture) */
   function modeSwitch(d) {

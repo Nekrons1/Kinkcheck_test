@@ -542,9 +542,9 @@ KC.CATS = [
 ];
 
 /* Items with code >= NEW_FROM_CODE get a green "new" dot in the form.
-   418 = everything added after v533 (codes 0–417); earlier it was 371 (after the v371 release).
+   497 (v615, owner): only the items after 496; earlier 418 (everything added after v533) and 371.
    Raise it to retire the dots. */
-KC.NEW_FROM_CODE = 418;
+KC.NEW_FROM_CODE = 497;
 
 /* Item ids used by the earliest versions (before v371), when ids were made from the English name.
    Answers saved under these ids in browsers are moved to the current item on load. */

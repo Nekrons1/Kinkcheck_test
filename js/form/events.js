@@ -1,7 +1,7 @@
 /* form/events.js — user input on the form. Handlers are attached once to stable containers,
    so re-rendering (language switch) never needs re-wiring. */
 (function (KC) {
-  const F = KC.form;
+  const F = KC.form, t = (k, v) => KC.i18n.t(k, v);
 
   /* answer buttons + "?" hints */
   KC.$("list").addEventListener("click", e => {
@@ -105,23 +105,5 @@
     else F.setTpl(null);
   });
 
-  /* "Clear": a small window — clear the list or only its favourites (also guards against a stray tap) */
-  const t = (k, v) => KC.i18n.t(k, v);
-  const resetModal = KC.modal("resetOverlay", "resetClose");
-  KC.$("resetBtn").addEventListener("click", () => {
-    const n = F.favList().length, fb = KC.$("resetFav");
-    KC.$("resetText").textContent = t(F.viewingShared ? "reset.pShared" : "confirm.reset");
-    fb.textContent = t("reset.fav", { n }); fb.disabled = !n;
-    resetModal.open();
-  });
-  KC.$("resetList").addEventListener("click", () => {
-    resetModal.close();
-    if (F.viewingShared) { F.state = KC.store.blank(); KC.$("search").value = ""; F.renderAll(); KC.toast(t("toast.cleared")); return; }
-    F.startNew(); /* current list stays in My lists */
-  });
-  KC.$("resetFav").addEventListener("click", () => {
-    resetModal.close();
-    F.setFavs([]); if (!F.viewingShared) F.saveNow();
-    F.hydrate(); F.applySearch(); KC.toast(t("toast.favCleared"));
-  });
+  /* v615 (owner): no "Clear" button any more — a new list is started in My lists, where a list can also be deleted */
 })(window.KC);

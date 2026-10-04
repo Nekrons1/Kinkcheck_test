@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css?v=614">
+<link rel="stylesheet" href="../css/style.css?v=615">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -66,7 +66,13 @@
       <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle" title="保存した自分のリスト" aria-label="保存した自分のリスト">マイリスト</button>
       <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle" title="リンクとQRコード" aria-label="リンクとQRコード">共有</button>
       <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf">PDFをダウンロード</button>
-      <button class="btn ghost" id="resetBtn" data-i18n="hdr.reset" data-i18n-title="hdr.resetTitle" title="新しく始める" aria-label="新しく始める">クリア</button>
+      <!-- v615 (owner): "Clear" is gone (a new list: My lists → Start a new list; delete there). Its place: the role filter of an
+           extended list; empty for a plain list -->
+      <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="表示する役割の回答" aria-label="表示する役割の回答">
+        <option value="both" data-i18n="ext.both">両方の役割</option>
+        <option value="t" data-i18n="ext.onlyT">↑ トップ</option>
+        <option value="b" data-i18n="ext.onlyB">↓ ボトム</option>
+      </select>
     </div>
   </div>
   <div class="subbar">
@@ -84,13 +90,8 @@
       <option value="positive" data-i18n="view.positive">大好き / OK / 条件次第</option>
       <option value="no" data-i18n="view.no">NGのみ</option>
     </select>
-    <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="表示する役割の回答" aria-label="表示する役割の回答">
-      <option value="both" data-i18n="ext.both">両方の役割</option>
-      <option value="t" data-i18n="ext.onlyT">↑ トップのみ</option>
-      <option value="b" data-i18n="ext.onlyB">↓ ボトムのみ</option>
-    </select>
-    <label class="type-tg" id="extToggleBox" data-i18n-title="ext.toggleTitle" title="通常版か拡張版か（トップとボトムそれぞれの回答）" aria-label="通常版か拡張版か（トップとボトムそれぞれの回答）"><input type="checkbox" id="extToggle"><span data-i18n="ext.toggle">拡張版</span></label>
     <label class="fav-toggle" data-i18n-title="filt.onlyFav" title="お気に入りのみ ♥" aria-label="お気に入りのみ ♥"><input type="checkbox" id="onlyFav"><span aria-hidden="true">♥</span></label>
+    <label class="fav-toggle ext-tg" id="extToggleBox" data-i18n-title="ext.toggleTitle" title="通常版か拡張版か（トップとボトムそれぞれの回答）" aria-label="通常版か拡張版か（トップとボトムそれぞれの回答）"><input type="checkbox" id="extToggle"><span aria-hidden="true">⇅</span><span class="vh" data-i18n="ext.toggle">拡張版</span></label>
   </div>
 </header>
 
@@ -151,7 +152,7 @@
   </details>
 
   <details class="about portrait" id="portraitSection">
-    <summary><span id="portraitTitle"></span> <span class="new-dot pt-new" data-i18n-title="item.new" title="新しい項目" aria-label="新しい項目"></span> <button class="help-q" type="button" data-help="lore" data-i18n-title="help.open" title="ヘルプ" aria-label="ヘルプ">?</button></summary>
+    <summary><span id="portraitTitle"></span> <button class="help-q" type="button" data-help="lore" data-i18n-title="help.open" title="ヘルプ" aria-label="ヘルプ">?</button></summary>
     <div class="portrait-body" id="portraitBody"></div>
   </details>
 
@@ -257,16 +258,6 @@
   </div>
 </div>
 
-<div class="overlay" id="resetOverlay">
-  <div class="modal">
-    <h3 data-i18n="reset.h">クリア</h3>
-    <p id="resetText"></p>
-    <button class="btn primary" id="resetList" type="button" style="width:100%;margin-bottom:8px" data-i18n="reset.list">リストをクリア</button>
-    <button class="btn ghost" id="resetFav" type="button" style="width:100%"></button>
-    <div class="modal-foot"><button class="btn ghost" id="resetClose" type="button" style="width:100%" data-i18n="cancel">キャンセル</button></div>
-  </div>
-</div>
-
 <div class="overlay" id="extOverlay">
   <div class="modal">
     <h3 data-i18n="ext.askH">拡張版リストを作る</h3>
@@ -299,6 +290,6 @@
   </div>
 </div>
 
-<script src="../js/boot.js?v=614" data-page="form" data-v="614"></script>
+<script src="../js/boot.js?v=615" data-page="form" data-v="615"></script>
 </body>
 </html>

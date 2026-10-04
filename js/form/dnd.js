@@ -277,12 +277,16 @@
   const usable = m => m === "wod" ? !!KC.wod : WR.indexOf(m) >= 0 && !!(KC[m] && KC.FEATURES && KC.FEATURES[m]);
   const mode = scope => { const r = KC.ls.raw(KEY(scope)); return r === "1" ? "dnd" : usable(r) ? r : "sign"; };
   const setMode = (m, scope) => { const k = KEY(scope); if (m === "dnd") KC.ls.setRaw(k, "1"); else if (usable(m)) KC.ls.setRaw(k, m); else KC.ls.del(k);
-    if (WR.indexOf(m) >= 0 && usable(m)) KC.ls.setRaw(WRKEY(scope), m); };
+    if (WRG.indexOf(m) >= 0 && usable(m)) KC.ls.setRaw(WRKEY(scope), m); };
   /* v611: ⚔ Wr is one button on the left that opens its own tabs — Chaos gods (wr), factions (wh), legions (leg), (v612) Old World (ow), Witcher (wi).
      The tab chosen last is remembered (per scope) and reopened by the ⚔ Wr button; a tab that is switched off is skipped. */
   const WR = ["wr", "wh", "leg", "ow", "wi"];
+  /* v615 (owner): the Witcher (wi) is its own button next to ⚔ Wr, not a tab inside it. WR = every mode of this family
+     (they need the list itself: isWr, wrOf); WRG = the tabs under ⚔ Wr. */
+  const WRG = ["wr", "wh", "leg", "ow"];
   const WRKEY = scope => scope === "pair" ? KC.KEYS.wrPair : scope === "group" ? KC.KEYS.wrGroup : KC.KEYS.wr;
-  const wrTabs = () => WR.filter(usable);
+  const wrTabs = () => WRG.filter(usable);
+  const inWrg = m => WRG.indexOf(m) >= 0;
   const wrLast = scope => { const r = KC.ls.raw(WRKEY(scope)), on = wrTabs(); return on.indexOf(r) >= 0 ? r : on[0] || null; };
   const isWr = m => WR.indexOf(m) >= 0;
   /* the module of a figure made by one of these modes (each pick() marks its figure with its mode: sg.wr, sg.wh, …), or null */
@@ -290,7 +294,7 @@
   const on = scope => mode(scope) === "dnd";
   const setOn = (v, scope) => setMode(v ? "dnd" : "sign", scope);
 
-  KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, AXES, scores, keyOf, pick, alignNum, alignment, on, set: setOn, mode, setMode, usable, wrTabs, wrLast, isWr, wrOf, WR,
+  KC.dnd = { FIG, VAR, ORDER, ALIGN, LIM, AXES, scores, keyOf, pick, alignNum, alignment, on, set: setOn, mode, setMode, usable, wrTabs, wrLast, isWr, inWrg, wrOf, WR, WRG,
     TYP, devs, CLS, GAP_D, EVEN_D, classes, variant,
     POLES, CL, RACES, RLIM, AXT, AXSD, RACEB, axes, zPoles, race, XP, level, DMG, MON, foes };
 })(window.KC);
