@@ -3,8 +3,8 @@
    Element = the groups (as the Witcher schools: Σ w·dev(group) / Σ|w|) + the clusters (Σ w·z / Σ|w| × CW) + a bias
    (equal shares on synthetic lists shaped like the owner's group, local script).
    Type (only inside the element; the rarest that applies wins; none → "Без особого типа"):
-     Water: common Vines (wild), special Healing (home), rare Bloodbending (blood + D/s above the list's mean);
-     Earth: common Sand (touch), special Metal (iron), rare Lava (fire);
+     Water: common Vines (rope), special Healing (home), rare Bloodbending (blood + D/s above the list's mean);
+     Earth: common Sand (dark), special Metal (iron, when it beats dark), rare Lava (sex well above the mean) — v619;
      Fire:  special Lightning (the electricity items liked), rare Combustion (extreme + fire);
      Air:   none (owner).
      Spirit energy (energybending) — any element, very rare, beats the others: the "spirit" items mostly Yes / Love.
@@ -16,13 +16,16 @@
 (function (KC) {
   const ELEMENTS = ["water", "earth", "fire", "air"];
   /* group letters as in the signs (KC.signs.KEY): n tenderness, b bondage, f fetishes, r role-play, d D/s, s S/M, x sex, v voyeurism, w fluids */
-  const PROF = { water: "n1 w1 x.5 r.5 s-.5", earth: "b1 d.5 f.5 r-.5", fire: "s1 d.5 x.5 n-.5", air: "r1 v1 n.5 b-.5" };
-  const CPROF = { water: "home1 touch1 cum1 taboo1 devour1", earth: "rope1 iron1 stasis1 armor1 wardrobe1 protocol1",
-    fire: "spank1 extreme1 fire1 edge1 hunt1 blood1", air: "pet1 stage1 public1 watch1 wild1 dark1" };
-  const CW = 5;   /* a cluster z of 1 weighs like a group 5 points above the list's mean (clusters ≈ half the element) */
-  const BIAS = { water: 2.73, earth: -2.89, fire: -1.44, air: 1.6 };
-  /* type thresholds: cluster z (rare / special / common), the electricity items' liked share (0–100) */
-  const T = { blood: .8, healing: .5, vines: 0, lava: 1.05, metal: .75, sand: 0, combustion: 1.3, lightning: 55 };
+  /* v619 (owner, Oct 5): re-fitted so that seven people the owner knows get the elements he named (Water: bondage and
+     role-play with sex; Earth: D/s and sex, the body; Fire: S/M without role-play; Air: voyeurism / exhibitionism); found
+     by a local search over the weights with the shares kept equal on synthetic lists — the real lists stay local */
+  const PROF = { water: "b.5 r.75 s-.25 x.75 v.25 w-.5", earth: "n-.75 b.5 f.05 r-.5 d1 s.75 x1.5 v.75 w.5", fire: "r-1.25 s1 x.25", air: "n-.5 f-.25 r.3 v.5 w.75" };
+  const CPROF = { water: "rope1 pet1 stage1 touch1 home1", earth: "classic1 cum1 devour1 iron1 protocol1 armor1",
+    fire: "spank1 extreme1 fire1 edge1 blood1", air: "watch1 public1 wild1 dark1" };
+  const CW = 1.5;   /* the clusters' mean z × 1.5 is added to the groups' part */
+  const BIAS = { water: 1.06, earth: 1.5, fire: -1.26, air: -1.3 };
+  /* type thresholds: cluster z, the sex group's deviation (lava), the electricity items' liked share (0–100) — v619 */
+  const T = { blood: .55, healing: .35, vines: .5, lava: 10, metal: .3, sand: .6, combustion: 1.1, lightning: 58 };
   const ELEC = "electricity-tens electricity-violet-wand shock-collar electricity-internal electricity-genitals-external electricity-anal electricity-genital-internal vaginal-electrostimulation cbt-electrical".split(" ");
   const SPIRIT = "personality-modification mindbreak depersonalisation dronification total-power-exchange name-change mantra-meditation rituals tantric-yoni".split(" ");
   const SPIRIT_MIN = 7, SPIRIT_SHARE = .85, AVATAR = .9;
@@ -65,8 +68,10 @@
   function typeOf(el, d, st, set) {
     if (spirit(st, set)) return "spirit";
     const z = c => KC.clusters.z(st, c, set), dv = KC.dnd.devs(d);
-    if (el === "water") return z("blood") >= T.blood && dv && (dv.dev.ds || 0) > 0 ? "blood" : z("home") >= T.healing ? "healing" : z("wild") >= T.vines ? "vines" : null;
-    if (el === "earth") return z("fire") >= T.lava ? "lava" : z("iron") >= T.metal ? "metal" : z("touch") >= T.sand ? "sand" : null;
+    /* v619 (owner): Vines = ropes (plants that grab and bind); Lava = earth with raw passion (the sex group well above the
+       list's mean); Metal = iron when iron beats darkness; Sand = darkness and the senses (a sandstorm blinds) */
+    if (el === "water") return z("blood") >= T.blood && dv && (dv.dev.ds || 0) > 0 ? "blood" : z("home") >= T.healing ? "healing" : z("rope") >= T.vines ? "vines" : null;
+    if (el === "earth") return dv && (dv.dev["sex-penetration"] || 0) >= T.lava ? "lava" : z("iron") >= T.metal && z("iron") >= z("dark") ? "metal" : z("dark") >= T.sand ? "sand" : null;
     if (el === "fire") { if (z("extreme") >= T.combustion && z("fire") >= 1) return "combustion"; const e = KC.clusters.liked(st, ELEC, set); return e.n >= 3 && e.v >= T.lightning ? "lightning" : null; }
     return null;
   }

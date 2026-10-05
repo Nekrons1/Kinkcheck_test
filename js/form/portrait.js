@@ -19,8 +19,11 @@
   /* v613: an extended list has a portrait per role — PTR is the role being drawn ("t" | "b"); everything below reads
      the list through shownR(), the plain list of that role (core/ext.js). A plain list: PTR is ignored. */
   let PTR = null, CARD_R = "t";
-  const shownR = () => { const s = F.shown(); return KC.ext.isExt(s) ? KC.ext.view(s, PTR || "t") : s; };
-  const data = () => KC.portrait.compute(shownR(), F.tplSet());
+  /* v618 (owner): the portrait (every mode, the card, the PDF page, the constellation guide) judges the WHOLE list — never
+     only the items of an applied template or of a filter */
+  const whole = () => F.state;
+  const shownR = () => { const s = whole(); return KC.ext.isExt(s) ? KC.ext.view(s, PTR || "t") : s; };
+  const data = () => KC.portrait.compute(shownR(), null);
   const pctText = p => (p === null ? "—" : p + "%");
   const metaBits = st => ["role", "exp"].map(f => st.meta[f] ? KC.i18n.optLabel(f, st.meta[f]) : "").filter(Boolean);
 
@@ -34,21 +37,18 @@
   const mode = () => KC.dnd ? KC.dnd.mode() : "sign";
   const dndOn = () => mode() === "dnd";
   /* v610: the modes that need the list itself, not only the portrait (KC.dnd.WR) */
-  /* v616 fix: the ⚔ Wr / Witcher / Avatar modules (clusters) read the applied template as a Set (F.tplSet() is a map) —
-     with a template applied they used to throw "set.has is not a function" and the portrait stayed empty */
-  let tsSrc = null, tsSet = null;
-  const tplSetOf = () => { const m = F.tplSet(); if (!m) return null; if (m !== tsSrc) { tsSrc = m; tsSet = new Set(Object.keys(m)); } return tsSet; };
-  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, shownR(), tplSetOf()) : KC.signs.pick(d);
+  /* v616: the ⚔ Wr / Witcher / Avatar modules take the template as a Set; since v618 the portrait never applies one (null) */
+  const figOf = d => mode() === "dnd" ? KC.dnd.pick(d) : mode() === "wod" ? KC.wod.pick(d) : KC.dnd.isWr(mode()) ? KC[mode()].pick(d, shownR(), null) : KC.signs.pick(d);
   /* the title lines of a figure: over-title, name, sub-line and (DnD) the alignment line */
   function headOf(sg) {
     if (KC.dnd.wrOf(sg)) { const h = KC.dnd.wrOf(sg).head(sg, F.viewingShared, t);
       return { over: h.over, name: h.name, rl: h.rl, sub: signSub(sg), al: null }; }
     if (sg.wod) {
-      const dt = KC.wod.details(shownR(), data(), F.tplSet(), sg.line, sg.id), ln = KC.wod.lines(dt, t);
+      const dt = KC.wod.details(shownR(), data(), null, sg.line, sg.id), ln = KC.wod.lines(dt, t);
       return { over: t((F.viewingShared ? "wod.of." : "wod.mine.") + sg.line), name: t("wod." + sg.line + "." + sg.id), sub: ln.sub + " · " + signSub(sg), rl: ln.rl, al: null, dt };
     }
     if (!sg.dnd) return { over: t(F.viewingShared ? "sign.of" : "sign.mine"), name: t("sign." + sg.id), sub: signSub(sg), al: null };
-    const st = shownR(), set = F.tplSet(), al = KC.dnd.alignment(st, data(), set), race = KC.dnd.race(st, set), lv = KC.dnd.level(st, set);
+    const st = shownR(), set = null, al = KC.dnd.alignment(st, data(), set), race = KC.dnd.race(st, set), lv = KC.dnd.level(st, set);
     return { over: t(F.viewingShared ? "dnd.of" : "dnd.mine"), name: t("dnd.c." + sg.cls), sub: t("dnd.s." + sg.cls + "." + sg.sub) + " · " + signSub(sg),
       rl: t("dnd.r." + race) + " · " + t("dnd.lvl", { n: lv }), race, lv,
       al: { name: t("dnd.al." + al), quip: t("dnd.aq." + al) }, alKey: al };
@@ -134,7 +134,7 @@
     return [];   /* the constellation itself: our own signs, nothing to look up */
   }
   KC.lore.provider = function () {
-    const s = F.shown(), out = [];
+    const s = whole(), out = [];
     (KC.ext.isExt(s) ? KC.ext.R : [null]).forEach(r => {
       PTR = r; const d = data(); const sg = d.answered ? figOf(d) : null;
       if (sg) out.push({ title: r ? t("ext.row." + r) : "", items: loreOf(sg) });
@@ -142,7 +142,9 @@
     PTR = null; return out;
   };
   /* v615 (owner): the mode buttons inside the guide — the same switch, the same storage (the portrait's choice) */
-  KC.lore.switchHTML = () => (KC.dnd && KC.wod && Object.keys((F.shown() || {}).items || {}).length ? KC.wod.switchHTML() : "");
+  /* v618 (owner): without «✦ Созвездие» — our own signs have nothing to describe */
+  KC.lore.switchHTML = () => (KC.dnd && KC.wod && Object.keys((whole() || {}).items || {}).length
+    ? KC.wod.switchHTML().replace(/<button[^>]*data-mode="sign"[^>]*>[^<]*<\/button>/, "") : "");
   KC.lore.click = function (e) {
     const m = e.target.closest(".pt-mode [data-mode]");
     if (m) { const want = m.dataset.mode; if (want !== mode()) { KC.dnd.setMode(want); if (want !== "sign") KC.stats.event(want); F.renderPortrait(); } return true; }
@@ -165,8 +167,8 @@
   F.renderPortrait = function () {
     title(); ptLang = KC.i18n.lang;
     if (!sec.open) return;                      /* drawn when opened: nothing to compute while folded */
-    if (KC.ext.isExt(F.shown())) { renderExt(); return; }
-    const d = data(), st = F.shown();
+    if (KC.ext.isExt(whole())) { renderExt(); return; }
+    const d = data(), st = whole();
     if (!d.answered) { body.innerHTML = '<p class="pt-empty">' + esc(t("pt.empty")) + "</p>"; return; }
     const meta = metaBits(st);
     body.innerHTML = (meta.length ? '<div class="pt-meta">' + esc(meta.join(" · ")) + "</div>" : "") + modeSwitch(d) + one(d, st, "")
@@ -403,7 +405,7 @@
   /* ---------- the PDF page (first page when "Add the portrait" is ticked) ---------- */
   /* v613: an extended list gives two pages, one per role */
   F.buildPortraitSheet = function () {
-    if (!KC.ext.isExt(F.shown())) return sheet("");
+    if (!KC.ext.isExt(whole())) return sheet("");
     const out = KC.ext.R.map(r => { PTR = r; const s2 = data().answered ? sheet(r) : null; return s2; }).filter(Boolean);
     PTR = null; return out;
   };

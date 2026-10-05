@@ -1695,7 +1695,7 @@ const S = (title) => console.log("\n## " + title);
     ["ru", "en", "pt", "es", "ja", "th", "zh"].forEach(l => {
       hp.KC.i18n.set(l); hp.KC.help.open("news");
       const s3 = hp.d.getElementById("helpNews");
-      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 5 && /4/.test(s3.querySelectorAll("h5")[0].textContent) && s3.querySelectorAll("ul")[0].querySelectorAll("li").length === 7 && /29/.test(s3.querySelectorAll("h5")[1].textContent) && /29/.test(s3.querySelectorAll("h5")[2].textContent) && /DnD/.test(s3.querySelectorAll("h5")[2].textContent) && /29/.test(s3.querySelectorAll("h5")[3].textContent) && /27/.test(s3.querySelectorAll("h5")[4].textContent) && [1, 2, 3, 4].map(k => s3.querySelectorAll("ul")[k].querySelectorAll("li").length).join() === "6,8,8,3", l + ": “What's new” tab (v601): World of Darkness (6 points) on top, the DnD update (8) and Kinkosmos (8) dated 29 Sept, 27 Sept (3) below");
+      ok(s3 && !s3.hidden && hp.d.getElementById("helpPane").hidden && s3.querySelectorAll("h5").length === 5 && /5/.test(s3.querySelectorAll("h5")[0].textContent) && s3.querySelectorAll("ul")[0].querySelectorAll("li").length === 8 && /29/.test(s3.querySelectorAll("h5")[1].textContent) && /29/.test(s3.querySelectorAll("h5")[2].textContent) && /DnD/.test(s3.querySelectorAll("h5")[2].textContent) && /29/.test(s3.querySelectorAll("h5")[3].textContent) && /27/.test(s3.querySelectorAll("h5")[4].textContent) && [1, 2, 3, 4].map(k => s3.querySelectorAll("ul")[k].querySelectorAll("li").length).join() === "6,8,8,3", l + ": “What's new” tab (v601): World of Darkness (6 points) on top, the DnD update (8) and Kinkosmos (8) dated 29 Sept, 27 Sept (3) below");
       ok(hp.d.getElementById("helpNewsTab").textContent === hp.KC.i18n.t("help.news.h") && !!hp.d.querySelector("#helpNewsTab .new-dot"), l + ": tab name with a green dot");
     });
     eq([hp.KC.help.SECTIONS.indexOf("news"), !!hp.d.getElementById("help-news"), hp.d.querySelectorAll('#helpToc button[data-go="news"]').length], [-1, false, 0], "“What's new” is not a section of “How to use”");
@@ -2322,7 +2322,7 @@ const S = (title) => console.log("\n## " + title);
     const g = open("form", { storage: { local: { "checklist-lang": "ru" }, session: {} } });
     g.KC.help.open("news");
     const h5 = [...g.d.querySelectorAll("#helpNews h5")].map(x => x.textContent);
-    eq(h5, ["4 октября 2026 · Расширенная анкета", "29 сентября 2026 · Мир Тьмы", "29 сентября 2026 · DnD-обновление", "29 сентября 2026", "27 сентября 2026"], "what's new: (v613) the extended list on top, then World of Darkness, DnD and Kinkosmos dated 29 September (owner)");
+    eq(h5, ["5 октября 2026 · Расширенная анкета", "29 сентября 2026 · Мир Тьмы", "29 сентября 2026 · DnD-обновление", "29 сентября 2026", "27 сентября 2026"], "what's new: (v613) the extended list on top, then World of Darkness, DnD and Kinkosmos dated 29 September (owner)");
     ok(/Ярость и Гнозис/.test(g.d.querySelectorAll("#helpNews ul")[1].textContent) && /Не официальный материал World of Darkness/.test(g.d.querySelectorAll("#helpNews ul")[1].textContent), "…the WoD entry lists the lines and the notice");
     const LANGS = ["ru", "en", "es", "pt", "ja", "th", "zh"], nf = [];
     LANGS.forEach(l => { g.KC.i18n.set(l); g.KC.help.open("news"); const n = g.d.querySelectorAll("#helpNews h5").length; if (n !== 5 || /28/.test(g.d.querySelectorAll("#helpNews h5")[2].textContent)) nf.push(l + ":" + n); });
@@ -3167,8 +3167,59 @@ const S = (title) => console.log("\n## " + title);
       fsz[m] = mm ? +(+mm[1] / vb[2]).toFixed(5) : null; });
     ok(Object.values(fsz).every(v => v && Math.abs(v - fsz.wi) < 1e-4), "the same pixels per unit (so the same label size) in every mode: " + JSON.stringify(fsz));
     // Avatar: special ≈ 35 %, rare ≈ 7–8 % (thresholds)
-    eq([K.av.T.healing, K.av.T.metal, K.av.T.lightning, K.av.T.blood, K.av.T.lava, K.av.T.combustion], [.5, .75, 55, .8, 1.05, 1.3], "Avatar type thresholds (special ~35 %, rare ~7–8 %)");
+    eq([K.av.T.healing, K.av.T.metal, K.av.T.lightning, K.av.T.blood, K.av.T.lava, K.av.T.combustion], [.35, .3, 58, .55, 10, 1.1], "Avatar type thresholds (v619: re-fitted to the owner's known people)");
     ok(!f.errors.length && !r2.errors.length && !r3.errors.length, "no script errors: " + f.errors.concat(r2.errors, r3.errors).join(" | "));
+    _sc.end();
+  }
+
+  S("v618: the portrait judges the whole list (not the template); the guide without «Созвездие»; lore from English");
+  {
+    const _sc = scope();
+    const V = ["limit", "maybe", "yes", "love"], ids = [];
+    const f0 = open("form"); f0.KC.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const st = f0.KC.store.blank(); ids.forEach((id, i) => { st.items[id] = { interest: V[(i * 7 + 3) % 4] }; }); st.name = "Ann";
+    const sig = {};
+    ["sign", "1", "wod", "wh", "wi", "av"].forEach(m => {
+      const g = open("form", { storage: { local: { "checklist-lang": "ru", "checklist-dnd": m, "practices-checklist-v1": JSON.stringify(st) }, session: {} } });
+      const sec = g.d.getElementById("portraitSection"); sec.open = true; sec.dispatchEvent(new g.w.Event("toggle"));
+      const read = () => { const p = g.d.querySelector(".pt-sign"); return p ? p.querySelector(".sg-name").textContent + "|" + ((p.querySelector(".sg-rl") || {}).textContent || "") + "|" + p.querySelector(".sg-sub").textContent : ""; };
+      const bars = () => [...g.d.querySelectorAll("#portraitBody .pt-row")].map(x => x.textContent).join("/");
+      const before = read(), b0 = bars();
+      g.KC.form.setTpl({ id: "Srough", name: "R", ids: g.KC.STARTERS[1].ids.slice() }); g.KC.form.renderPortrait();
+      const v = g.d.getElementById("view"); v.value = "positive"; v.dispatchEvent(new g.w.Event("change")); g.KC.form.renderPortrait();
+      sig[m] = before && before === read() && b0 === bars();
+      if (m === "av") {
+        g.w.eval(require("fs").readFileSync(__dirname + "/../js/lore/ru.lore.js", "utf8")); g.KC.help.open("lore");
+        const lb = g.d.getElementById("helpLore");
+        ok(!lb.querySelector('[data-mode="sign"]') && !!lb.querySelector('[data-mode="dnd"]'), "the constellation guide has no «✦ Созвездие» button (nothing to describe there)");
+      }
+    });
+    eq(sig, { sign: true, "1": true, wod: true, wh: true, wi: true, av: true }, "with a template applied and an answer filter on, the portrait stays the same in every mode");
+    // lore files: English is the source, every language complete, the Avatar's spirit energy without a note about the site
+    const fsx = require("fs"), L = {};
+    ["en", "ru"].forEach(l => { const o = {}; new Function("KC", fsx.readFileSync(__dirname + "/../js/lore/" + l + ".lore.js", "utf8"))({ addLore: (lg, d) => Object.assign(o, d) }); L[l] = o; });
+    ok(/written in English first/.test(fsx.readFileSync(__dirname + "/../js/lore/ru.lore.js", "utf8")) && !/this site/i.test(JSON.stringify(L.en)), "lore: English first, no remarks about the site inside the texts");
+    _sc.end();
+  }
+
+  S("v619: Avatar re-fitted (owner's known people): Vines = ropes, Sand = darkness, Lava = raw sex, Metal = iron over darkness");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, A = K.av, ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const base = () => { const st = K.store.blank(); ids.forEach((id, i) => { st.items[id] = { interest: ["limit", "maybe", "yes", "love"][(i * 7 + 3) % 4] }; }); return st; };
+    const set = (st, list, v) => { list.forEach(id => { st.items[id] = { interest: v }; }); return st; };
+    const CI = k => K.clusters.ids()[k];
+    const sand = set(set(base(), CI("dark"), "love"), CI("iron"), "maybe");
+    ok(A.typeOf("earth", K.portrait.compute(sand, null), sand, null) === "sand", "Earth with darkness loved (and iron not above it) → Sand");
+    const metal = set(set(base(), CI("iron"), "love"), CI("dark"), "limit");
+    ok(A.typeOf("earth", K.portrait.compute(metal, null), metal, null) === "metal", "Earth with iron loved over darkness → Metal");
+    const vines = set(set(base(), CI("rope"), "love"), CI("home"), "limit");
+    ok(A.typeOf("water", K.portrait.compute(vines, null), vines, null) === "vines", "Water with ropes loved → Vines");
+    const sexIds = K.CATS.find(c => c.id === "sex-penetration").items.map(x => x[1]);
+    const lava = set(set(set(base(), ids, "maybe"), sexIds, "love"), CI("dark"), "limit");
+    ok(A.typeOf("earth", K.portrait.compute(lava, null), lava, null) === "lava", "Earth with sex far above the rest → Lava");
+    eq(Object.keys(A.PROF).join(), "water,earth,fire,air", "four profiles");
+    ok(!f.errors.length, "no script errors");
     _sc.end();
   }
 
