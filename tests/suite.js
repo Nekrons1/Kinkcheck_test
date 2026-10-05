@@ -3167,7 +3167,7 @@ const S = (title) => console.log("\n## " + title);
       fsz[m] = mm ? +(+mm[1] / vb[2]).toFixed(5) : null; });
     ok(Object.values(fsz).every(v => v && Math.abs(v - fsz.wi) < 1e-4), "the same pixels per unit (so the same label size) in every mode: " + JSON.stringify(fsz));
     // Avatar: special ≈ 35 %, rare ≈ 7–8 % (thresholds)
-    eq([K.av.T.healing, K.av.T.metal, K.av.T.lightning, K.av.T.blood, K.av.T.lava, K.av.T.combustion], [.35, .3, 58, .55, 10, 1.1], "Avatar type thresholds (v619: re-fitted to the owner's known people)");
+    eq([K.av.T.healing, K.av.T.metal, K.av.T.lightning, K.av.T.blood, K.av.T.lava, K.av.T.combustion], [.35, .3, 58, .55, 20, 1.1], "Avatar type thresholds (v620: re-fitted to the owner's known people; lava = sex + fluids)");
     ok(!f.errors.length && !r2.errors.length && !r3.errors.length, "no script errors: " + f.errors.concat(r2.errors, r3.errors).join(" | "));
     _sc.end();
   }
@@ -3219,6 +3219,22 @@ const S = (title) => console.log("\n## " + title);
     const lava = set(set(set(base(), ids, "maybe"), sexIds, "love"), CI("dark"), "limit");
     ok(A.typeOf("earth", K.portrait.compute(lava, null), lava, null) === "lava", "Earth with sex far above the rest → Lava");
     eq(Object.keys(A.PROF).join(), "water,earth,fire,air", "four profiles");
+    ok(!f.errors.length, "no script errors");
+    _sc.end();
+  }
+
+  S("v620: Avatar re-fit: hunt cluster in Earth, Lava = sex + fluids deviations ≥ 20");
+  {
+    const _sc = scope();
+    const f = open("form"), K = f.KC, A = K.av, ids = []; K.CATS.forEach(c => c.items.forEach(([, id]) => ids.push(id)));
+    const set = (st, list, v) => { list.forEach(id => { st.items[id] = { interest: v }; }); return st; };
+    const grp = g => K.CATS.find(c => c.id === g).items.map(x => x[1]);
+    ok(/hunt1/.test(A.CPROF.earth) && !/hunt/.test(A.CPROF.air), "hunt cluster counts for Earth");
+    eq(A.T.lava, 20, "lava threshold 20");
+    const st = set(set(set(K.store.blank(), ids, "maybe"), grp("sex-penetration").slice(0, Math.ceil(grp("sex-penetration").length * .6)), "love"), grp("bodily-fluids"), "yes");
+    const d = K.portrait.compute(st, null), dv = K.dnd.devs(d).dev;
+    eq(A.typeOf("earth", d, st, null), (dv["sex-penetration"] || 0) + (dv["bodily-fluids"] || 0) >= 20 ? "lava" : A.typeOf("earth", d, st, null), "Lava follows sex + fluids");
+    ok((dv["sex-penetration"] || 0) < 20 || A.typeOf("earth", d, st, null) === "lava", "lava reachable without the sex group alone being ≥ 20");
     ok(!f.errors.length, "no script errors");
     _sc.end();
   }
