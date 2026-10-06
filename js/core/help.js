@@ -11,11 +11,20 @@
   const SECTIONS = ["start", "answer", "filters", "portrait", "lists", "share", "received", "tpl", "pdf", "compare", "roulette", "privacy"];
   const NEWS = "news";   /* its own tab, not a section of "How to use" */
   /* texts added to a section later, kept as separate keys so the original text stays as it was */
-  const MORE = { answer: ["help.answerExt_html"], portrait: ["help.portraitDnd_html", "help.dndRace_html", "help.wod_html", "help.wr_html", "help.leg_html", "help.av_html", "help.portraitExt_html"], compare: ["help.compareSave_html", "help.compareSpace_html", "help.compareFold_html", "help.compareDnd_html", "help.compareParty_html", "help.compareWod_html", "help.compareWr_html", "help.compareAv_html", "help.compareWh_html", "help.compareLeg_html", "help.compareExt_html"], tpl: ["help.tplNebula_html", "help.tplStart_html"], share: ["help.shareSend_html"], privacy: ["help.privacyStats_html"] };
+  const MORE = { answer: ["help.answerExt_html"], portrait: ["help.portraitDnd_html", "help.dndRace_html", "help.wod_html", "help.wr_html", "help.leg_html", "help.av_html", "help.rz_html", "help.portraitExt_html"], compare: ["help.compareSave_html", "help.compareSpace_html", "help.compareFold_html", "help.compareDnd_html", "help.compareParty_html", "help.compareWod_html", "help.compareWr_html", "help.compareAv_html", "help.compareRz_html", "help.compareWh_html", "help.compareLeg_html", "help.compareExt_html"], tpl: ["help.tplNebula_html", "help.tplStart_html"], share: ["help.shareSend_html"], privacy: ["help.privacyStats_html"] };
   /* only while the counter is on; v610: a new joke mode's paragraphs only while its switch (KC.FEATURES) is on */
-  const FEAT = { "help.av_html": "av", "help.compareAv_html": "av", "help.wr_html": "wr", "help.compareWr_html": "wr", "help.compareWh_html": "wh", "help.leg_html": "leg", "help.compareLeg_html": "leg" };
+  const FEAT = { "help.answerExt_html": "ext", "help.portraitExt_html": "ext", "help.compareExt_html": "ext", "help.av_html": "av", "help.compareAv_html": "av", "help.rz_html": "rz", "help.compareRz_html": "rz", "help.wr_html": "wr", "help.compareWr_html": "wr", "help.compareWh_html": "wh", "help.leg_html": "leg", "help.compareLeg_html": "leg" };
   const shown = k => k === "help.privacyStats_html" ? !!(KC.stats && KC.stats.enabled) : FEAT[k] ? !!(KC.FEATURES && KC.FEATURES[FEAT[k]]) : true;
   const t = k => KC.i18n.t(k);
+  const on = f => !!(KC.FEATURES && KC.FEATURES[f]);
+  /* v621: "What's new" lines of a locked feature carry data-feat="<switch>" (shown only while it is on);
+     a line written for the time it is locked carries data-nofeat="<switch>" (shown only while it is off) */
+  function newsHTML() {
+    const box = document.createElement("div"); box.innerHTML = t("help.news_html");
+    box.querySelectorAll("[data-feat]").forEach(el => { if (!on(el.dataset.feat)) el.remove(); });
+    box.querySelectorAll("[data-nofeat]").forEach(el => { if (on(el.dataset.nofeat)) el.remove(); });
+    return box.innerHTML;
+  }
   let modal = null;
 
   function build() {
@@ -51,7 +60,7 @@
     const box = KC.$("helpLore"), lang = KC.i18n.lang, esc = KC.esc;
     const groups = (KC.lore.provider ? KC.lore.provider() : []).filter(g => g.items.length);
     const sw = KC.lore.switchHTML ? '<div class="lore-sw">' + KC.lore.switchHTML() + "</div>" : "";
-    if (!groups.length) { box.innerHTML = sw + '<p class="lore-none">' + esc(t("lore.none")) + "</p>"; return; }
+    if (!groups.length) { box.innerHTML = sw + '<p class="lore-none">' + esc(KC.FEATURES && KC.FEATURES.wr ? t("lore.none") : t("lore.none").replace(/[,、]\s*⚔ Wr/, "")) + "</p>"; return; }
     box.innerHTML = sw + '<p class="lore-none">' + esc(t("lore.loading")) + "</p>";
     KC.lore.load(lang, ok => {
       if (KC.i18n.lang !== lang || box.hidden) return;
@@ -75,7 +84,7 @@
       KC.$("helpTitle").textContent = t("help.h");
       KC.$("helpNewsTab").firstChild.textContent = t("help.news.h");
       KC.$("helpLoreTab").textContent = t("lore.h"); KC.$("helpLoreTab").hidden = !KC.lore.provider;
-      KC.$("helpNews").innerHTML = t("help.news_html");
+      KC.$("helpNews").innerHTML = newsHTML();
       KC.$("helpClose").textContent = t("close");
       KC.$("helpToc").innerHTML = SECTIONS.map(s => '<button type="button" class="btn ghost mini" data-go="' + s + '">' + KC.esc(t("help." + s + ".h")) + "</button>").join("");
       KC.$("helpBody").innerHTML = SECTIONS.map(s => '<section id="help-' + s + '"><h4>' + KC.esc(t("help." + s + ".h")) + "</h4>" + t("help." + s + "_html") + (MORE[s] || []).filter(shown).map(k => t(k)).join("") + "</section>").join("");
