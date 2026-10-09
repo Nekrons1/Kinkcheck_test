@@ -12,8 +12,8 @@ window.KC = window.KC || {};
      v621 (owner, Oct 5): ext = the extended list's buttons (⇅ in the header, "Сделать расширенную" in the role block)
      and its help / "What's new" lines. Everything stays in the code; the owner unlocks one thing per version for a post.
      A list that is already extended still opens and keeps its ⇅ switch, so one can get back to the plain list.
-     v623 (owner, Oct 7): ⚔ Wr (Chaos gods) unlocked; rz = Re:Zero sins, new and on. */
-  KC.FEATURES = { ext: false, wr: true, wh: false, leg: false, ow: false, wi: false, av: false, rz: true };
+     v623 (owner, Oct 7): ⚔ Wr (Chaos gods) unlocked; rz = Re:Zero sins, new and on. v624 (owner, Oct 9): ext unlocked. */
+  KC.FEATURES = { ext: true, wr: true, wh: false, leg: false, ow: false, wi: false, av: false, rz: true };
 
   KC.el = function (tag, cls, text) {
     const e = document.createElement(tag);
