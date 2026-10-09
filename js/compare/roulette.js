@@ -52,7 +52,7 @@
    /* v624: hardcore, public, other people's age, belongings */
    "milk-enema urine-enema food-insertion public-omorashi gerontophilia ruining-sub-belongings " +
    /* v625: burns, third people, no safeword */
-   "cigarette-burns forced-sex-unpleasant-partner no-safeword-short no-safeword-long " +
+   "emetophilia cigarette-burns forced-sex-unpleasant-partner no-safeword-short no-safeword-long " +
    /* marking: permanent or burns */
    "tattooing branding scarification wax-burns " +
    /* sex: machines, medical, in public, needs its own talk */

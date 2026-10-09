@@ -557,4 +557,10 @@ KC.addLang("pt", "items", {
   "forced-sex-unpleasant-partner": ["Sexo forçado com um parceiro desagradável", "Por acordo: o sub é «obrigado» a fazer sexo com alguém que acha desagradável. A terceira pessoa é adulta, conhece as regras do jogo e concorda; o sub aprova antes quem pode ser."],
   "no-safeword-short": ["Cenas curtas sem palavra de segurança", "Uma cena curta que o bottom não pode parar com uma palavra. Segurança: combinar antes, em detalhe, a cena e os limites rígidos; combinar um sinal de «parar por saúde» (um gesto, uma bolinha na mão) que sempre vale; o top observa o estado do bottom e para a cena a qualquer sinal de problema; sem álcool; só com um parceiro de confiança há muito tempo; conversar sobre a cena depois."],
   "no-safeword-long": ["Cenas longas sem palavra de segurança (um dia ou mais)", "Um dia ou mais sem poder parar com uma palavra. Segurança: tudo das cenas curtas e mais: deixar o acordo por escrito antes (duração, limites, o que é permitido); ter um jeito de sair antes (uma palavra-código por meio de uma terceira pessoa, uma ligação combinada para um amigo); checar o bem-estar com regularidade; sono, comida, água e remédios no horário; nada que ponha a vida em risco sem supervisão."],
+  /* v630 (owner, Oct 9) */
+  "pubic-hair-fetish": ["Fetiche por pelos pubianos", "Gostar dos pelos naturais nos genitais — do parceiro ou os seus."],
+  "fully-shaved-fetish": ["Fetiche por depilação total", "Gostar de pele completamente lisa: genitais e corpo sem pelos."],
+  "primal-play": ["Primal play (caçador e presa)", "Brincadeira animal e instintiva: perseguição, luta, rosnados, mordidas, «te peguei, você é meu». Combinem um gesto de parada: na empolgação as palavras podem não ser ouvidas."],
+  "cock-slapping": ["Tapas com o pau", "Bater no rosto com o pênis — mais sobre poder e humilhação do que dor."],
+  "emetophilia": ["Fetiche por vômito (emetofilia)", "Excitar-se com vômito — o seu, o do parceiro ou provocado na brincadeira. O maior risco é aspirar o vômito: não de barriga para cima, sem amarras nem mordaça, sem álcool. Vomitar com frequência faz mal à garganta e aos dentes."],
 });

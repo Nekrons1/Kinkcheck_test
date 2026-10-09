@@ -556,4 +556,10 @@ KC.addLang("en", "items", {
   "forced-sex-unpleasant-partner": ["Forced sex with an unappealing partner", "By agreement: the sub is “made” to have sex with someone they find unappealing. The third person is an adult who knows the rules of the game and consents; the sub approves in advance who it may be."],
   "no-safeword-short": ["Short scenes without a safeword", "A short scene the bottom cannot stop with a word. Safety: negotiate the scene and hard limits in detail beforehand; agree on a “health stop” signal (a gesture, a ball in the hand) that always works; the top watches the bottom's state and stops the scene at any sign of trouble; no alcohol; only with a partner you have trusted for a long time; talk the scene through afterwards."],
   "no-safeword-long": ["Long scenes without a safeword (a day or more)", "A day or longer with no right to stop it with a word. Safety: everything for short scenes, plus — write the agreement down beforehand (how long, limits, what is allowed); keep a way out early (a code word through a third person, an agreed call to a friend); check in on wellbeing regularly; sleep, food, water and medication on schedule; nothing life-threatening unsupervised."],
+  /* v630 (owner, Oct 9) */
+  "pubic-hair-fetish": ["Pubic hair fetish", "Being into natural hair on the genitals — your partner's or your own."],
+  "fully-shaved-fetish": ["Fully shaved fetish", "Being into completely smooth skin: genitals and body with no hair."],
+  "primal-play": ["Primal play (predator and prey)", "Animal, instinctive play: chasing, wrestling, growling, biting, “caught you — you're mine”. Agree on a stop gesture: in the heat of it words may not be heard."],
+  "cock-slapping": ["Cock slapping", "Slapping someone's face with a cock — more about power and humiliation than pain."],
+  "emetophilia": ["Vomit fetish (emetophilia)", "Being aroused by vomiting — your own, your partner's or induced in play. The main risk is breathing vomit in: not lying on the back, not tied up, no gag, no alcohol. Frequent vomiting harms the throat and teeth."],
 });
