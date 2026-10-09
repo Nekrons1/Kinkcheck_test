@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css?v=626">
+<link rel="stylesheet" href="../css/style.css?v=627">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -66,6 +66,8 @@
       <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle" title="Your saved lists" aria-label="Your saved lists">My lists</button>
       <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle" title="Link &amp; QR" aria-label="Link &amp; QR">Share</button>
       <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf">Download PDF</button>
+      <!-- v627 (owner): the filters row folds under this arrow (folded by default on phones, remembered) -->
+      <button class="btn ghost icon-btn filt-tg" id="filtToggle" type="button" aria-controls="subbar" aria-expanded="true" data-i18n-title="hdr.filters" title="Filters and search" aria-label="Filters and search"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <!-- v615 (owner): "Clear" is gone (a new list: My lists → Start a new list; delete there). Its place: the role filter of an
            extended list; empty for a plain list -->
       <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="Which role's answers to show" aria-label="Which role's answers to show">
@@ -75,7 +77,7 @@
       </select>
     </div>
   </div>
-  <div class="subbar">
+  <div class="subbar" id="subbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off" placeholder="Search practices…">
@@ -124,8 +126,7 @@
   </div>
   <section class="intro">
     <h1 data-i18n="intro.h1">Mark what interests you</h1>
-    <p data-i18n-html="intro.p1_html">A personal checklist for talking about desires and limits. Take your time and be honest; leave items blank if they are not for you. Tap “?” next to an item if you are not sure what it means. <b style="color:var(--ink);font-weight:600">Everything stays on this device</b>, in this browser, and is never sent anywhere.</p>
-    <p data-i18n="intro.p2">A filled-in list is a starting point for conversation and consent, not a commitment. Safewords and limits always outweigh any checkbox.</p>
+    <p data-i18n-html="intro.p1_html">Share the link and compare with a partner. <b style="color:var(--ink);font-weight:600">Everything stays on this device.</b></p>
     <p class="tpl-desc" id="tplDesc" hidden></p>
     <div class="idfields">
       <label><span data-i18n="name.label">Name / nickname</span> <span class="hint" data-i18n="name.hint">Latin letters keep the link short</span><input type="text" id="metaName" autocomplete="off" data-i18n-ph="name.ph" disabled placeholder="name or nickname"></label>
@@ -133,10 +134,10 @@
   </section>
 
   <section class="role-top">
-    <div class="role-explain" data-i18n-html="role.explain_html">Mark what you <b>want to do to your partner</b> if you are the Top, or <b>what you want done to you</b> if you are the Bottom. Your role is saved in the link together with your answers and name. Switches are best off keeping <b>two separate lists</b>, one for each role.</div>
+    <div class="role-explain" data-i18n-html="role.explain_html"><b>Top</b>: mark what you want to do to your partner. <b>Bottom</b>: what you want done to you. Your role is saved in the link.</div>
     <div class="role-pick" id="roleTop"></div>
     <div class="ext-note" id="extNote" data-i18n="ext.note" hidden>Extended list — roles Top and Bottom</div>
-    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>Make an extended one</button>
+    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>⇅ Switch? Make an extended one</button>
   </section>
 
   <div class="legend">
@@ -292,6 +293,6 @@
   </div>
 </div>
 
-<script src="../js/boot.js?v=626" data-page="form" data-v="626"></script>
+<script src="../js/boot.js?v=627" data-page="form" data-v="627"></script>
 </body>
 </html>

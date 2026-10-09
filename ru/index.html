@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css?v=626">
+<link rel="stylesheet" href="../css/style.css?v=627">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -66,6 +66,8 @@
       <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle" title="Мои сохранённые анкеты" aria-label="Мои сохранённые анкеты">Мои анкеты</button>
       <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle" title="Ссылка и QR" aria-label="Ссылка и QR">Поделиться</button>
       <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf">Скачать PDF</button>
+      <!-- v627 (owner): the filters row folds under this arrow (folded by default on phones, remembered) -->
+      <button class="btn ghost icon-btn filt-tg" id="filtToggle" type="button" aria-controls="subbar" aria-expanded="true" data-i18n-title="hdr.filters" title="Фильтры и поиск" aria-label="Фильтры и поиск"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <!-- v615 (owner): "Clear" is gone (a new list: My lists → Start a new list; delete there). Its place: the role filter of an
            extended list; empty for a plain list -->
       <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="Ответы какой роли показывать" aria-label="Ответы какой роли показывать">
@@ -75,7 +77,7 @@
       </select>
     </div>
   </div>
-  <div class="subbar">
+  <div class="subbar" id="subbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off" placeholder="Поиск практики…">
@@ -124,8 +126,7 @@
   </div>
   <section class="intro">
     <h1 data-i18n="intro.h1">Отметь, что тебе интересно</h1>
-    <p data-i18n-html="intro.p1_html">Личный чек-лист для обсуждения желаний и границ. Заполни спокойно и честно — можно оставлять пункты пустыми, если они не про тебя. Нажми «?» рядом с пунктом, если не уверен(а), что это. <b style="color:var(--ink);font-weight:600">Всё сохраняется только на этом устройстве</b>, в этом браузере, и никуда не отправляется.</p>
-    <p data-i18n="intro.p2">Заполненный список — это старт для разговора и согласия, а не обязательство. Стоп-слово и границы всегда важнее любой галочки.</p>
+    <p data-i18n-html="intro.p1_html">Поделись ссылкой и сравни с партнёром. <b style="color:var(--ink);font-weight:600">Всё хранится только на этом устройстве.</b></p>
     <p class="tpl-desc" id="tplDesc" hidden></p>
     <div class="idfields">
       <label><span data-i18n="name.label">Имя / ник</span> <span class="hint" data-i18n="name.hint">лучше латиницей</span><input type="text" id="metaName" autocomplete="off" data-i18n-ph="name.ph" disabled placeholder="имя или ник"></label>
@@ -133,10 +134,10 @@
   </section>
 
   <section class="role-top">
-    <div class="role-explain" data-i18n-html="role.explain_html">Отмечай то, что <b>хочешь делать с партнёром</b>, если ты Верх, — или <b>что хочешь, чтобы делали с тобой</b>, если ты Низ. Роль сохраняется в ссылке вместе с анкетой и именем. Свитчам лучше вести <b>две отдельные анкеты</b> — для роли Верха и для роли Низа.</div>
+    <div class="role-explain" data-i18n-html="role.explain_html"><b>Верх</b> отмечает, что хочет делать с партнёром, <b>Низ</b> — что хочет, чтобы делали с ним. Роль сохраняется в ссылке.</div>
     <div class="role-pick" id="roleTop"></div>
     <div class="ext-note" id="extNote" data-i18n="ext.note" hidden>Расширенная анкета — роли Верх и Низ</div>
-    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>Сделать расширенную</button>
+    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>⇅ Свитч? Сделать расширенную</button>
   </section>
 
   <div class="legend">
@@ -292,6 +293,6 @@
   </div>
 </div>
 
-<script src="../js/boot.js?v=626" data-page="form" data-v="626"></script>
+<script src="../js/boot.js?v=627" data-page="form" data-v="627"></script>
 </body>
 </html>

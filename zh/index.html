@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css?v=626">
+<link rel="stylesheet" href="../css/style.css?v=627">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -66,6 +66,8 @@
       <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle" title="你儲存的清單" aria-label="你儲存的清單">我的清單</button>
       <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle" title="連結與 QR 碼" aria-label="連結與 QR 碼">分享</button>
       <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf">下載 PDF</button>
+      <!-- v627 (owner): the filters row folds under this arrow (folded by default on phones, remembered) -->
+      <button class="btn ghost icon-btn filt-tg" id="filtToggle" type="button" aria-controls="subbar" aria-expanded="true" data-i18n-title="hdr.filters" title="篩選與搜尋" aria-label="篩選與搜尋"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <!-- v615 (owner): "Clear" is gone (a new list: My lists → Start a new list; delete there). Its place: the role filter of an
            extended list; empty for a plain list -->
       <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="顯示哪個角色的回答" aria-label="顯示哪個角色的回答">
@@ -75,7 +77,7 @@
       </select>
     </div>
   </div>
-  <div class="subbar">
+  <div class="subbar" id="subbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off" placeholder="搜尋玩法…">
@@ -124,8 +126,7 @@
   </div>
   <section class="intro">
     <h1 data-i18n="intro.h1">勾選你有興趣的</h1>
-    <p data-i18n-html="intro.p1_html">一份用來聊慾望和界線的個人清單。慢慢來、誠實填；不適合你的項目可以留白。不確定某個項目是什麼，就點旁邊的「?」。<b style="color:var(--ink);font-weight:600">所有資料只存在這台裝置</b>的這個瀏覽器裡，不會傳送到任何地方。</p>
-    <p data-i18n="intro.p2">填好的清單是溝通與同意的起點，不是承諾。安全詞和底線永遠比任何勾選更重要。</p>
+    <p data-i18n-html="intro.p1_html">分享連結，和伴侶比較。<b style="color:var(--ink);font-weight:600">所有資料只存在這台裝置。</b></p>
     <p class="tpl-desc" id="tplDesc" hidden></p>
     <div class="idfields">
       <label><span data-i18n="name.label">名字／暱稱</span> <span class="hint" data-i18n="name.hint">用英文字母，連結會比較短</span><input type="text" id="metaName" autocomplete="off" data-i18n-ph="name.ph" disabled placeholder="名字或暱稱"></label>
@@ -133,10 +134,10 @@
   </section>
 
   <section class="role-top">
-    <div class="role-explain" data-i18n-html="role.explain_html">如果你是 Top，就勾選你<b>想對伴侶做的事</b>；如果你是 Bottom，就勾選你<b>希望別人對你做的事</b>。你的角色會和答案、名字一起存在連結裡。Switch（兩者皆可）最好分成<b>兩份清單</b>，每個角色各一份。</div>
+    <div class="role-explain" data-i18n-html="role.explain_html"><b>Top</b> 勾選想對伴侶做的事，<b>Bottom</b> 勾選希望別人對你做的事。角色會存在連結裡。</div>
     <div class="role-pick" id="roleTop"></div>
     <div class="ext-note" id="extNote" data-i18n="ext.note" hidden>進階清單 — 支配方與臣服方兩個角色</div>
-    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>製作進階版</button>
+    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>⇅ Switch？製作進階版</button>
   </section>
 
   <div class="legend">
@@ -292,6 +293,6 @@
   </div>
 </div>
 
-<script src="../js/boot.js?v=626" data-page="form" data-v="626"></script>
+<script src="../js/boot.js?v=627" data-page="form" data-v="627"></script>
 </body>
 </html>

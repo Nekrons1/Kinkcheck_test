@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css?v=626">
+<link rel="stylesheet" href="../css/style.css?v=627">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -66,6 +66,8 @@
       <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle" title="ลิสต์ที่บันทึกไว้" aria-label="ลิสต์ที่บันทึกไว้">ลิสต์ของฉัน</button>
       <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle" title="ลิงก์และ QR" aria-label="ลิงก์และ QR">แชร์</button>
       <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf">ดาวน์โหลด PDF</button>
+      <!-- v627 (owner): the filters row folds under this arrow (folded by default on phones, remembered) -->
+      <button class="btn ghost icon-btn filt-tg" id="filtToggle" type="button" aria-controls="subbar" aria-expanded="true" data-i18n-title="hdr.filters" title="ตัวกรองและค้นหา" aria-label="ตัวกรองและค้นหา"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <!-- v615 (owner): "Clear" is gone (a new list: My lists → Start a new list; delete there). Its place: the role filter of an
            extended list; empty for a plain list -->
       <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="แสดงคำตอบของบทบาทไหน" aria-label="แสดงคำตอบของบทบาทไหน">
@@ -75,7 +77,7 @@
       </select>
     </div>
   </div>
-  <div class="subbar">
+  <div class="subbar" id="subbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off" placeholder="ค้นหา…">
@@ -124,8 +126,7 @@
   </div>
   <section class="intro">
     <h1 data-i18n="intro.h1">เลือกสิ่งที่คุณสนใจ</h1>
-    <p data-i18n-html="intro.p1_html">เช็กลิสต์ส่วนตัวสำหรับคุยกันเรื่องความต้องการและขีดจำกัด ค่อย ๆ ตอบอย่างตรงไปตรงมา ข้อไหนไม่เกี่ยวกับคุณก็เว้นว่างไว้ได้ ถ้าไม่แน่ใจว่าข้อไหนหมายถึงอะไร กด “?” ข้าง ๆ ข้อนั้น <b style="color:var(--ink);font-weight:600">ทุกอย่างถูกเก็บไว้ในอุปกรณ์นี้เท่านั้น</b> ในเบราว์เซอร์นี้ และไม่ถูกส่งไปที่ไหน</p>
-    <p data-i18n="intro.p2">ลิสต์ที่กรอกแล้วเป็นจุดเริ่มต้นของการพูดคุยและความยินยอม ไม่ใช่คำสัญญา เซฟเวิร์ดและขีดจำกัดสำคัญกว่าเครื่องหมายใด ๆ เสมอ</p>
+    <p data-i18n-html="intro.p1_html">แชร์ลิงก์แล้วเปรียบเทียบกับคู่ <b style="color:var(--ink);font-weight:600">ทุกอย่างเก็บไว้ในอุปกรณ์นี้เท่านั้น</b></p>
     <p class="tpl-desc" id="tplDesc" hidden></p>
     <div class="idfields">
       <label><span data-i18n="name.label">ชื่อ / ชื่อเล่น</span> <span class="hint" data-i18n="name.hint">ใช้ตัวอักษรภาษาอังกฤษ ลิงก์จะสั้นกว่า</span><input type="text" id="metaName" autocomplete="off" data-i18n-ph="name.ph" disabled placeholder="ชื่อหรือชื่อเล่น"></label>
@@ -133,10 +134,10 @@
   </section>
 
   <section class="role-top">
-    <div class="role-explain" data-i18n-html="role.explain_html">ถ้าคุณเป็นท็อป ให้เลือก<b>สิ่งที่อยากทำกับคู่</b> ถ้าเป็นบ็อตทอม ให้เลือก<b>สิ่งที่อยากให้คู่ทำกับคุณ</b> บทบาทจะถูกบันทึกในลิงก์พร้อมคำตอบและชื่อ ถ้าคุณเป็นสวิตช์ แนะนำให้ทำ<b>สองลิสต์แยกกัน</b> ลิสต์ละบทบาท</div>
+    <div class="role-explain" data-i18n-html="role.explain_html"><b>ท็อป</b> เลือกสิ่งที่อยากทำกับคู่ <b>บ็อตทอม</b> เลือกสิ่งที่อยากให้คู่ทำกับคุณ บทบาทจะถูกบันทึกในลิงก์</div>
     <div class="role-pick" id="roleTop"></div>
     <div class="ext-note" id="extNote" data-i18n="ext.note" hidden>ลิสต์แบบขยาย — บทบาทท็อปและบ็อตทอม</div>
-    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>ทำแบบขยาย</button>
+    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>⇅ เป็นสวิตช์? ทำแบบขยาย</button>
   </section>
 
   <div class="legend">
@@ -292,6 +293,6 @@
   </div>
 </div>
 
-<script src="../js/boot.js?v=626" data-page="form" data-v="626"></script>
+<script src="../js/boot.js?v=627" data-page="form" data-v="627"></script>
 </body>
 </html>

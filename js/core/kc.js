@@ -46,6 +46,7 @@ window.KC = window.KC || {};
     wr:    "checklist-wr",                  // v611: the last tab chosen under ⚔ Wr (raw string): wr | wh | leg — the ⚔ Wr button reopens it
     wrPair:  "checklist-wr-pair",
     wrGroup: "checklist-wr-group",
+    filters: "checklist-filters",           // v627: the filters row open ("1") or folded ("0"); default: folded on phones
   };
 
   KC.ls = {

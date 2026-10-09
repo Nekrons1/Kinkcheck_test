@@ -44,7 +44,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css?v=626">
+<link rel="stylesheet" href="../css/style.css?v=627">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -66,6 +66,8 @@
       <button class="btn ghost" id="mineBtn" data-i18n="hdr.mine" data-i18n-title="hdr.mineTitle" title="保存した自分のリスト" aria-label="保存した自分のリスト">マイリスト</button>
       <button class="btn ghost" id="shareBtn" data-i18n="hdr.share" data-i18n-title="hdr.shareTitle" title="リンクとQRコード" aria-label="リンクとQRコード">共有</button>
       <button class="btn ghost" id="pdfBtn" data-i18n="hdr.pdf">PDFをダウンロード</button>
+      <!-- v627 (owner): the filters row folds under this arrow (folded by default on phones, remembered) -->
+      <button class="btn ghost icon-btn filt-tg" id="filtToggle" type="button" aria-controls="subbar" aria-expanded="true" data-i18n-title="hdr.filters" title="フィルターと検索" aria-label="フィルターと検索"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <!-- v615 (owner): "Clear" is gone (a new list: My lists → Start a new list; delete there). Its place: the role filter of an
            extended list; empty for a plain list -->
       <select class="jump role-view" id="roleView" data-i18n-title="ext.roleView" hidden title="表示する役割の回答" aria-label="表示する役割の回答">
@@ -75,7 +77,7 @@
       </select>
     </div>
   </div>
-  <div class="subbar">
+  <div class="subbar" id="subbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="search" data-i18n-ph="search.ph" autocomplete="off" placeholder="プレイを検索…">
@@ -124,8 +126,7 @@
   </div>
   <section class="intro">
     <h1 data-i18n="intro.h1">興味のあることにチェックを</h1>
-    <p data-i18n-html="intro.p1_html">望みと限界について話し合うための、個人用チェックリストです。落ち着いて正直に記入してください。自分に関係のない項目は空欄のままでかまいません。意味がわからない項目は横の「?」を押してください。<b style="color:var(--ink);font-weight:600">内容はこの端末のこのブラウザにだけ保存され</b>、どこにも送信されません。</p>
-    <p data-i18n="intro.p2">記入したリストは、会話と合意のきっかけであって、約束ではありません。セーフワードと限界は、どのチェックよりも優先されます。</p>
+    <p data-i18n-html="intro.p1_html">リンクを共有して、パートナーと比べましょう。<b style="color:var(--ink);font-weight:600">データはこの端末にだけ保存されます。</b></p>
     <p class="tpl-desc" id="tplDesc" hidden></p>
     <div class="idfields">
       <label><span data-i18n="name.label">名前／ニックネーム</span> <span class="hint" data-i18n="name.hint">ローマ字だとリンクが短くなります</span><input type="text" id="metaName" autocomplete="off" data-i18n-ph="name.ph" disabled placeholder="名前またはニックネーム"></label>
@@ -133,10 +134,10 @@
   </section>
 
   <section class="role-top">
-    <div class="role-explain" data-i18n-html="role.explain_html">トップ（S）なら<b>相手にしたいこと</b>を、ボトム（M）なら<b>自分がされたいこと</b>をチェックしてください。役割は回答や名前と一緒にリンクに保存されます。スイッチの方は、役割ごとに<b>2つのリストを分けて</b>作るのがおすすめです。</div>
+    <div class="role-explain" data-i18n-html="role.explain_html"><b>トップ（S）</b>は相手にしたいこと、<b>ボトム（M）</b>は自分がされたいことをチェック。役割はリンクに保存されます。</div>
     <div class="role-pick" id="roleTop"></div>
     <div class="ext-note" id="extNote" data-i18n="ext.note" hidden>拡張版リスト — トップとボトムの役割</div>
-    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>拡張版を作る</button>
+    <button class="btn ghost ext-make" id="extMake" type="button" data-i18n="ext.make" hidden>⇅ スイッチなら：拡張版を作る</button>
   </section>
 
   <div class="legend">
@@ -292,6 +293,6 @@
   </div>
 </div>
 
-<script src="../js/boot.js?v=626" data-page="form" data-v="626"></script>
+<script src="../js/boot.js?v=627" data-page="form" data-v="627"></script>
 </body>
 </html>
