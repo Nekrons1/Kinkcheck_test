@@ -342,9 +342,9 @@
     KC.$("onlyFav").closest(".fav-toggle").classList.toggle("on", KC.$("onlyFav").checked);
     F.renderFiltFold();
   };
-  /* v627 (owner): the filters row folds under the arrow in the header — folded by default on phones (≤ 600 px), the
+  /* v627 (owner): the filters row folds under the arrow in the header — open by default (v628), the
      choice is remembered on this device. While folded, the arrow shows a dot if something is filtering the list. */
-  F.filtersOpen = () => { const r = KC.ls.raw(KC.KEYS.filters); return r === "1" ? true : r === "0" ? false : !(window.innerWidth && window.innerWidth <= 600); };
+  F.filtersOpen = () => { const r = KC.ls.raw(KC.KEYS.filters); return r !== "0"; };   /* v628 (owner): open by default everywhere */
   F.filtActive = () => !!(KC.$("search").value.trim() || F.tpl() || KC.$("view").value !== "all" || KC.$("onlyFav").checked);
   F.renderFiltFold = function () {
     const open = F.filtersOpen(), b = KC.$("filtToggle"); if (!b) return;

@@ -853,3 +853,6 @@ body.filters-off .subbar{display:none}
   .subbar select.jump, .subbar #jump, .subbar #tplSel, .subbar #view{padding:6px 6px;font-size:13.5px}
   .subbar .fav-toggle{width:34px;height:32px}
 }
+
+/* v629: shown only when JavaScript is off */
+.noscript{max-width:640px;margin:24px auto;padding:14px 16px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--ink);font-size:15px;text-align:center}

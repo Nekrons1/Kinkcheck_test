@@ -62,6 +62,8 @@ KC.addLang("en", "ui", {
   "share.copy": "Copy",
   "share.qrNote": "Show the QR on your screen and let them scan it.",
   "share.qrTooLong": "The link is too long for a QR code. Use copy instead.",
+  "share.qrFail": "The QR code didn't load — check your connection. The link above works without it.",
+  "noscript": "This site needs JavaScript. Please turn it on in your browser settings.",
   "close": "Close",
 
   "saved.h": "Received lists",

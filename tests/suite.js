@@ -3405,6 +3405,38 @@ const S = (title) => console.log("\n## " + title);
     _sc.end();
   }
 
+  S("v628: the saved theme before the first paint; filters open by default");
+  {
+    const _sc = scope();
+    const fsx = require("fs"), bad = [];
+    ["index.html", "compare.html", "ru/index.html", "en/index.html"].forEach(fl => { const h = fsx.readFileSync(__dirname + "/../" + fl, "utf8");
+      const sc = h.indexOf('localStorage.getItem("checklist-theme")'), css = h.indexOf('rel="stylesheet" href="') >= 0 ? h.search(/<link rel="stylesheet" href="[^"]*css\/style\.css/) : -1;
+      if (sc < 0 || css < 0 || sc > css || !/<meta name="color-scheme" content="light dark">/.test(h)) bad.push(fl); });
+    eq(bad, [], "every page sets the saved theme in <head> before the stylesheet");
+    const f = open("form"); ok(f.KC.form.filtersOpen() && !f.d.body.classList.contains("filters-off"), "filters open by default (owner)");
+    _sc.end();
+  }
+
+  S("v629: libraries on demand, Back closes windows, browser bar follows ◑, a note without JavaScript");
+  {
+    const _sc = scope();
+    const fsx = require("fs"), R = f2 => fsx.readFileSync(__dirname + "/../" + f2, "utf8");
+    const pages = ["index.html", "compare.html", "ru/index.html", "en/index.html", "ja/index.html"];
+    eq(pages.filter(x => /cdnjs/.test(R(x))), [], "no PDF / picture / QR library is loaded with the page");
+    ok(/await KC\.lib\("pdf"\)/.test(R("js/form/pdf.js")) && /KC\.lib\("qr"\)/.test(R("js/form/share.js")), "…they are fetched when PDF or QR is first needed");
+    eq(pages.filter(x => !/<noscript><p class="noscript" data-i18n="noscript">[^<]{20,}<\/p><\/noscript>/.test(R(x))), [], "every page says it needs JavaScript when scripts are off");
+    ok(/Для работы сайта нужен JavaScript/.test(R("ru/index.html")), "…in the page's language");
+    const f = open("form"), K = f.KC, d = f.d, w = f.w;
+    K.barColor("dark"); eq([...d.querySelectorAll('meta[name="theme-color"]')].map(m => m.getAttribute("content")), ["#161114", "#161114"], "the browser bar takes the chosen theme's colour");
+    const ov = d.getElementById("mineOverlay");
+    click(w, d.getElementById("mineBtn"));
+    ok(ov.classList.contains("show") && w.history.state && w.history.state.kcModal === "mineOverlay", "opening a window adds a history entry");
+    w.dispatchEvent(new w.PopStateEvent("popstate", { state: null }));
+    ok(!ov.classList.contains("show"), "Back (popstate) closes the window");
+    ok(!f.errors.length, "no script errors");
+    _sc.end();
+  }
+
   S("calibration constants — v624: the hand-tuned and fitted numbers in one place (update here when re-fitting)");
   {
     const _sc = scope();

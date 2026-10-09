@@ -64,6 +64,8 @@ KC.addLang("ja", "ui", {
   "share.copy": "コピー",
   "share.qrNote": "画面にQRコードを表示して、相手に読み取ってもらいましょう。",
   "share.qrTooLong": "リンクが長すぎてQRコードにできません。コピーを使ってください。",
+  "share.qrFail": "QRコードを読み込めませんでした。接続を確認してください。上のリンクはQRなしでも使えます。",
+  "noscript": "このサイトにはJavaScriptが必要です。ブラウザの設定で有効にしてください。",
   "close": "閉じる",
 
   "saved.h": "受け取ったリスト",

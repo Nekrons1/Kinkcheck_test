@@ -74,6 +74,8 @@ KC.addLang("zh", "ui", {
   "share.copy": "複製",
   "share.qrNote": "把 QR 碼秀在螢幕上讓對方掃描。",
   "share.qrTooLong": "連結太長，無法產生 QR 碼。請改用複製。",
+  "share.qrFail": "QR 碼沒有載入——請檢查網路。上面的連結不用 QR 也能用。",
+  "noscript": "本網站需要 JavaScript。請在瀏覽器設定中開啟。",
   "close": "關閉",
   "saved.h": "收到的清單",
   "saved.p": "你從連結或 QR 碼打開的清單會保存在這台裝置上。可以直接打開，或馬上和你的比較。",
